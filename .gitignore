@@ -1,0 +1,35 @@
+# Dépendances
+node_modules/
+
+# Build & PWA
+dist/
+dist-ssr/
+dev-dist/
+*.local
+
+# Variables d'environnement & Secrets (Protection anti-fuite)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+
+# Tests & Couverture
+coverage/
+
+# Logs & Rapports de debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Éditeurs & OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
