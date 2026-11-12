@@ -8,6 +8,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Initialisation du projet Vite + React 19 + TypeScript (`strict`, `noUncheckedIndexedAccess`), ESLint et Vitest
 - [x] Création du système de Design Tokens CSS bi-thème (`src/theme/tokens.css`, `base.css`) : Thème Clair par défaut + Thème Sombre, typographie tabulaire pour les chiffres, cibles tactiles >= 44 px
 - [x] Mise en place de l'App Shell responsive (en-tête d'identité du personnage avec cadre du portrait, barre d'état rapide, bascule Mode Partie / Mode Édition et commutateur de thème Clair / Sombre)
+- [x] Configuration PWA (`vite-plugin-pwa`, manifest, icône SVG, Service Worker hors-ligne), exposition réseau local (`--host`) et workflow GitHub Actions pour déploiement GitHub Pages
 
 ## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD)
 - **Focus d'apprentissage** : Séparation stricte entre données sources stockées et données dérivées calculées à la volée ; développement piloté par les tests (TDD) en TypeScript pur.
@@ -41,7 +42,6 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [ ] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
 - [ ] Vue **Forge d'Édition** : édition de l'identité (avec **upload et compression automatique du portrait du personnage**), des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew), gestion des ressources suivies
 - [ ] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
-- [ ] Configuration PWA (`vite-plugin-pwa`, manifest, icônes, fonctionnement 100 % hors-ligne)
 
 ## Jalon 5 — Hardening, Sécurité & Audit Qualité (Obligatoire)
 - **Focus d'apprentissage** : Durcissement applicatif, résilience face aux fichiers corrompus, accessibilité et performance de production.
