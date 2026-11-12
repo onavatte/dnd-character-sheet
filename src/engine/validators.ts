@@ -1,0 +1,162 @@
+/**
+ * Validation stricte aux frontières (IndexedDB / Import de sauvegarde JSON).
+ * Protège l'application contre les fichiers JSON malformés, tronqués ou corrompus.
+ */
+
+import { ABILITY_KEYS, HIT_DIE_SIZES } from './types';
+import type { CharacterSheetV1 } from './types';
+
+export type ValidationResult =
+  | { valid: true; data: CharacterSheetV1 }
+  | { valid: false; errors: string[] };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+/**
+ * Valide qu'un payload inconnu (issu d'un import JSON ou d'IndexedDB) respecte
+ * la structure et les invariants de sécurité de CharacterSheetV1.
+ */
+export function validateCharacterSheet(payload: unknown): ValidationResult {
+  const errors: string[] = [];
+
+  if (!isRecord(payload)) {
+    return {
+      valid: false,
+      errors: ['Le contenu fourni n’est pas un objet JSON valide.'],
+    };
+  }
+
+  if (payload['schemaVersion'] !== 1) {
+    errors.push(
+      `Version de schéma non supportée (${String(payload['schemaVersion'])}). Attendu : 1.`,
+    );
+  }
+
+  if (!isNonEmptyString(payload['id'])) {
+    errors.push('L’identifiant du personnage (id) est manquant ou invalide.');
+  }
+
+  if (!isFiniteNumber(payload['revision']) || payload['revision'] < 1) {
+    errors.push('Le numéro de révision (revision) doit être un entier >= 1.');
+  }
+
+  const identity = payload['identity'];
+  if (!isRecord(identity)) {
+    errors.push('La section identity est manquante.');
+  } else {
+    if (!isNonEmptyString(identity['name'])) {
+      errors.push('Le nom du personnage (identity.name) est obligatoire.');
+    }
+    if (
+      identity['portraitDataUrl'] !== undefined &&
+      (typeof identity['portraitDataUrl'] !== 'string' ||
+        !identity['portraitDataUrl'].startsWith('data:image/'))
+    ) {
+      errors.push(
+        'Le portrait du personnage (identity.portraitDataUrl) doit être une Data URL image valide (data:image/...).',
+      );
+    }
+    const classes = identity['classes'];
+    if (!Array.isArray(classes) || classes.length === 0) {
+      errors.push(
+        'Le personnage doit posséder au moins une classe dans identity.classes.',
+      );
+    } else {
+      classes.forEach((cls, idx) => {
+        if (!isRecord(cls)) {
+          errors.push(`La classe à l'index ${idx} est invalide.`);
+          return;
+        }
+        if (!isNonEmptyString(cls['name'])) {
+          errors.push(`Le nom de la classe à l'index ${idx} est manquant.`);
+        }
+        if (!isFiniteNumber(cls['level']) || cls['level'] < 1 || cls['level'] > 20) {
+          errors.push(
+            `Le niveau de la classe "${String(cls['name'])}" doit être compris entre 1 et 20.`,
+          );
+        }
+        if (!HIT_DIE_SIZES.includes(cls['hitDieSize'] as 6 | 8 | 10 | 12)) {
+          errors.push(
+            `Taille de dé de vie invalide pour la classe "${String(cls['name'])}" (attendu : 6, 8, 10 ou 12).`,
+          );
+        }
+      });
+    }
+  }
+
+  const abilities = payload['abilities'];
+  if (!isRecord(abilities)) {
+    errors.push('La section abilities est manquante.');
+  } else {
+    for (const key of ABILITY_KEYS) {
+      const score = abilities[key];
+      if (!isFiniteNumber(score) || score < 1 || score > 30) {
+        errors.push(
+          `Le score de caractéristique ${key} doit être un nombre compris entre 1 et 30.`,
+        );
+      }
+    }
+  }
+
+  const combat = payload['combat'];
+  if (!isRecord(combat)) {
+    errors.push('La section combat est manquante.');
+  } else {
+    if (!isFiniteNumber(combat['hpMax']) || combat['hpMax'] < 1) {
+      errors.push('Les PV maximum (combat.hpMax) doivent être >= 1.');
+    }
+    if (!isFiniteNumber(combat['hpCurrent']) || combat['hpCurrent'] < 0) {
+      errors.push('Les PV actuels (combat.hpCurrent) doivent être >= 0.');
+    }
+    const pools = combat['hitDicePools'];
+    if (!isRecord(pools)) {
+      errors.push('Les réserves de dés de vie (combat.hitDicePools) sont manquantes.');
+    } else {
+      for (const size of HIT_DIE_SIZES) {
+        const pool = pools[String(size)];
+        if (
+          !isRecord(pool) ||
+          !isFiniteNumber(pool['total']) ||
+          !isFiniteNumber(pool['available'])
+        ) {
+          errors.push(`La réserve de dés de vie d${size} est invalide.`);
+        }
+      }
+    }
+  }
+
+  if (!Array.isArray(payload['skills'])) {
+    errors.push('La liste des compétences (skills) doit être un tableau.');
+  }
+
+  if (!Array.isArray(payload['resources'])) {
+    errors.push('La liste des ressources (resources) doit être un tableau.');
+  }
+
+  if (!Array.isArray(payload['attacks'])) {
+    errors.push('La liste des attaques (attacks) doit être un tableau.');
+  }
+
+  if (!Array.isArray(payload['inventory'])) {
+    errors.push('L’inventaire (inventory) doit être un tableau.');
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  return {
+    valid: true,
+    data: payload as unknown as CharacterSheetV1,
+  };
+}

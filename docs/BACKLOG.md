@@ -2,7 +2,7 @@
 
 Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cours.
 
-## Jalon 0 — Fondations, Outillage & Design System ("Grimoire Tactique" Clair / Sombre) ⏳
+## Jalon 0 — Fondations, Outillage & Design System ("Grimoire Tactique" Clair / Sombre) ✅
 - **Focus d'apprentissage** : Configuration d'une base React 19 + TypeScript ultra-stricte et architecture de Design Tokens CSS bi-thème (Thème Clair *Ivoire & Encre* par défaut + Thème Sombre *Obsidienne & Or*).
 - **Critère de validation** : `npm test`, `npm run lint` et `npm run build` passent sans erreur ; la coquille applicative (App Shell) affiche la typographie, la bascule de thème Clair/Sombre et le sélecteur de mode (*Cockpit* / *Forge*) sur Desktop et Tablette.
 - [x] Initialisation du projet Vite + React 19 + TypeScript (`strict`, `noUncheckedIndexedAccess`), ESLint et Vitest
@@ -10,14 +10,14 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Mise en place de l'App Shell responsive (en-tête d'identité du personnage avec cadre du portrait, barre d'état rapide, bascule Mode Partie / Mode Édition et commutateur de thème Clair / Sombre)
 - [x] Configuration PWA (`vite-plugin-pwa`, manifest, icône SVG, Service Worker hors-ligne), exposition réseau local (`--host`) et workflow GitHub Actions pour déploiement GitHub Pages
 
-## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD)
+## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD) ⏳
 - **Focus d'apprentissage** : Séparation stricte entre données sources stockées et données dérivées calculées à la volée ; développement piloté par les tests (TDD) en TypeScript pur.
 - **Critère de validation** : 100 % des tests unitaires de `src/engine/` passent avec `npm test` (modificateurs, maîtrise, compétences personnalisées, CA, DD, repos court/long, assistant de jets).
-- [ ] Définition des types du domaine versionnés (`src/engine/types.ts`), du lexique bilingue FR/EN (`src/engine/glossary.ts` : 6 caractéristiques, 18 compétences 5e, conditions, recherche bilingue) et d'un personnage de référence complet (fixture de test / démo)
-- [ ] Implémentation des calculateurs purs (`src/engine/calculators.ts` + tests) : niveau global multi-classes, modificateurs, bonus de maîtrise, sauvegardes, compétences (standard 5e + compétences personnalisées post-apo), CA, initiative, Perception passive, DD de sorts par classe
-- [ ] Implémentation de la machine à états des ressources et repos (`src/engine/rest.ts` + tests) : dégâts/soins avec absorption par PV temporaires, jets contre la mort, Repos Court (dépense par pool de Dés de Vie `d6`/`d8`/`d10`/`d12` et emplacements de Pacte) et Repos Long
-- [ ] Implémentation du moteur de l'Assistant de Jet Hybride (`src/engine/dice.ts` + tests) : résolution à partir d'une valeur de dé physique saisie par le joueur ou d'un tirage aléatoire, gestion Avantage/Désavantage et critiques (1 / 20)
-- [ ] Validation stricte et migration de schéma (`src/engine/validators.ts` + tests)
+- [x] Définition des types du domaine versionnés (`src/engine/types.ts`), du lexique bilingue FR/EN (`src/engine/glossary.ts` : 6 caractéristiques, 18 compétences 5e, conditions, recherche bilingue) et d'un personnage de référence complet (fixture de test / démo)
+- [x] Implémentation des calculateurs purs (`src/engine/calculators.ts` + tests) : niveau global multi-classes, modificateurs, bonus de maîtrise, sauvegardes, compétences (standard 5e + compétences personnalisées post-apo), CA, initiative, Perception passive, DD de sorts par classe
+- [x] Implémentation de la machine à états des ressources et repos (`src/engine/rest.ts` + tests) : dégâts/soins avec absorption par PV temporaires, jets contre la mort, Repos Court (dépense par pool de Dés de Vie `d6`/`d8`/`d10`/`d12` et emplacements de Pacte) et Repos Long
+- [x] Implémentation du moteur de l'Assistant de Jet Hybride (`src/engine/dice.ts` + tests) : résolution à partir d'une valeur de dé physique saisie par le joueur ou d'un tirage aléatoire, gestion Avantage/Désavantage et critiques (1 / 20)
+- [x] Validation stricte et migration de schéma (`src/engine/validators.ts` + tests)
 
 ## Jalon 2 — Stockage IndexedDB, Undo/Redo Copy-on-Write & Backup JSON
 - **Focus d'apprentissage** : Architecture de stockage multi-tiers dans le navigateur (RAM Copy-on-Write avec `Zustand` + `Immer`, persistance asynchrone `IndexedDB`, snapshots immuables et portabilité JSON).
