@@ -87,6 +87,7 @@ export interface CharacterSheetV1 {
   };
   identity: {
     name: string;
+    portraitDataUrl?: string;       // Portrait du personnage (Data URL WebP/JPEG redimensionnée côté client, ex. max 512x512)
     classes: CharacterClassEntry[]; // Support natif du multi-classage (1 à N classes)
     background: string;
     ancestry: string;

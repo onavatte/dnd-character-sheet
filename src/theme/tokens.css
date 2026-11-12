@@ -1,0 +1,186 @@
+/* ==========================================================================
+   Design Tokens — Grimoire 5e ("Ivoire & Encre" Clair par défaut / "Obsidienne & Or" Sombre)
+   ========================================================================== */
+
+:root {
+  /* 1. Déclaration native du schéma de couleurs (modern-web-guidance: dark-mode & dark-mode-toggle) */
+  color-scheme: light dark;
+
+  /* Palettes brutes — Thème Clair ("Ivoire & Encre") */
+  --raw-bg-canvas-light: #f6f3ec;
+  --raw-bg-surface-light: #fcfaf5;
+  --raw-bg-elevated-light: #ede8dc;
+  --raw-bg-interactive-light: #e4decb;
+
+  --raw-text-primary-light: #1a1d24;
+  --raw-text-secondary-light: #454d5e;
+  --raw-text-muted-light: #646d80;
+
+  --raw-border-subtle-light: #cfc7b4;
+  --raw-border-strong-light: #7c725d;
+
+  --raw-accent-primary-light: #8f6110;
+  --raw-accent-surface-light: #f5ebd6;
+  --raw-color-hp-ok-light: #237032;
+  --raw-color-hp-warn-light: #b45309;
+  --raw-color-hp-crit-light: #b91c1c;
+  --raw-color-arcane-light: #1864ab;
+
+  /* Palettes brutes — Thème Sombre ("Obsidienne & Or") */
+  --raw-bg-canvas-dark: #0d0f12;
+  --raw-bg-surface-dark: #151921;
+  --raw-bg-elevated-dark: #1e2430;
+  --raw-bg-interactive-dark: #272f3f;
+
+  --raw-text-primary-dark: #f0ece1;
+  --raw-text-secondary-dark: #b0b9c6;
+  --raw-text-muted-dark: #8490a3;
+
+  --raw-border-subtle-dark: #2e3748;
+  --raw-border-strong-dark: #6e7b91;
+
+  --raw-accent-primary-dark: #d4a853;
+  --raw-accent-surface-dark: #2a2419;
+  --raw-color-hp-ok-dark: #3fb950;
+  --raw-color-hp-warn-dark: #d29922;
+  --raw-color-hp-crit-dark: #f85149;
+  --raw-color-arcane-dark: #58a6ff;
+
+  /* Valeurs sémantiques par défaut (Thème Clair — Fallback pour navigateurs sans light-dark()) */
+  --bg-canvas: var(--raw-bg-canvas-light);
+  --bg-surface: var(--raw-bg-surface-light);
+  --bg-elevated: var(--raw-bg-elevated-light);
+  --bg-interactive: var(--raw-bg-interactive-light);
+
+  --text-primary: var(--raw-text-primary-light);
+  --text-secondary: var(--raw-text-secondary-light);
+  --text-muted: var(--raw-text-muted-light);
+
+  --border-subtle: var(--raw-border-subtle-light);
+  --border-strong: var(--raw-border-strong-light);
+
+  --accent-primary: var(--raw-accent-primary-light);
+  --accent-surface: var(--raw-accent-surface-light);
+  --color-hp-ok: var(--raw-color-hp-ok-light);
+  --color-hp-warn: var(--raw-color-hp-warn-light);
+  --color-hp-crit: var(--raw-color-hp-crit-light);
+  --color-arcane: var(--raw-color-arcane-light);
+
+  /* Fallback Media Query pour navigateurs sans light-dark() */
+  @media (prefers-color-scheme: dark) {
+    --bg-canvas: var(--raw-bg-canvas-dark);
+    --bg-surface: var(--raw-bg-surface-dark);
+    --bg-elevated: var(--raw-bg-elevated-dark);
+    --bg-interactive: var(--raw-bg-interactive-dark);
+    --text-primary: var(--raw-text-primary-dark);
+    --text-secondary: var(--raw-text-secondary-dark);
+    --text-muted: var(--raw-text-muted-dark);
+    --border-subtle: var(--raw-border-subtle-dark);
+    --border-strong: var(--raw-border-strong-dark);
+    --accent-primary: var(--raw-accent-primary-dark);
+    --accent-surface: var(--raw-accent-surface-dark);
+    --color-hp-ok: var(--raw-color-hp-ok-dark);
+    --color-hp-warn: var(--raw-color-hp-warn-dark);
+    --color-hp-crit: var(--raw-color-hp-crit-dark);
+    --color-arcane: var(--raw-color-arcane-dark);
+  }
+
+  /* Synchronisation du <meta name="color-scheme"> et de data-theme avec la propriété CSS color-scheme */
+  &:has(> head > meta[name="color-scheme"][content="dark"]),
+  &[data-theme="dark"] {
+    color-scheme: dark;
+    --bg-canvas: var(--raw-bg-canvas-dark);
+    --bg-surface: var(--raw-bg-surface-dark);
+    --bg-elevated: var(--raw-bg-elevated-dark);
+    --bg-interactive: var(--raw-bg-interactive-dark);
+    --text-primary: var(--raw-text-primary-dark);
+    --text-secondary: var(--raw-text-secondary-dark);
+    --text-muted: var(--raw-text-muted-dark);
+    --border-subtle: var(--raw-border-subtle-dark);
+    --border-strong: var(--raw-border-strong-dark);
+    --accent-primary: var(--raw-accent-primary-dark);
+    --accent-surface: var(--raw-accent-surface-dark);
+    --color-hp-ok: var(--raw-color-hp-ok-dark);
+    --color-hp-warn: var(--raw-color-hp-warn-dark);
+    --color-hp-crit: var(--raw-color-hp-crit-dark);
+    --color-arcane: var(--raw-color-arcane-dark);
+  }
+
+  &:has(> head > meta[name="color-scheme"][content="light"]),
+  &[data-theme="light"] {
+    color-scheme: light;
+    --bg-canvas: var(--raw-bg-canvas-light);
+    --bg-surface: var(--raw-bg-surface-light);
+    --bg-elevated: var(--raw-bg-elevated-light);
+    --bg-interactive: var(--raw-bg-interactive-light);
+    --text-primary: var(--raw-text-primary-light);
+    --text-secondary: var(--raw-text-secondary-light);
+    --text-muted: var(--raw-text-muted-light);
+    --border-subtle: var(--raw-border-subtle-light);
+    --border-strong: var(--raw-border-strong-light);
+    --accent-primary: var(--raw-accent-primary-light);
+    --accent-surface: var(--raw-accent-surface-light);
+    --color-hp-ok: var(--raw-color-hp-ok-light);
+    --color-hp-warn: var(--raw-color-hp-warn-light);
+    --color-hp-crit: var(--raw-color-hp-crit-light);
+    --color-arcane: var(--raw-color-arcane-light);
+  }
+
+  /* Résolution dynamique via light-dark() lorsque supporté par le navigateur */
+  @supports (color: light-dark(white, black)) {
+    --bg-canvas: light-dark(var(--raw-bg-canvas-light), var(--raw-bg-canvas-dark));
+    --bg-surface: light-dark(var(--raw-bg-surface-light), var(--raw-bg-surface-dark));
+    --bg-elevated: light-dark(var(--raw-bg-elevated-light), var(--raw-bg-elevated-dark));
+    --bg-interactive: light-dark(var(--raw-bg-interactive-light), var(--raw-bg-interactive-dark));
+
+    --text-primary: light-dark(var(--raw-text-primary-light), var(--raw-text-primary-dark));
+    --text-secondary: light-dark(var(--raw-text-secondary-light), var(--raw-text-secondary-dark));
+    --text-muted: light-dark(var(--raw-text-muted-light), var(--raw-text-muted-dark));
+
+    --border-subtle: light-dark(var(--raw-border-subtle-light), var(--raw-border-subtle-dark));
+    --border-strong: light-dark(var(--raw-border-strong-light), var(--raw-border-strong-dark));
+
+    --accent-primary: light-dark(var(--raw-accent-primary-light), var(--raw-accent-primary-dark));
+    --accent-surface: light-dark(var(--raw-accent-surface-light), var(--raw-accent-surface-dark));
+    --color-hp-ok: light-dark(var(--raw-color-hp-ok-light), var(--raw-color-hp-ok-dark));
+    --color-hp-warn: light-dark(var(--raw-color-hp-warn-light), var(--raw-color-hp-warn-dark));
+    --color-hp-crit: light-dark(var(--raw-color-hp-crit-light), var(--raw-color-hp-crit-dark));
+    --color-arcane: light-dark(var(--raw-color-arcane-light), var(--raw-color-arcane-dark));
+  }
+
+  /* Support du mode Contraste Élevé / Forced Colors (Windows High Contrast) */
+  @media (forced-colors: active) {
+    --bg-canvas: Canvas;
+    --bg-surface: Canvas;
+    --bg-elevated: Canvas;
+    --text-primary: CanvasText;
+    --text-secondary: CanvasText;
+    --border-subtle: CanvasText;
+    --border-strong: Highlight;
+    --accent-primary: Highlight;
+  }
+
+  /* 2. Typographie */
+  --font-display: 'Cinzel', 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Consolas, monospace;
+
+  /* 3. Espacements & Dimensions Tactiles (Tablette & Desktop) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  --touch-target-min: 2.75rem; /* 44px minimum pour l'ergonomie tactile Tablette */
+
+  /* 4. Rayons & Bordures */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* 5. Personnalisation UI native du navigateur */
+  accent-color: var(--accent-primary);
+}

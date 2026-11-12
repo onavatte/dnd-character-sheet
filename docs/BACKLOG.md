@@ -2,12 +2,12 @@
 
 Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cours.
 
-## Jalon 0 — Fondations, Outillage & Design System ("Grimoire Tactique" Clair / Sombre)
+## Jalon 0 — Fondations, Outillage & Design System ("Grimoire Tactique" Clair / Sombre) ⏳
 - **Focus d'apprentissage** : Configuration d'une base React 19 + TypeScript ultra-stricte et architecture de Design Tokens CSS bi-thème (Thème Clair *Ivoire & Encre* par défaut + Thème Sombre *Obsidienne & Or*).
 - **Critère de validation** : `npm test`, `npm run lint` et `npm run build` passent sans erreur ; la coquille applicative (App Shell) affiche la typographie, la bascule de thème Clair/Sombre et le sélecteur de mode (*Cockpit* / *Forge*) sur Desktop et Tablette.
-- [ ] Initialisation du projet Vite + React 19 + TypeScript (`strict`, `noUncheckedIndexedAccess`), ESLint et Vitest
-- [ ] Création du système de Design Tokens CSS bi-thème (`src/theme/tokens.css`, `base.css`) : Thème Clair par défaut + Thème Sombre, typographie tabulaire pour les chiffres, cibles tactiles >= 44 px
-- [ ] Mise en place de l'App Shell responsive (en-tête d'identité du personnage, barre d'état rapide, bascule Mode Partie / Mode Édition et commutateur de thème Clair / Sombre)
+- [x] Initialisation du projet Vite + React 19 + TypeScript (`strict`, `noUncheckedIndexedAccess`), ESLint et Vitest
+- [x] Création du système de Design Tokens CSS bi-thème (`src/theme/tokens.css`, `base.css`) : Thème Clair par défaut + Thème Sombre, typographie tabulaire pour les chiffres, cibles tactiles >= 44 px
+- [x] Mise en place de l'App Shell responsive (en-tête d'identité du personnage avec cadre du portrait, barre d'état rapide, bascule Mode Partie / Mode Édition et commutateur de thème Clair / Sombre)
 
 ## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD)
 - **Focus d'apprentissage** : Séparation stricte entre données sources stockées et données dérivées calculées à la volée ; développement piloté par les tests (TDD) en TypeScript pur.
@@ -39,7 +39,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - **Focus d'apprentissage** : Conception de formulaires complexes ergonomiques, gestion de bibliothèque multi-personnages et mise en cache hors-ligne par Service Worker (PWA).
 - **Critère de validation** : L'utilisateur peut créer un personnage de zéro (y compris avec des compétences/armes post-apo sur mesure), le faire monter de niveau, gérer ses snapshots et installer l'application en PWA 100 % hors-ligne.
 - [ ] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
-- [ ] Vue **Forge d'Édition** : édition de l'identité, des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew), gestion des ressources suivies
+- [ ] Vue **Forge d'Édition** : édition de l'identité (avec **upload et compression automatique du portrait du personnage**), des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew), gestion des ressources suivies
 - [ ] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
 - [ ] Configuration PWA (`vite-plugin-pwa`, manifest, icônes, fonctionnement 100 % hors-ligne)
 

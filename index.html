@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      try {
+        const storedScheme = localStorage.getItem('color-scheme') ?? 'light';
+        const meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.content = storedScheme;
+        document.documentElement.dataset.theme = storedScheme === 'dark' ? 'dark' : 'light';
+      } catch {
+        // Ignore storage errors if blocked
+      }
+    </script>
+    <title>Grimoire 5e — Fiche de Personnage</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
