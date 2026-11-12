@@ -10,13 +10,24 @@ import type { RollLogEntry } from './components/DiceAssistantPanel';
 import { RestDialogs } from './components/RestDialogs';
 import { SystemSettingsDialog } from './components/SystemSettingsDialog';
 import { VitalityBanner } from './components/VitalityBanner';
-import type { ActiveRollTarget } from './components/dialog-utils';
+import type { ActiveRollTarget, DiceRollMode } from './components/dialog-utils';
 
 type SheetMode = 'cockpit' | 'forge';
 
 function getInitialTheme(): ThemeMode {
   if (typeof document === 'undefined') return 'light';
   return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+}
+
+function getInitialDiceRollMode(): DiceRollMode {
+  if (typeof window === 'undefined') return 'physical';
+  try {
+    return window.localStorage.getItem('dice-roll-mode') === 'virtual'
+      ? 'virtual'
+      : 'physical';
+  } catch {
+    return 'physical';
+  }
 }
 
 export function App() {
@@ -59,6 +70,9 @@ export function App() {
   const [sheetMode, setSheetMode] = useState<SheetMode>('cockpit');
   const [termMode, setTermMode] = useState<TermDisplayMode>('bilingual');
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
+  const [diceRollMode, setDiceRollMode] = useState<DiceRollMode>(
+    getInitialDiceRollMode,
+  );
 
   const shortRestDialogRef = useRef<HTMLDialogElement>(null);
   const longRestDialogRef = useRef<HTMLDialogElement>(null);
@@ -93,6 +107,14 @@ export function App() {
       // Ignore storage restrictions
     }
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dice-roll-mode', diceRollMode);
+    } catch {
+      // Ignore storage restrictions
+    }
+  }, [diceRollMode]);
 
   const activeRollTarget: ActiveRollTarget = selectedRollTarget ?? {
     id: defaultSkill?.id ?? 'stealth',
@@ -348,7 +370,9 @@ export function App() {
       <DiceAssistantPanel
         isOpen={isDiceModalOpen}
         onToggleOpen={setIsDiceModalOpen}
+        diceRollMode={diceRollMode}
         activeTarget={activeRollTarget}
+        hasExplicitTarget={selectedRollTarget !== null}
         rollLog={rollLog}
         renderTerm={renderTerm}
         onPushRollLog={pushRollLog}
@@ -373,8 +397,10 @@ export function App() {
         backupFeedback={backupFeedback}
         theme={theme}
         termMode={termMode}
+        diceRollMode={diceRollMode}
         onSetTheme={setTheme}
         onSetTermMode={setTermMode}
+        onSetDiceRollMode={setDiceRollMode}
         onCreateManualSnapshot={handleCreateManualSnapshot}
         onRestoreSnapshot={restoreSnapshot}
         onDeleteSnapshot={deleteSnapshot}

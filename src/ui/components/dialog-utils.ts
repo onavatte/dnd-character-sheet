@@ -28,6 +28,8 @@ export function handleDialogBackdropClick(
   }
 }
 
+export type DiceRollMode = 'physical' | 'virtual';
+
 export interface ActiveRollTarget {
   id: string;
   label: string;

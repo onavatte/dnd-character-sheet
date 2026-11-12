@@ -218,9 +218,7 @@ export function RestDialogs({
         </div>
 
         <p className="dialog-subtitle">
-          Un <strong>Snapshot automatique IndexedDB</strong> sera capturé avant
-          la réinitialisation afin que vous puissiez annuler ce Repos Long à
-          tout moment.
+          Votre personnage récupère après une nuit de repos complète :
         </p>
 
         <ul className="dialog-checklist">
@@ -240,13 +238,18 @@ export function RestDialogs({
           <li>Niveau d’épuisement réduit de 1 (si supérieur à 0).</li>
         </ul>
 
+        <p className="muted-note">
+          (Note : un snapshot automatique est enregistré avant ce repos afin de
+          pouvoir revenir en arrière si besoin.)
+        </p>
+
         <div className="dialog-footer-actions">
           <button
             type="button"
             className="action-btn action-btn--primary"
             onClick={() => void handleApplyLongRest()}
           >
-            Capturer Snapshot & Appliquer le Repos Long
+            Valider le Repos Long
           </button>
         </div>
       </dialog>

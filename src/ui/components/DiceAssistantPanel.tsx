@@ -12,7 +12,8 @@ import type {
   D20Resolution,
   DamageResolution,
 } from '../../engine';
-import type { ActiveRollTarget } from './dialog-utils';
+import { handleDialogBackdropClick } from './dialog-utils';
+import type { ActiveRollTarget, DiceRollMode } from './dialog-utils';
 
 export interface RollLogEntry {
   id: string;
@@ -27,14 +28,16 @@ export interface RollLogEntry {
 export interface DiceAssistantPanelProps {
   isOpen: boolean;
   onToggleOpen: (open: boolean) => void;
+  diceRollMode: DiceRollMode;
   activeTarget: ActiveRollTarget;
+  hasExplicitTarget: boolean;
   rollLog: RollLogEntry[];
   renderTerm: (fr: string, en?: string) => ReactNode;
   onPushRollLog: (entry: RollLogEntry) => void;
   onClearRollLog: () => void;
 }
 
-type AssistantTab = 'd20' | 'formula' | 'free';
+type AssistantView = 'd20' | 'formula' | 'free';
 type FreeDieSides = 4 | 6 | 8 | 10 | 12 | 20 | 100;
 
 const FREE_DIE_OPTIONS: readonly FreeDieSides[] = [4, 6, 8, 10, 12, 20, 100];
@@ -42,14 +45,18 @@ const FREE_DIE_OPTIONS: readonly FreeDieSides[] = [4, 6, 8, 10, 12, 20, 100];
 export function DiceAssistantPanel({
   isOpen,
   onToggleOpen,
+  diceRollMode,
   activeTarget,
+  hasExplicitTarget,
   rollLog,
   renderTerm,
   onPushRollLog,
   onClearRollLog,
 }: DiceAssistantPanelProps) {
   const titleId = useId();
+  const historyTitleId = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const historyDialogRef = useRef<HTMLDialogElement>(null);
   const dragOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   const [position, setPosition] = useState<{ left: number; top: number } | null>(
@@ -58,42 +65,49 @@ export function DiceAssistantPanel({
   const [isDragging, setIsDragging] = useState(false);
   const [moveAnnouncement, setMoveAnnouncement] = useState('');
 
-  const [activeTab, setActiveTab] = useState<AssistantTab>(
-    activeTarget.initialMode ?? 'd20',
+  const [assistantView, setAssistantView] = useState<AssistantView>(
+    hasExplicitTarget ? (activeTarget.initialMode ?? 'd20') : 'free',
   );
   const [advantage, setAdvantage] = useState<AdvantageState>('normal');
   const [pendingFirstD20, setPendingFirstD20] = useState<number | null>(null);
 
-  // État pour le mode Formule / Dégâts (d4, d6, d8, d10, d12...)
+  // État Formule / Dégâts
   const [isCriticalDamage, setIsCriticalDamage] = useState<boolean>(
     activeTarget.isCritical ?? false,
   );
   const [pendingDamageRolls, setPendingDamageRolls] = useState<number[]>([]);
 
-  // État pour le mode Jet Libre (d4..d100)
+  // État Jet Libre (d4..d100)
   const [freeDieSides, setFreeDieSides] = useState<FreeDieSides>(20);
   const [freeDiceCount, setFreeDiceCount] = useState<number>(1);
   const [freeModifier, setFreeModifier] = useState<number>(0);
   const [pendingFreeRolls, setPendingFreeRolls] = useState<number[]>([]);
   const [freeD100Input, setFreeD100Input] = useState<number>(50);
 
-  // Dernier résultat affiché
+  // Dernier résultat affiché dans la zone fixe supérieure
   const [lastD20, setLastD20] = useState<D20Resolution | null>(null);
   const [lastDamage, setLastDamage] = useState<DamageResolution | null>(null);
 
-  // Synchroniser l'onglet actif et le mode critique quand la cible change
   useEffect(() => {
-    setActiveTab(activeTarget.initialMode ?? 'd20');
-    setIsCriticalDamage(activeTarget.isCritical ?? false);
+    if (!isOpen) return;
+    if (hasExplicitTarget) {
+      setAssistantView(activeTarget.initialMode ?? 'd20');
+      setIsCriticalDamage(activeTarget.isCritical ?? false);
+    } else {
+      setAssistantView('free');
+    }
     setPendingFirstD20(null);
     setPendingDamageRolls([]);
-  }, [activeTarget]);
+    setPendingFreeRolls([]);
+    setLastD20(null);
+    setLastDamage(null);
+  }, [isOpen, activeTarget, hasExplicitTarget]);
 
   const clampPosition = (left: number, top: number) => {
     if (typeof window === 'undefined') return { left: 16, top: 16 };
     const el = dialogRef.current;
-    const width = el?.offsetWidth ?? 420;
-    const height = el?.offsetHeight ?? 520;
+    const width = el?.offsetWidth ?? 410;
+    const height = el?.offsetHeight ?? 440;
     const maxLeft = Math.max(8, window.innerWidth - width - 8);
     const maxTop = Math.max(8, window.innerHeight - height - 8);
     return {
@@ -179,15 +193,17 @@ export function DiceAssistantPanel({
     }
   };
 
-  const dockToPresetCorner = () => {
-    if (typeof window === 'undefined') return;
-    if (position === null) {
-      setPosition(clampPosition(16, 80));
-      announceMove('Assistant de jet ancré en haut à gauche');
+  const toggleFreeRollView = () => {
+    if (assistantView === 'free' && hasExplicitTarget) {
+      setAssistantView(activeTarget.initialMode ?? 'd20');
     } else {
-      setPosition(null);
-      announceMove('Assistant de jet ancré en bas à droite');
+      setAssistantView('free');
     }
+    setPendingFirstD20(null);
+    setPendingDamageRolls([]);
+    setPendingFreeRolls([]);
+    setLastD20(null);
+    setLastDamage(null);
   };
 
   const nowTime = () =>
@@ -260,7 +276,7 @@ export function DiceAssistantPanel({
     });
   };
 
-  /* === 2. RÉSOLUTION FORMULE DE DÉGÂTS (PHYSIQUE ADAPTÉE AU DÉ & VIRTUELLE) === */
+  /* === 2. RÉSOLUTION FORMULE DE DÉGÂTS (PHYSIQUE & VIRTUELLE) === */
   const activeFormula = activeTarget.damageFormula ?? '1d8';
   const parsedDamage = (() => {
     try {
@@ -361,8 +377,16 @@ export function DiceAssistantPanel({
 
   const floatingStyle =
     position !== null
-      ? { left: `${position.left}px`, top: `${position.top}px`, right: 'auto', bottom: 'auto' }
+      ? {
+          left: `${position.left}px`,
+          top: `${position.top}px`,
+          right: 'auto',
+          bottom: 'auto',
+        }
       : undefined;
+
+  const activeResultBreakdown =
+    lastD20?.formulaBreakdown ?? lastDamage?.formulaBreakdown ?? null;
 
   return (
     <>
@@ -370,7 +394,7 @@ export function DiceAssistantPanel({
         {moveAnnouncement}
       </div>
 
-      {/* Bouton flottant permanent (FAB) qui reste visible au scroll */}
+      {/* Bouton flottant permanent (FAB) visible même au scroll */}
       <button
         type="button"
         className="dice-fab-btn action-btn action-btn--primary"
@@ -396,7 +420,7 @@ export function DiceAssistantPanel({
         <span>{isOpen ? 'Masquer Dés' : 'Assistant de Jet'}</span>
       </button>
 
-      {/* Fenêtre flottante non-modale déplaçable (sans flou ni blocage de l'arrière-plan) */}
+      {/* Fenêtre flottante non-modale déplaçable (sans flou ni scroll pour voir le résultat) */}
       <dialog
         ref={dialogRef}
         open={isOpen}
@@ -404,7 +428,7 @@ export function DiceAssistantPanel({
         style={floatingStyle}
         aria-labelledby={titleId}
       >
-        {/* Barre de titre déplaçable au doigt / souris + poignée clavier accessible */}
+        {/* 1. Barre de titre déplaçable + Historique + Jet Libre + Fermer */}
         <div
           className={`floating-dice-header ${isDragging ? 'dragging' : ''}`}
           onPointerDown={handleHeaderPointerDown}
@@ -424,70 +448,87 @@ export function DiceAssistantPanel({
             <h2 id={titleId}>Assistant de Jet</h2>
           </div>
 
-          <div className="button-cluster">
+          <div className="dice-header-actions">
             <button
               type="button"
-              className="action-btn"
-              onClick={dockToPresetCorner}
-              title="Basculer l'ancrage de la fenêtre (Haut-Gauche / Bas-Droite)"
+              className="action-btn dice-header-btn dice-icon-count-btn tabular-nums"
+              onClick={() => historyDialogRef.current?.showModal()}
+              aria-label={`Ouvrir l'historique des jets (${rollLog.length})`}
+              title={`Historique des jets (${rollLog.length})`}
             >
-              Ancrer
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M3 3v5h5" />
+                <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
+                <path d="M12 7v5l4 2" />
+              </svg>
+              <span>{rollLog.length}</span>
             </button>
             <button
               type="button"
-              className="action-btn"
-              onClick={() => onToggleOpen(false)}
+              className="action-btn dice-header-btn"
+              aria-pressed={assistantView === 'free'}
+              onClick={toggleFreeRollView}
+              title="Configurer un jet libre (d4 à d100)"
             >
-              Fermer
+              {assistantView === 'free' && hasExplicitTarget
+                ? 'Jet ciblé'
+                : 'Jet Libre'}
+            </button>
+            <button
+              type="button"
+              className="action-btn dice-header-btn"
+              onClick={() => onToggleOpen(false)}
+              aria-label="Fermer l'assistant de jet"
+              title="Fermer"
+            >
+              ✕
             </button>
           </div>
         </div>
 
-        {/* Sélecteur du mode de jet : Jet d20 | Dégâts d'Arme | Jet Libre */}
-        <div
-          className="segmented-control"
-          role="tablist"
-          aria-label="Type de jet dans l'assistant"
-        >
-          <button
-            type="button"
-            role="tab"
-            className="segmented-btn"
-            aria-selected={activeTab === 'd20'}
-            aria-pressed={activeTab === 'd20'}
-            onClick={() => setActiveTab('d20')}
-          >
-            Jet d20
-          </button>
-          {activeTarget.damageFormula && (
-            <button
-              type="button"
-              role="tab"
-              className="segmented-btn tabular-nums"
-              aria-selected={activeTab === 'formula'}
-              aria-pressed={activeTab === 'formula'}
-              onClick={() => setActiveTab('formula')}
-            >
-              Dégâts ({activeTarget.damageFormula})
-            </button>
+        {/* 2. Carte Résultat fixe sous le header (aucun texte répété, uniquement calcul + résultat) */}
+        <div className="dice-result-fixed" aria-live="polite">
+          {activeResultBreakdown !== null ? (
+            <div className="dice-result-content">
+              <span className="dice-result-formula tabular-nums">
+                {activeResultBreakdown}
+              </span>
+              {lastD20?.isCriticalSuccess && (
+                <span className="badge-pill dice-crit-badge--ok">
+                  CRITIQUE (20)
+                </span>
+              )}
+              {lastD20?.isCriticalFailure && (
+                <span className="badge-pill dice-crit-badge--fail">
+                  ÉCHEC (1)
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="muted-note">
+              {diceRollMode === 'physical'
+                ? 'Prêt — Touchez la valeur de votre dé'
+                : 'Prêt — Cliquez sur Lancer'}
+            </span>
           )}
-          <button
-            type="button"
-            role="tab"
-            className="segmented-btn"
-            aria-selected={activeTab === 'free'}
-            aria-pressed={activeTab === 'free'}
-            onClick={() => setActiveTab('free')}
-          >
-            Jet Libre (d4–d100)
-          </button>
         </div>
 
-        {/* === ONGLET 1 : JET DE D20 (Compétence, Sauvegarde, Attaque, Initiative) === */}
-        {activeTab === 'd20' && (
-          <div className="floating-dice-body">
+        {/* 3. Corps compact (sans onglets ni historique) */}
+        <div className="floating-dice-body">
+          {/* Source du jet sélectionné (masquée en mode Jet Libre) */}
+          {assistantView !== 'free' && (
             <div className="stat-preview-row">
-              <div>
+              <div className="dice-target-info">
                 <span className="muted-note">Jet sélectionné :</span>
                 <div>
                   <strong>
@@ -495,204 +536,209 @@ export function DiceAssistantPanel({
                   </strong>
                 </div>
               </div>
-              <span className="badge-pill tabular-nums">
-                1d20 {formatSignedModifier(activeTarget.modifier)}
+              <span className="badge-pill badge-pill--nowrap tabular-nums">
+                {assistantView === 'd20'
+                  ? `1d20 ${formatSignedModifier(activeTarget.modifier)}`
+                  : `${expectedDamageDiceCount}d${parsedDamage.dieSides}${
+                      parsedDamage.modifier !== 0
+                        ? ` ${formatSignedModifier(parsedDamage.modifier)}`
+                        : ''
+                    }`}
               </span>
             </div>
+          )}
 
-            <div
-              className="segmented-control"
-              role="group"
-              aria-label="Mode d'avantage du jet d20"
-            >
-              <button
-                type="button"
-                className="segmented-btn"
-                aria-pressed={advantage === 'normal'}
-                onClick={() => {
-                  setAdvantage('normal');
-                  setPendingFirstD20(null);
-                }}
-              >
-                Normal
-              </button>
-              <button
-                type="button"
-                className="segmented-btn"
-                aria-pressed={advantage === 'advantage'}
-                onClick={() => {
-                  setAdvantage('advantage');
-                  setPendingFirstD20(null);
-                }}
-              >
-                Avantage (2d20↑)
-              </button>
-              <button
-                type="button"
-                className="segmented-btn"
-                aria-pressed={advantage === 'disadvantage'}
-                onClick={() => {
-                  setAdvantage('disadvantage');
-                  setPendingFirstD20(null);
-                }}
-              >
-                Désavantage (2d20↓)
-              </button>
-            </div>
-
-            <div className="field-group">
-              <label id="modal-d20-keypad-label">
-                {advantage === 'normal'
-                  ? 'Dé physique d20 — Touchez votre score :'
-                  : pendingFirstD20 === null
-                    ? 'Dé physique d20 — Touchez le 1er dé :'
-                    : `1er dé = ${pendingFirstD20} — Touchez le 2e dé :`}
-              </label>
+          {/* === VUE 1 : JET DE D20 === */}
+          {assistantView === 'd20' && (
+            <>
               <div
-                className="d20-keypad"
+                className="segmented-control"
                 role="group"
-                aria-labelledby="modal-d20-keypad-label"
+                aria-label="Mode d'avantage du jet d20"
               >
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    className={`d20-key tabular-nums ${
-                      val === 20
-                        ? 'd20-key--crit'
-                        : val === 1
-                          ? 'd20-key--fumble'
-                          : ''
-                    }`}
-                    onClick={() => handlePhysicalD20Tap(val)}
-                  >
-                    {val}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={advantage === 'normal'}
+                  onClick={() => {
+                    setAdvantage('normal');
+                    setPendingFirstD20(null);
+                  }}
+                >
+                  Normal
+                </button>
+                <button
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={advantage === 'advantage'}
+                  onClick={() => {
+                    setAdvantage('advantage');
+                    setPendingFirstD20(null);
+                  }}
+                >
+                  Avantage
+                </button>
+                <button
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={advantage === 'disadvantage'}
+                  onClick={() => {
+                    setAdvantage('disadvantage');
+                    setPendingFirstD20(null);
+                  }}
+                >
+                  Désavantage
+                </button>
               </div>
-            </div>
 
-            <div className="button-cluster">
-              <button
-                type="button"
-                className="action-btn action-btn--primary"
-                onClick={handleVirtualD20}
-              >
-                Lancer 1d20 Virtuel
-              </button>
+              {diceRollMode === 'physical' ? (
+                <div className="field-group">
+                  {advantage !== 'normal' && (
+                    <label id="modal-d20-keypad-label">
+                      {pendingFirstD20 === null
+                        ? 'Touchez le 1er dé d20 :'
+                        : `1er dé = ${pendingFirstD20} — Touchez le 2e dé :`}
+                    </label>
+                  )}
+                  <div
+                    className="d20-keypad"
+                    role="group"
+                    aria-label="Pavé de saisie du dé d20 physique"
+                  >
+                    {Array.from({ length: 20 }, (_, i) => i + 1).map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        className={`d20-key tabular-nums ${
+                          val === 20
+                            ? 'd20-key--crit'
+                            : val === 1
+                              ? 'd20-key--fumble'
+                              : ''
+                        }`}
+                        onClick={() => handlePhysicalD20Tap(val)}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="action-btn action-btn--primary virtual-roll-cta tabular-nums"
+                  onClick={handleVirtualD20}
+                >
+                  Lancer 1d20 {formatSignedModifier(activeTarget.modifier)}
+                </button>
+              )}
+
               {activeTarget.damageFormula && (
                 <button
                   type="button"
                   className="action-btn tabular-nums"
-                  onClick={() => setActiveTab('formula')}
+                  onClick={() => {
+                    setAssistantView('formula');
+                    setPendingDamageRolls([]);
+                    setLastD20(null);
+                    setLastDamage(null);
+                  }}
                 >
                   Passer aux Dégâts ({activeTarget.damageFormula}) →
                 </button>
               )}
-            </div>
-          </div>
-        )}
+            </>
+          )}
 
-        {/* === ONGLET 2 : DÉGÂTS D'ARME ADAPTÉS AU TYPE DE DÉ (d4, d6, d8, d10, d12) === */}
-        {activeTab === 'formula' && (
-          <div className="floating-dice-body">
-            <div className="stat-preview-row">
-              <div>
-                <span className="muted-note">Dégâts sélectionnés :</span>
-                <div>
-                  <strong>
-                    {renderTerm(activeTarget.label, activeTarget.originalLabel)}
-                  </strong>
-                </div>
-              </div>
-              <span className="badge-pill tabular-nums">
-                {expectedDamageDiceCount}d{parsedDamage.dieSides}{' '}
-                {parsedDamage.modifier !== 0
-                  ? formatSignedModifier(parsedDamage.modifier)
-                  : ''}
-              </span>
-            </div>
-
-            <div
-              className="segmented-control"
-              role="group"
-              aria-label="Dégâts normaux ou critiques"
-            >
-              <button
-                type="button"
-                className="segmented-btn"
-                aria-pressed={!isCriticalDamage}
-                onClick={() => {
-                  setIsCriticalDamage(false);
-                  setPendingDamageRolls([]);
-                }}
-              >
-                Normal ({parsedDamage.diceCount}d{parsedDamage.dieSides})
-              </button>
-              <button
-                type="button"
-                className="segmented-btn"
-                aria-pressed={isCriticalDamage}
-                onClick={() => {
-                  setIsCriticalDamage(true);
-                  setPendingDamageRolls([]);
-                }}
-              >
-                Critique ({parsedDamage.diceCount * 2}d{parsedDamage.dieSides})
-              </button>
-            </div>
-
-            <div className="field-group">
-              <label id="modal-damage-keypad-label">
-                Dé physique d{parsedDamage.dieSides} — Touchez le résultat du dé{' '}
-                {pendingDamageRolls.length + 1}/{expectedDamageDiceCount}
-                {pendingDamageRolls.length > 0
-                  ? ` (déjà saisi : ${pendingDamageRolls.join(' + ')})`
-                  : ''}
-                :
-              </label>
+          {/* === VUE 2 : DÉGÂTS D'ARME ADAPTÉS AU DÉ === */}
+          {assistantView === 'formula' && (
+            <>
               <div
-                className="d20-keypad"
+                className="segmented-control"
                 role="group"
-                aria-labelledby="modal-damage-keypad-label"
+                aria-label="Dégâts normaux ou critiques"
               >
-                {Array.from(
-                  { length: parsedDamage.dieSides },
-                  (_, i) => i + 1,
-                ).map((val) => (
-                  <button
-                    key={val}
-                    type="button"
-                    className={`d20-key tabular-nums ${
-                      val === parsedDamage.dieSides ? 'd20-key--crit' : ''
-                    }`}
-                    onClick={() => handlePhysicalDamageDieTap(val)}
-                  >
-                    {val}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  className="segmented-btn tabular-nums"
+                  aria-pressed={!isCriticalDamage}
+                  onClick={() => {
+                    setIsCriticalDamage(false);
+                    setPendingDamageRolls([]);
+                  }}
+                >
+                  Normal ({parsedDamage.diceCount}d{parsedDamage.dieSides})
+                </button>
+                <button
+                  type="button"
+                  className="segmented-btn tabular-nums"
+                  aria-pressed={isCriticalDamage}
+                  onClick={() => {
+                    setIsCriticalDamage(true);
+                    setPendingDamageRolls([]);
+                  }}
+                >
+                  Critique ({parsedDamage.diceCount * 2}d
+                  {parsedDamage.dieSides})
+                </button>
               </div>
-            </div>
 
-            <div className="button-cluster">
-              <button
-                type="button"
-                className="action-btn action-btn--primary tabular-nums"
-                onClick={handleVirtualDamageRoll}
+              {diceRollMode === 'physical' ? (
+                <div className="field-group">
+                  {expectedDamageDiceCount > 1 && (
+                    <label>
+                      Dé {pendingDamageRolls.length + 1}/
+                      {expectedDamageDiceCount}
+                      {pendingDamageRolls.length > 0
+                        ? ` (${pendingDamageRolls.join(' + ')})`
+                        : ''}
+                    </label>
+                  )}
+                  <div
+                    className="d20-keypad"
+                    role="group"
+                    aria-label={`Pavé de saisie du dé d${parsedDamage.dieSides}`}
+                  >
+                    {Array.from(
+                      { length: parsedDamage.dieSides },
+                      (_, i) => i + 1,
+                    ).map((val) => (
+                      <button
+                        key={val}
+                        type="button"
+                        className={`d20-key tabular-nums ${
+                          val === parsedDamage.dieSides ? 'd20-key--crit' : ''
+                        }`}
+                        onClick={() => handlePhysicalDamageDieTap(val)}
+                      >
+                        {val}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="action-btn action-btn--primary virtual-roll-cta tabular-nums"
+                  onClick={handleVirtualDamageRoll}
+                >
+                  Lancer {expectedDamageDiceCount}d{parsedDamage.dieSides}
+                  {parsedDamage.modifier !== 0
+                    ? ` ${formatSignedModifier(parsedDamage.modifier)}`
+                    : ''}
+                </button>
+              )}
+            </>
+          )}
+
+          {/* === VUE 3 : JET LIBRE (d4, d6, d8, d10, d12, d20, d100) === */}
+          {assistantView === 'free' && (
+            <>
+              <div
+                className="button-cluster"
+                role="group"
+                aria-label="Choix du type de dé"
               >
-                Lancer {expectedDamageDiceCount}d{parsedDamage.dieSides}{' '}
-                Virtuel
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* === ONGLET 3 : JET LIBRE MULTI-DÉS (d4, d6, d8, d10, d12, d20, d100) === */}
-        {activeTab === 'free' && (
-          <div className="floating-dice-body">
-            <div className="field-group">
-              <label>1. Choisissez le type de dé :</label>
-              <div className="button-cluster">
                 {FREE_DIE_OPTIONS.map((sides) => (
                   <button
                     key={sides}
@@ -708,198 +754,187 @@ export function DiceAssistantPanel({
                   </button>
                 ))}
               </div>
-            </div>
 
-            <div className="free-roll-config-row">
-              <div className="resource-controls">
-                <span className="muted-note">Nombre :</span>
-                <button
-                  type="button"
-                  className="stepper-btn tabular-nums"
-                  disabled={freeDiceCount <= 1}
-                  onClick={() => {
-                    setFreeDiceCount((c) => Math.max(1, c - 1));
-                    setPendingFreeRolls([]);
-                  }}
-                >
-                  −
-                </button>
-                <strong className="tabular-nums">
-                  {freeDiceCount}d{freeDieSides}
-                </strong>
-                <button
-                  type="button"
-                  className="stepper-btn tabular-nums"
-                  disabled={freeDiceCount >= 10}
-                  onClick={() => {
-                    setFreeDiceCount((c) => Math.min(10, c + 1));
-                    setPendingFreeRolls([]);
-                  }}
-                >
-                  +
-                </button>
-              </div>
-
-              <div className="resource-controls">
-                <span className="muted-note">Bonus :</span>
-                <button
-                  type="button"
-                  className="stepper-btn tabular-nums"
-                  onClick={() => setFreeModifier((m) => m - 1)}
-                >
-                  −
-                </button>
-                <strong className="tabular-nums">
-                  {formatSignedModifier(freeModifier)}
-                </strong>
-                <button
-                  type="button"
-                  className="stepper-btn tabular-nums"
-                  onClick={() => setFreeModifier((m) => m + 1)}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-
-            {freeDieSides === 100 ? (
-              <div className="field-group">
-                <label htmlFor="free-d100-input">
-                  Score obtenu sur votre d100 physique (1 à 100) :
-                </label>
-                <div className="inline-input-row">
-                  <input
-                    id="free-d100-input"
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={freeD100Input}
-                    onChange={(e) =>
-                      setFreeD100Input(
-                        Math.min(100, Math.max(1, Number(e.target.value) || 1)),
-                      )
-                    }
-                  />
+              <div className="free-roll-config-row">
+                <div className="resource-controls">
                   <button
                     type="button"
-                    className="action-btn"
-                    onClick={() => handlePhysicalFreeDieTap(freeD100Input)}
+                    className="stepper-btn tabular-nums"
+                    disabled={freeDiceCount <= 1}
+                    onClick={() => {
+                      setFreeDiceCount((c) => Math.max(1, c - 1));
+                      setPendingFreeRolls([]);
+                    }}
+                    aria-label="Réduire le nombre de dés"
                   >
-                    Valider d100
+                    −
+                  </button>
+                  <strong className="tabular-nums">
+                    {freeDiceCount}d{freeDieSides}
+                  </strong>
+                  <button
+                    type="button"
+                    className="stepper-btn tabular-nums"
+                    disabled={freeDiceCount >= 10}
+                    onClick={() => {
+                      setFreeDiceCount((c) => Math.min(10, c + 1));
+                      setPendingFreeRolls([]);
+                    }}
+                    aria-label="Augmenter le nombre de dés"
+                  >
+                    +
+                  </button>
+                </div>
+
+                <div className="resource-controls">
+                  <button
+                    type="button"
+                    className="stepper-btn tabular-nums"
+                    onClick={() => setFreeModifier((m) => m - 1)}
+                    aria-label="Réduire le bonus"
+                  >
+                    −
+                  </button>
+                  <strong className="tabular-nums">
+                    {formatSignedModifier(freeModifier)}
+                  </strong>
+                  <button
+                    type="button"
+                    className="stepper-btn tabular-nums"
+                    onClick={() => setFreeModifier((m) => m + 1)}
+                    aria-label="Augmenter le bonus"
+                  >
+                    +
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="field-group">
-                <label id="modal-free-keypad-label">
-                  Dé physique d{freeDieSides} — Touchez le dé{' '}
-                  {pendingFreeRolls.length + 1}/{freeDiceCount}
-                  {pendingFreeRolls.length > 0
-                    ? ` (déjà saisi : ${pendingFreeRolls.join(' + ')})`
-                    : ''}
-                  :
-                </label>
-                <div
-                  className="d20-keypad"
-                  role="group"
-                  aria-labelledby="modal-free-keypad-label"
+
+              {diceRollMode === 'physical' ? (
+                freeDieSides === 100 ? (
+                  <div className="inline-input-row">
+                    <input
+                      id="free-d100-input"
+                      type="number"
+                      aria-label="Score du d100 physique"
+                      min={1}
+                      max={100}
+                      value={freeD100Input}
+                      onChange={(e) =>
+                        setFreeD100Input(
+                          Math.min(
+                            100,
+                            Math.max(1, Number(e.target.value) || 1),
+                          ),
+                        )
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="action-btn action-btn--primary"
+                      onClick={() => handlePhysicalFreeDieTap(freeD100Input)}
+                    >
+                      Valider d100
+                    </button>
+                  </div>
+                ) : (
+                  <div className="field-group">
+                    {freeDiceCount > 1 && (
+                      <label>
+                        Dé {pendingFreeRolls.length + 1}/{freeDiceCount}
+                        {pendingFreeRolls.length > 0
+                          ? ` (${pendingFreeRolls.join(' + ')})`
+                          : ''}
+                      </label>
+                    )}
+                    <div
+                      className="d20-keypad"
+                      role="group"
+                      aria-label={`Pavé de saisie du dé d${freeDieSides}`}
+                    >
+                      {Array.from(
+                        { length: freeDieSides },
+                        (_, i) => i + 1,
+                      ).map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          className="d20-key tabular-nums"
+                          onClick={() => handlePhysicalFreeDieTap(val)}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ) : (
+                <button
+                  type="button"
+                  className="action-btn action-btn--primary virtual-roll-cta tabular-nums"
+                  onClick={handleVirtualFreeRoll}
                 >
-                  {Array.from({ length: freeDieSides }, (_, i) => i + 1).map(
-                    (val) => (
-                      <button
-                        key={val}
-                        type="button"
-                        className="d20-key tabular-nums"
-                        onClick={() => handlePhysicalFreeDieTap(val)}
-                      >
-                        {val}
-                      </button>
-                    ),
-                  )}
+                  Lancer {freeFormulaString}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </dialog>
+
+      {/* Modale dédiée : Historique des jets de la séance */}
+      <dialog
+        ref={historyDialogRef}
+        className="grimoire-dialog"
+        aria-labelledby={historyTitleId}
+        onClick={handleDialogBackdropClick}
+        {...({ closedby: 'any' } as Record<string, string>)}
+      >
+        <div className="dialog-header">
+          <h2 id={historyTitleId}>
+            Historique de Séance ({rollLog.length})
+          </h2>
+          <form method="dialog">
+            <button type="submit" className="action-btn" autoFocus>
+              Fermer
+            </button>
+          </form>
+        </div>
+
+        {rollLog.length === 0 ? (
+          <p className="muted-note">
+            Aucun jet enregistré durant cette séance.
+          </p>
+        ) : (
+          <div className="roll-log-list roll-log-list--modal">
+            {rollLog.map((entry) => (
+              <div key={entry.id} className="roll-log-item">
+                <div>
+                  <strong>{entry.title}</strong>
+                  <div className="muted-note">
+                    {entry.subtitle} · {entry.timestamp}
+                  </div>
+                </div>
+                <div className="tabular-nums" style={{ fontWeight: 700 }}>
+                  {entry.formulaBreakdown}
                 </div>
               </div>
-            )}
-
-            <button
-              type="button"
-              className="action-btn action-btn--primary tabular-nums"
-              onClick={handleVirtualFreeRoll}
-            >
-              Lancer {freeFormulaString} Virtuel
-            </button>
+            ))}
           </div>
         )}
 
-        {/* Dernier résultat en direct */}
-        <div
-          aria-live="polite"
-          style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
-        >
-          {lastD20 && (
-            <div className="roll-banner">
-              <div>
-                <strong>{lastD20.label}</strong> (
-                {lastD20.mode === 'physical' ? 'Dé physique' : 'Jet virtuel'})
-                {lastD20.isCriticalSuccess && ' — RÉUSSITE CRITIQUE (20) !'}
-                {lastD20.isCriticalFailure && ' — ÉCHEC CRITIQUE (1) !'}
-              </div>
-              <div
-                className="tabular-nums"
-                style={{ fontSize: '1.15rem', fontWeight: 700 }}
-              >
-                {lastD20.formulaBreakdown}
-              </div>
-            </div>
-          )}
-
-          {lastDamage && (
-            <div className="roll-banner">
-              <div>
-                <strong>Résultat ({lastDamage.formula})</strong>{' '}
-                {lastDamage.isCritical ? '(Critique x2 dés)' : ''}
-              </div>
-              <div
-                className="tabular-nums"
-                style={{ fontSize: '1.15rem', fontWeight: 700 }}
-              >
-                {lastDamage.formulaBreakdown}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Journal compact des jets de la séance */}
         {rollLog.length > 0 && (
-          <div className="roll-log-section">
-            <div className="inventory-header-row">
-              <span className="muted-note">
-                <strong>Historique de séance ({rollLog.length})</strong>
-              </span>
-              <button
-                type="button"
-                className="action-btn"
-                onClick={() => {
-                  setLastD20(null);
-                  setLastDamage(null);
-                  onClearRollLog();
-                }}
-              >
-                Effacer
-              </button>
-            </div>
-            <div className="roll-log-list">
-              {rollLog.map((entry) => (
-                <div key={entry.id} className="roll-log-item">
-                  <div>
-                    <strong>{entry.title}</strong>{' '}
-                    <span className="muted-note">({entry.subtitle})</span>
-                  </div>
-                  <div className="tabular-nums" style={{ fontWeight: 700 }}>
-                    {entry.formulaBreakdown}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="dialog-footer-actions">
+            <button
+              type="button"
+              className="action-btn"
+              onClick={() => {
+                setLastD20(null);
+                setLastDamage(null);
+                onClearRollLog();
+              }}
+            >
+              Effacer l’historique
+            </button>
           </div>
         )}
       </dialog>

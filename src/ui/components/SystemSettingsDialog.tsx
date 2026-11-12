@@ -8,6 +8,7 @@ import type {
 } from '../../engine';
 import type { SaveSyncStatus } from '../../state';
 import { handleDialogBackdropClick } from './dialog-utils';
+import type { DiceRollMode } from './dialog-utils';
 
 export interface SystemSettingsDialogProps {
   dialogRef: RefObject<HTMLDialogElement | null>;
@@ -18,8 +19,10 @@ export interface SystemSettingsDialogProps {
   backupFeedback: string | null;
   theme: ThemeMode;
   termMode: TermDisplayMode;
+  diceRollMode: DiceRollMode;
   onSetTheme: (theme: ThemeMode) => void;
   onSetTermMode: (mode: TermDisplayMode) => void;
+  onSetDiceRollMode: (mode: DiceRollMode) => void;
   onCreateManualSnapshot: (label: string) => Promise<CharacterSnapshot>;
   onRestoreSnapshot: (snapshotId: string) => Promise<void>;
   onDeleteSnapshot: (snapshotId: string) => Promise<void>;
@@ -37,8 +40,10 @@ export function SystemSettingsDialog({
   backupFeedback,
   theme,
   termMode,
+  diceRollMode,
   onSetTheme,
   onSetTermMode,
+  onSetDiceRollMode,
   onCreateManualSnapshot,
   onRestoreSnapshot,
   onDeleteSnapshot,
@@ -88,9 +93,9 @@ export function SystemSettingsDialog({
         </form>
       </div>
 
-      {/* 1. Préférences d'affichage (Thème & Langue des termes) */}
+      {/* 1. Préférences d'affichage et de jeu (Thème, Langue & Mode de dés) */}
       <div className="settings-section">
-        <h3>1. Préférences d’Affichage</h3>
+        <h3>1. Préférences d’Affichage & de Jeu</h3>
         <div className="settings-row">
           <span>Thème visuel :</span>
           <div
@@ -147,6 +152,32 @@ export function SystemSettingsDialog({
               onClick={() => onSetTermMode('en')}
             >
               Anglais (EN)
+            </button>
+          </div>
+        </div>
+
+        <div className="settings-row">
+          <span>Mode de lancer des dés :</span>
+          <div
+            className="segmented-control"
+            role="group"
+            aria-label="Mode de lancer des dés dans l'assistant"
+          >
+            <button
+              type="button"
+              className="segmented-btn"
+              aria-pressed={diceRollMode === 'physical'}
+              onClick={() => onSetDiceRollMode('physical')}
+            >
+              Dés Physiques (Pavé)
+            </button>
+            <button
+              type="button"
+              className="segmented-btn"
+              aria-pressed={diceRollMode === 'virtual'}
+              onClick={() => onSetDiceRollMode('virtual')}
+            >
+              Dés Virtuels (Aléatoire)
             </button>
           </div>
         </div>

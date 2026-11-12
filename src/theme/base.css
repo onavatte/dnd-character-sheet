@@ -1067,9 +1067,8 @@ dialog::backdrop {
   left: auto;
   top: auto;
   z-index: 90;
-  width: min(94vw, 430px);
-  max-height: min(82dvh, 660px);
-  overflow-y: auto;
+  width: min(95vw, 445px);
+  max-height: 92dvh;
   border-radius: var(--radius-lg);
   border: 2px solid var(--border-strong);
   border-top: 4px solid var(--accent-primary);
@@ -1083,6 +1082,81 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.dice-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.dice-header-btn {
+  padding: 0 0.625rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.dice-icon-count-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dice-result-fixed {
+  flex-shrink: 0;
+  min-height: 3.25rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--accent-primary);
+  background-color: var(--accent-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dice-result-content {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.dice-result-formula {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.dice-crit-badge--ok {
+  border-color: var(--color-hp-ok);
+  color: var(--color-hp-ok);
+}
+
+.dice-crit-badge--fail {
+  border-color: var(--color-hp-crit);
+  color: var(--color-hp-crit);
+}
+
+.virtual-roll-cta {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1.05rem;
+}
+
+.dice-target-info {
+  min-width: 0;
+}
+
+.badge-pill--nowrap {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.roll-log-list--modal {
+  max-height: 55dvh;
 }
 
 .floating-dice-header {
@@ -1106,13 +1180,15 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .floating-dice-title-group h2 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 0.975rem;
   color: var(--accent-primary);
+  white-space: nowrap;
 }
 
 .drag-handle {
