@@ -32,8 +32,10 @@ export interface ActiveRollTarget {
   id: string;
   label: string;
   originalLabel?: string;
-  category: 'skill' | 'ability' | 'save' | 'attack' | 'initiative';
+  category: 'skill' | 'ability' | 'save' | 'attack' | 'initiative' | 'damage' | 'free';
   modifier: number;
   damageFormula?: string;
   damageType?: string;
+  initialMode?: 'd20' | 'formula' | 'free';
+  isCritical?: boolean;
 }

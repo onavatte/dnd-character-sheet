@@ -28,12 +28,12 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Service d'**Export / Import JSON** avec contrôle de validité du schéma à l'import
 
 ## Jalon 3 — Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride ⏳
-- **Focus d'apprentissage** : Ergonomie tactile Tablette sans friction (zéro édition accidentelle, densité d'information maîtrisée, micro-interactions de combat et de jets).
-- **Critère de validation** : En Mode Partie sur format Tablette et Desktop, l'utilisateur peut gérer un combat complet (PV, munitions, sorts, états), effectuer ses jets en mode dé physique ou virtuel, et déclencher un Repos Court/Long avec possibilité d'annuler.
-- [x] Vue **Cockpit de Partie** (grille responsive Tablette/Desktop) : bandeau vital (PV, CA, Initiative, Vitesse, États/Épuisement) et modale rapide de Dégâts / Soins / PV temporaires
-- [x] Panneau des **Caractéristiques, Sauvegardes & Compétences** (avec filtres rapides et mise en évidence des maîtrises/expertises)
-- [x] Panneau central d'**Actions, Armes & Ressources** (coches tactiles rapides pour munitions/charges, emplacements de sorts et capacités de classe)
-- [x] Composant **Assistant de Jet Hybride** (`<dialog>` / panneau dédié) : affichage de la formule décomposée, pavé `1-20` pour saisir son dé physique, bouton de jet virtuel et journal des derniers jets
+- **Focus d'apprentissage** : Ergonomie tactile Tablette sans friction (zéro édition accidentelle, densité d'information maîtrisée en 2 larges colonnes, micro-interactions de combat et de jets).
+- **Critère de validation** : En Mode Partie sur format Tablette et Desktop, l'utilisateur peut gérer un combat complet (PV, munitions, sorts, états, notes de butin), effectuer tous ses jets (`d4` à `d100`) en mode dé physique ou virtuel via la fenêtre flottante déplaçable, et déclencher un Repos Court/Long avec possibilité d'annuler.
+- [x] Vue **Cockpit de Partie** (grille responsive 2 colonnes Tablette/Desktop + modale `Système` séparée derrière l'icône Engrenage) : bandeau vital (PV, CA, Initiative, Vitesse, États/Épuisement) et modale rapide de Dégâts / Soins / PV temporaires
+- [x] Panneau des **Caractéristiques, Sauvegardes & Compétences** (cartes épurées sans débordement, card pleine largeur *Bonus de Maîtrise / Proficiency Bonus*, filtres rapides et recherche bilingue)
+- [x] Panneau central d'**Actions, Armes, Sorts & Équipement/Notes** (boutons `+`/`−` en relief, emplacements de sorts et prise de notes/butin rapide en partie)
+- [x] Composant **Assistant de Jet Hybride Universel** (`<dialog>` flottant non-modal déplaçable sans flou d'arrière-plan + bouton flottant permanent FAB) : pavé physique dynamique adapté au dé (`d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`), jets de dégâts normaux/critiques, mode **Jet Libre** et journal des derniers jets
 - [x] Flux interactif de **Repos Court** (dépense de Dés de Vie) et **Repos Long** (avec création automatique d'un snapshot préalable)
 
 ## Jalon 4 — Interface "Mode Édition (Forge)", Multi-Personnages & PWA

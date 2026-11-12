@@ -21,12 +21,6 @@ export interface CombatAndResourcesPanelProps {
   activeRollTargetId: string;
   renderTerm: (fr: string, en?: string) => ReactNode;
   onSelectRollTarget: (target: ActiveRollTarget) => void;
-  onRollAttackDamage: (
-    attackName: string,
-    damageFormula: string,
-    damageType: string,
-    isCritical: boolean,
-  ) => void;
   onAdjustResource: (resourceId: string, delta: number) => void;
   onAdjustSpellSlotUsed: (level: number, delta: number) => void;
   onAdjustPactSlotUsed: (delta: number) => void;
@@ -41,7 +35,6 @@ export function CombatAndResourcesPanel({
   activeRollTargetId,
   renderTerm,
   onSelectRollTarget,
-  onRollAttackDamage,
   onAdjustResource,
   onAdjustSpellSlotUsed,
   onAdjustPactSlotUsed,
@@ -156,6 +149,7 @@ export function CombatAndResourcesPanel({
                           modifier: atk.toHitBonus,
                           damageFormula: atk.damageFormula,
                           damageType: atk.damageType,
+                          initialMode: 'd20',
                         });
                       }}
                     >
@@ -167,12 +161,19 @@ export function CombatAndResourcesPanel({
                       type="button"
                       className="action-btn tabular-nums"
                       onClick={() =>
-                        onRollAttackDamage(
-                          atk.name,
-                          atk.damageFormula,
-                          atk.damageType,
-                          false,
-                        )
+                        onSelectRollTarget({
+                          id: `${atk.id}-dmg`,
+                          label: `${atk.name} — Dégâts`,
+                          ...(atk.originalName !== undefined
+                            ? { originalLabel: `${atk.originalName} — Damage` }
+                            : {}),
+                          category: 'damage',
+                          modifier: atk.toHitBonus,
+                          damageFormula: atk.damageFormula,
+                          damageType: atk.damageType,
+                          initialMode: 'formula',
+                          isCritical: false,
+                        })
                       }
                     >
                       Dégâts ({atk.damageFormula})
@@ -182,12 +183,19 @@ export function CombatAndResourcesPanel({
                       type="button"
                       className="action-btn tabular-nums"
                       onClick={() =>
-                        onRollAttackDamage(
-                          atk.name,
-                          atk.damageFormula,
-                          atk.damageType,
-                          true,
-                        )
+                        onSelectRollTarget({
+                          id: `${atk.id}-crit`,
+                          label: `${atk.name} — Critique`,
+                          ...(atk.originalName !== undefined
+                            ? { originalLabel: `${atk.originalName} — Critical` }
+                            : {}),
+                          category: 'damage',
+                          modifier: atk.toHitBonus,
+                          damageFormula: atk.damageFormula,
+                          damageType: atk.damageType,
+                          initialMode: 'formula',
+                          isCritical: true,
+                        })
                       }
                     >
                       Critique (x2 dés)

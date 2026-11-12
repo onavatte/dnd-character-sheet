@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import {
-  computeDerivedCharacter,
-  resolveDamageRoll,
-} from '../engine';
+import { computeDerivedCharacter } from '../engine';
 import type { TermDisplayMode, ThemeMode } from '../engine';
 import { buildBackupFilename, useCharacterStore } from '../state';
 import { AbilitiesAndSkillsPanel } from './components/AbilitiesAndSkillsPanel';
@@ -74,6 +71,7 @@ export function App() {
 
   const [selectedRollTarget, setSelectedRollTarget] =
     useState<ActiveRollTarget | null>(null);
+  const [isDiceModalOpen, setIsDiceModalOpen] = useState<boolean>(false);
   const [rollLog, setRollLog] = useState<RollLogEntry[]>([]);
   const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
 
@@ -104,6 +102,12 @@ export function App() {
       : {}),
     category: 'skill',
     modifier: defaultSkill?.modifier ?? 0,
+    initialMode: 'd20',
+  };
+
+  const handleSelectRollTarget = (target: ActiveRollTarget) => {
+    setSelectedRollTarget(target);
+    setIsDiceModalOpen(true);
   };
 
   const renderTerm = (fr: string, en?: string) => {
@@ -121,29 +125,6 @@ export function App() {
 
   const pushRollLog = (entry: RollLogEntry) => {
     setRollLog((prev) => [entry, ...prev].slice(0, 12));
-  };
-
-  const handleRollAttackDamage = (
-    attackName: string,
-    damageFormula: string,
-    damageType: string,
-    isCritical: boolean,
-  ) => {
-    const dmg = resolveDamageRoll(damageFormula, { isCritical });
-    const timestamp = new Date().toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-    pushRollLog({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      timestamp,
-      title: `${attackName} — Dégâts`,
-      subtitle: isCritical
-        ? `Critique (${damageType})`
-        : `Normal (${damageType})`,
-      formulaBreakdown: dmg.formulaBreakdown,
-    });
   };
 
   const handleCreateManualSnapshot = async (label: string) => {
@@ -314,7 +295,7 @@ export function App() {
         sheet={sheet}
         derived={derived}
         renderTerm={renderTerm}
-        onSelectRollTarget={setSelectedRollTarget}
+        onSelectRollTarget={handleSelectRollTarget}
         onDamage={damage}
         onHeal={heal}
         onTempHp={tempHp}
@@ -337,7 +318,7 @@ export function App() {
         </div>
       )}
 
-      {/* Grille principale 3 colonnes du Cockpit de Partie */}
+      {/* Grille principale élargie en 2 grandes colonnes (Caractéristiques/Compétences & Actions/Inventaire) */}
       <main className="workspace-grid">
         <AbilitiesAndSkillsPanel
           sheet={sheet}
@@ -345,7 +326,7 @@ export function App() {
           termMode={termMode}
           activeRollTargetId={activeRollTarget.id}
           renderTerm={renderTerm}
-          onSelectRollTarget={setSelectedRollTarget}
+          onSelectRollTarget={handleSelectRollTarget}
         />
 
         <CombatAndResourcesPanel
@@ -354,23 +335,25 @@ export function App() {
           termMode={termMode}
           activeRollTargetId={activeRollTarget.id}
           renderTerm={renderTerm}
-          onSelectRollTarget={setSelectedRollTarget}
-          onRollAttackDamage={handleRollAttackDamage}
+          onSelectRollTarget={handleSelectRollTarget}
           onAdjustResource={adjustResource}
           onAdjustSpellSlotUsed={adjustSpellSlotUsed}
           onAdjustPactSlotUsed={adjustPactSlotUsed}
           onUpdateNotes={updateNotes}
           onAppendQuickNote={appendQuickNote}
         />
-
-        <DiceAssistantPanel
-          activeTarget={activeRollTarget}
-          rollLog={rollLog}
-          renderTerm={renderTerm}
-          onPushRollLog={pushRollLog}
-          onClearRollLog={() => setRollLog([])}
-        />
       </main>
+
+      {/* Assistant de Jet Hybride Universel (Modale flottante déplaçable sans flou + Bouton flottant FAB) */}
+      <DiceAssistantPanel
+        isOpen={isDiceModalOpen}
+        onToggleOpen={setIsDiceModalOpen}
+        activeTarget={activeRollTarget}
+        rollLog={rollLog}
+        renderTerm={renderTerm}
+        onPushRollLog={pushRollLog}
+        onClearRollLog={() => setRollLog([])}
+      />
 
       <RestDialogs
         sheet={sheet}
