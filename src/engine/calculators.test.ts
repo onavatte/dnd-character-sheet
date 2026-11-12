@@ -125,5 +125,35 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     const hacking = derived.skills.find((s) => s.id === 'custom_hacking');
     // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) = +6
     expect(hacking?.modifier).toBe(6);
+
+    const demoCantrip = demo.spellcasting?.abilitiesList.find(
+      (s) => s.level === 0 && s.hasAttackRoll,
+    );
+    expect(demoCantrip?.damageFormula).toBe('2d10');
+  });
+
+  it('calcule aussi la caractéristique spécifique de sorts offensifs multiclassés', () => {
+    const sheet = createDemoCharacter();
+    sheet.spellcasting?.abilitiesList.push({
+      id: 'spell-eldritch-blast',
+      level: 0,
+      name: 'Décharge occulte',
+      originalName: 'Eldritch Blast',
+      ability: 'CHA',
+      prepared: true,
+      castingTime: '1 action',
+      range: '36 m',
+      hasAttackRoll: true,
+      damageFormula: '1d10',
+      damageType: 'Force',
+      description: 'Rayon énergétique de pacte.',
+    });
+
+    const derived = computeDerivedCharacter(sheet);
+    // CHA 10 (+0) + Maîtrise (+3) -> DD 11, Attaque +3
+    expect(derived.spellcastingByAbility.CHA).toEqual({
+      saveDC: 11,
+      attackBonus: 3,
+    });
   });
 });

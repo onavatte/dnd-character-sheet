@@ -14,6 +14,22 @@ import type { ActiveRollTarget } from './dialog-utils';
 
 type CentralTab = 'combat' | 'spells' | 'inventory';
 
+/**
+ * Allège l'affichage du temps d'incantation pour les coûts d'action uniques
+ * ("1 action" -> "Action", "1 action bonus" -> "Action bonus") tout en préservant les durées (ex. "10 min").
+ */
+function formatCastingTimeLabel(castingTime: string): string {
+  const trimmed = castingTime.trim();
+  const singleActionMatch = /^1\s+(action(?:\s+bonus)?|r[ée]action)$/i.exec(
+    trimmed,
+  );
+  if (singleActionMatch?.[1]) {
+    const label = singleActionMatch[1];
+    return label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+  }
+  return trimmed;
+}
+
 export interface CombatAndResourcesPanelProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
@@ -411,20 +427,139 @@ export function CombatAndResourcesPanel({
 
           <h3>Sorts & Capacités Préparés</h3>
           <div className="attack-cards-list">
-            {sheet.spellcasting?.abilitiesList.map((spell) => (
-              <div key={spell.id} className="attack-card">
-                <div className="attack-card-header">
-                  <strong>{renderTerm(spell.name, spell.originalName)}</strong>
-                  <span className="badge-pill tabular-nums">
-                    {spell.level === 0 ? 'Tour de magie' : `Niv. ${spell.level}`}{' '}
-                    · {spell.castingTime}
-                  </span>
+            {sheet.spellcasting?.abilitiesList.map((spell) => {
+              const spellAbilityKey =
+                spell.ability ?? sheet.spellcasting?.defaultAbility ?? 'WIS';
+              const spellStats = derived.spellcastingByAbility[spellAbilityKey];
+              const isSelected =
+                activeRollTargetId === spell.id ||
+                activeRollTargetId === `${spell.id}-dmg` ||
+                activeRollTargetId === `${spell.id}-crit`;
+              const isHealing =
+                spell.damageType !== undefined &&
+                /soin|heal|pv/i.test(spell.damageType);
+              const saveGlossary = spell.saveAbility
+                ? ABILITY_GLOSSARY[spell.saveAbility]
+                : undefined;
+              const saveAbbr = saveGlossary
+                ? termMode === 'en'
+                  ? saveGlossary.abbrEn
+                  : saveGlossary.abbrFr
+                : undefined;
+              const showRollActions =
+                (Boolean(spell.hasAttackRoll) && Boolean(spellStats)) ||
+                Boolean(spell.damageFormula);
+
+              const triggerSpellDamageRoll = (isCritical: boolean) => {
+                const formula = spell.damageFormula;
+                if (!formula) return;
+                const frSuffix = isCritical
+                  ? 'Critique'
+                  : isHealing
+                    ? 'Soins'
+                    : 'Dégâts';
+                const enSuffix = isCritical
+                  ? 'Critical'
+                  : isHealing
+                    ? 'Healing'
+                    : 'Damage';
+
+                onSelectRollTarget({
+                  id: `${spell.id}-${isCritical ? 'crit' : 'dmg'}`,
+                  label: `${spell.name} — ${frSuffix}`,
+                  ...(spell.originalName !== undefined
+                    ? { originalLabel: `${spell.originalName} — ${enSuffix}` }
+                    : {}),
+                  category: 'damage',
+                  modifier: spellStats?.attackBonus ?? 0,
+                  damageFormula: formula,
+                  ...(spell.damageType !== undefined
+                    ? { damageType: spell.damageType }
+                    : {}),
+                  initialMode: 'formula',
+                  isCritical,
+                });
+              };
+
+              return (
+                <div
+                  key={spell.id}
+                  className={`attack-card ${
+                    isSelected ? 'attack-card--selected' : ''
+                  }`}
+                >
+                  <div className="attack-card-header">
+                    <strong>{renderTerm(spell.name, spell.originalName)}</strong>
+                    <span className="badge-pill tabular-nums">
+                      {spell.level === 0 ? 'Tour de magie' : `Niv. ${spell.level}`}{' '}
+                      · {formatCastingTimeLabel(spell.castingTime)}
+                    </span>
+                  </div>
+                  <div className="attack-meta">
+                    Portée : {spell.range}
+                    {saveAbbr && spellStats
+                      ? ` · JS ${saveAbbr} DD ${spellStats.saveDC}`
+                      : ''}
+                    {spell.damageType ? ` · Type : ${spell.damageType}` : ''} —{' '}
+                    {spell.description}
+                  </div>
+
+                  {showRollActions && (
+                    <div className="button-cluster">
+                      {spell.hasAttackRoll && spellStats && (
+                        <button
+                          type="button"
+                          className="action-btn action-btn--primary tabular-nums"
+                          onClick={() =>
+                            onSelectRollTarget({
+                              id: spell.id,
+                              label: `${spell.name} — Attaque de sort`,
+                              ...(spell.originalName !== undefined
+                                ? {
+                                    originalLabel: `${spell.originalName} — Spell Attack`,
+                                  }
+                                : {}),
+                              category: 'attack',
+                              modifier: spellStats.attackBonus,
+                              ...(spell.damageFormula !== undefined
+                                ? { damageFormula: spell.damageFormula }
+                                : {}),
+                              ...(spell.damageType !== undefined
+                                ? { damageType: spell.damageType }
+                                : {}),
+                              initialMode: 'd20',
+                            })
+                          }
+                        >
+                          Toucher 1d20{' '}
+                          {formatSignedModifier(spellStats.attackBonus)}
+                        </button>
+                      )}
+
+                      {spell.damageFormula && (
+                        <button
+                          type="button"
+                          className="action-btn tabular-nums"
+                          onClick={() => triggerSpellDamageRoll(false)}
+                        >
+                          {isHealing ? 'Soins' : 'Dégâts'} ({spell.damageFormula})
+                        </button>
+                      )}
+
+                      {spell.hasAttackRoll && spell.damageFormula && (
+                        <button
+                          type="button"
+                          className="action-btn tabular-nums"
+                          onClick={() => triggerSpellDamageRoll(true)}
+                        >
+                          Critique (x2 dés)
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-                <div className="attack-meta">
-                  Portée : {spell.range} — {spell.description}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

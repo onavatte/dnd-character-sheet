@@ -79,6 +79,10 @@ export interface SpellAbilityEntry extends BilingualNamed {
   castingTime: string;
   range: string;
   description: string;
+  hasAttackRoll?: boolean;
+  saveAbility?: AbilityKey;
+  damageFormula?: string;
+  damageType?: string;
 }
 
 export interface SpellcastingState {

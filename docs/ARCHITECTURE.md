@@ -129,13 +129,17 @@ export interface CharacterSheetV1 {
     abilitiesList: Array<{
       id: string;
       level: number;
-      name: string;                 // ex: "Foulée brumeuse" ou "Eldritch Blast"
-      originalName?: string;        // ex: "Misty Step"
+      name: string;                 // ex: "Décharge thermique" ou "Eldritch Blast"
+      originalName?: string;        // ex: "Fire Bolt"
       ability?: AbilityKey;         // Surcharge par classe en cas de multi-classage d'incantateurs
       prepared: boolean;
       castingTime: string;
       range: string;
       description: string;
+      hasAttackRoll?: boolean;      // Débloque Toucher 1d20 + bonus d'attaque de sort et Critique
+      saveAbility?: AbilityKey;     // Affiche le DD de sauvegarde ciblé (JS DEX, CON, WIS...)
+      damageFormula?: string;       // Formule de dégâts ou soins envoyée à l'Assistant de Jet (ex: "2d10")
+      damageType?: string;          // Type de dégâts ou mention "Soins"
     }>;
   };
   inventory: Array<{
