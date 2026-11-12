@@ -732,19 +732,23 @@ dialog::backdrop {
   display: inline-flex;
   align-items: baseline;
   gap: 0.3rem;
-  line-height: 1.1;
+  line-height: 1;
 }
 
 .ability-raw-score {
   font-size: 1.55rem;
   font-weight: 800;
+  line-height: 1;
   color: var(--text-primary);
 }
 
 .ability-mod-inline {
   font-size: 0.95rem;
   font-weight: 600;
+  line-height: 1;
   color: var(--text-muted);
+  position: relative;
+  top: -0.14em;
 }
 
 .ability-save-btn {
