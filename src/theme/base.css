@@ -62,7 +62,8 @@ input[type='file']::file-selector-button:hover {
 }
 
 input[type='search'],
-input[type='text'] {
+input[type='text'],
+input[type='number'] {
   font: inherit;
   font-size: max(1rem, 1em);
   padding: 0.625rem 0.75rem;
@@ -76,7 +77,8 @@ input[type='text'] {
 
 @media (pointer: coarse) {
   input[type='search'],
-  input[type='text'] {
+  input[type='text'],
+  input[type='number'] {
     min-height: 52px;
   }
 }
@@ -422,4 +424,480 @@ input[type='text'] {
   color: var(--color-hp-crit);
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+/* ============================================================================
+ * Jalon 3 — Mode Partie (Cockpit), Modales <dialog> & Assistant de Jet
+ * ============================================================================ */
+
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(12, 10, 8, 0.58);
+  backdrop-filter: blur(2px);
+}
+
+.grimoire-dialog {
+  width: min(92vw, 540px);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-strong);
+  border-top: 4px solid var(--accent-primary);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  padding: var(--space-5);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+}
+
+.grimoire-dialog--wide {
+  width: min(94vw, 680px);
+  max-height: 88dvh;
+}
+
+.settings-gear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sync-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background-color: var(--text-muted);
+}
+
+.sync-dot--saved {
+  background-color: var(--color-hp-ok);
+}
+
+.sync-dot--pending {
+  background-color: var(--color-hp-warn);
+}
+
+.sync-dot--error {
+  background-color: var(--color-hp-crit);
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.settings-section h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.9375rem;
+}
+
+.grimoire-textarea {
+  font: inherit;
+  font-size: max(1rem, 1em);
+  line-height: 1.5;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  width: 100%;
+  resize: vertical;
+}
+
+.grimoire-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-2);
+}
+
+.dialog-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--accent-primary);
+}
+
+.dialog-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+}
+
+.dialog-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-2);
+}
+
+.dialog-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.dialog-checklist {
+  margin: 0;
+  padding-inline-start: var(--space-5);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.action-btn--danger {
+  border-color: var(--color-hp-crit);
+  color: var(--color-hp-crit);
+}
+
+.action-btn--heal {
+  border-color: var(--color-hp-ok);
+  color: var(--color-hp-ok);
+}
+
+.badge-pill--alert {
+  border-color: var(--color-hp-warn);
+  color: var(--color-hp-warn);
+}
+
+/* Bandeau Vital du Cockpit */
+.cockpit-vital-banner {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.vitals-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-3);
+}
+
+.vital-tile {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-1);
+  text-align: left;
+  color: var(--text-primary);
+}
+
+.vital-tile--interactive {
+  border-color: var(--border-strong);
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.vital-tile--interactive:hover {
+  background-color: var(--bg-interactive);
+  border-color: var(--accent-primary);
+}
+
+.vital-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.hp-meter {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--border-subtle);
+  overflow: hidden;
+  margin-top: 0.25rem;
+}
+
+.hp-meter-fill {
+  height: 100%;
+  background-color: currentColor;
+  transition: width 180ms ease;
+}
+
+.hit-dice-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.vital-actions-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.conditions-cluster,
+.rest-buttons-cluster,
+.death-saves-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: var(--space-2);
+  max-height: 280px;
+  overflow-y: auto;
+  padding-inline-end: var(--space-1);
+}
+
+/* Grille des 6 Caractéristiques + Sauvegardes */
+.abilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.ability-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ability-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 0.25rem;
+}
+
+.ability-abbr {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--accent-primary);
+}
+
+.ability-score {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ability-roll-btn,
+.ability-save-btn {
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ability-roll-btn {
+  justify-content: center;
+  font-size: 0.9375rem;
+}
+
+.ability-roll-btn[aria-pressed='true'],
+.ability-save-btn[aria-pressed='true'] {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+}
+
+.skills-filter-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Panneau Central : Armes, Ressources, Sorts & Inventaire */
+.tab-panel-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tab-panel-stack h3 {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.attack-cards-list,
+.resources-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.attack-card {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.attack-card--selected {
+  border-color: var(--accent-primary);
+}
+
+.attack-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.attack-meta {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.resource-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+
+.resource-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.resource-recovery-badge {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.resource-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resource-counter {
+  font-weight: 700;
+  min-width: 3.25rem;
+  text-align: right;
+}
+
+.pip-strip {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.resource-pip {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--accent-primary);
+  background-color: transparent;
+}
+
+.resource-pip--filled {
+  background-color: var(--accent-primary);
+}
+
+.spell-stats-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inventory-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.muted-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.roll-log-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-2);
+}
+
+.roll-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  max-height: 200px;
+  overflow-y: auto;
+  padding-inline-end: var(--space-1);
+}
+
+.roll-log-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.8125rem;
 }

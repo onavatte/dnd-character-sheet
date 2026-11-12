@@ -55,6 +55,13 @@ export interface CharacterStoreState {
   heal(amount: number): void;
   tempHp(amount: number, overwrite?: boolean): void;
   adjustResource(resourceId: string, delta: number): void;
+  toggleCondition(conditionId: string): void;
+  setExhaustionLevel(level: 0 | 1 | 2 | 3 | 4 | 5 | 6): void;
+  setDeathSaves(successes: number, failures: number): void;
+  adjustSpellSlotUsed(level: number, delta: number): void;
+  adjustPactSlotUsed(delta: number): void;
+  updateNotes(nextNotes: string): void;
+  appendQuickNote(entryText: string): void;
   shortRest(options?: ShortRestOptions): void;
   longRestWithAutoSnapshot(): Promise<void>;
 
@@ -224,6 +231,61 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
       get().applySheetUpdate((sheet) =>
         updateResourceCurrent(sheet, resourceId, delta),
       );
+    },
+
+    toggleCondition(conditionId): void {
+      get().mutateWithImmer((draft) => {
+        const idx = draft.combat.conditions.indexOf(conditionId);
+        if (idx >= 0) {
+          draft.combat.conditions.splice(idx, 1);
+        } else {
+          draft.combat.conditions.push(conditionId);
+        }
+      });
+    },
+
+    setExhaustionLevel(level): void {
+      get().mutateWithImmer((draft) => {
+        draft.combat.exhaustionLevel = level;
+      });
+    },
+
+    setDeathSaves(successes, failures): void {
+      get().mutateWithImmer((draft) => {
+        draft.combat.deathSaves.successes = Math.min(3, Math.max(0, Math.trunc(successes)));
+        draft.combat.deathSaves.failures = Math.min(3, Math.max(0, Math.trunc(failures)));
+      });
+    },
+
+    adjustSpellSlotUsed(level, delta): void {
+      get().mutateWithImmer((draft) => {
+        const slot = draft.spellcasting?.slots[level];
+        if (!slot) return;
+        slot.used = Math.min(slot.max, Math.max(0, slot.used + Math.trunc(delta)));
+      });
+    },
+
+    adjustPactSlotUsed(delta): void {
+      get().mutateWithImmer((draft) => {
+        const pact = draft.spellcasting?.pactSlots;
+        if (!pact) return;
+        pact.used = Math.min(pact.max, Math.max(0, pact.used + Math.trunc(delta)));
+      });
+    },
+
+    updateNotes(nextNotes): void {
+      get().mutateWithImmer((draft) => {
+        draft.notes = nextNotes;
+      });
+    },
+
+    appendQuickNote(entryText): void {
+      const trimmed = entryText.trim();
+      if (trimmed.length === 0) return;
+      get().mutateWithImmer((draft) => {
+        const prefix = draft.notes.trim().length > 0 ? `${draft.notes.trimEnd()}\n` : '';
+        draft.notes = `${prefix}• ${trimmed}`;
+      });
     },
 
     shortRest(restOptions): void {

@@ -159,4 +159,31 @@ describe('store — Intégration Zustand + Immer + Repository + Snapshots', () =
     expect(store.getState().history.present.combat.hpCurrent).toBe(52);
     expect(store.getState().snapshots.some((s) => s.label.includes('Auto — Avant Import JSON'))).toBe(true);
   });
+
+  it('gère les interactions du Cockpit (états, épuisement, jets contre la mort et emplacements de sorts)', async () => {
+    const repo = new InMemoryCharacterRepository();
+    const store = createCharacterStore({ repository: repo, writeBehindMs: 0 });
+    await store.getState().initialize();
+
+    store.getState().toggleCondition('poisoned');
+    expect(store.getState().history.present.combat.conditions).toContain('poisoned');
+
+    store.getState().setExhaustionLevel(2);
+    expect(store.getState().history.present.combat.exhaustionLevel).toBe(2);
+
+    store.getState().setDeathSaves(2, 1);
+    expect(store.getState().history.present.combat.deathSaves).toEqual({
+      successes: 2,
+      failures: 1,
+    });
+
+    store.getState().adjustSpellSlotUsed(1, 1);
+    expect(store.getState().history.present.spellcasting?.slots[1]?.used).toBe(2);
+
+    store.getState().appendQuickNote('+150 crédits impériaux (Bunker 4)');
+    expect(store.getState().history.present.notes).toContain('• +150 crédits impériaux (Bunker 4)');
+
+    store.getState().updateNotes('Note remplacée');
+    expect(store.getState().history.present.notes).toBe('Note remplacée');
+  });
 });

@@ -19,7 +19,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Implémentation du moteur de l'Assistant de Jet Hybride (`src/engine/dice.ts` + tests) : résolution à partir d'une valeur de dé physique saisie par le joueur ou d'un tirage aléatoire, gestion Avantage/Désavantage et critiques (1 / 20)
 - [x] Validation stricte et migration de schéma (`src/engine/validators.ts` + tests)
 
-## Jalon 2 — Stockage IndexedDB, Undo/Redo Copy-on-Write & Backup JSON ⏳
+## Jalon 2 — Stockage IndexedDB, Undo/Redo Copy-on-Write & Backup JSON ✅
 - **Focus d'apprentissage** : Architecture de stockage multi-tiers dans le navigateur (RAM Copy-on-Write avec `Zustand` + `Immer`, persistance asynchrone `IndexedDB`, snapshots immuables et portabilité JSON).
 - **Critère de validation** : Les modifications persistent après rechargement, le bouton Undo/Redo annule/rétablit instantanément les actions, les snapshots avant Repos Long sont restaurables, et l'export/import JSON transfère une fiche complète sans perte.
 - [x] Définition du contrat abstrait `CharacterRepository` et implémentation de l'adaptateur `IndexedDB` (stores `characters` et `snapshots`)
@@ -27,14 +27,14 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Service de **Snapshots locaux** (création manuelle nommée + snapshot automatique avant un Repos Long + restauration)
 - [x] Service d'**Export / Import JSON** avec contrôle de validité du schéma à l'import
 
-## Jalon 3 — Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride
+## Jalon 3 — Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride ⏳
 - **Focus d'apprentissage** : Ergonomie tactile Tablette sans friction (zéro édition accidentelle, densité d'information maîtrisée, micro-interactions de combat et de jets).
 - **Critère de validation** : En Mode Partie sur format Tablette et Desktop, l'utilisateur peut gérer un combat complet (PV, munitions, sorts, états), effectuer ses jets en mode dé physique ou virtuel, et déclencher un Repos Court/Long avec possibilité d'annuler.
-- [ ] Vue **Cockpit de Partie** (grille responsive Tablette/Desktop) : bandeau vital (PV, CA, Initiative, Vitesse, États/Épuisement) et modale rapide de Dégâts / Soins / PV temporaires
-- [ ] Panneau des **Caractéristiques, Sauvegardes & Compétences** (avec filtres rapides et mise en évidence des maîtrises/expertises)
-- [ ] Panneau central d'**Actions, Armes & Ressources** (coches tactiles rapides pour munitions/charges, emplacements de sorts et capacités de classe)
-- [ ] Composant **Assistant de Jet Hybride** (`<dialog>` / popover) : affichage de la formule décomposée, pavé `1-20` pour saisir son dé physique, bouton de jet virtuel et journal des derniers jets
-- [ ] Flux interactif de **Repos Court** (dépense de Dés de Vie) et **Repos Long** (avec création automatique d'un snapshot préalable)
+- [x] Vue **Cockpit de Partie** (grille responsive Tablette/Desktop) : bandeau vital (PV, CA, Initiative, Vitesse, États/Épuisement) et modale rapide de Dégâts / Soins / PV temporaires
+- [x] Panneau des **Caractéristiques, Sauvegardes & Compétences** (avec filtres rapides et mise en évidence des maîtrises/expertises)
+- [x] Panneau central d'**Actions, Armes & Ressources** (coches tactiles rapides pour munitions/charges, emplacements de sorts et capacités de classe)
+- [x] Composant **Assistant de Jet Hybride** (`<dialog>` / panneau dédié) : affichage de la formule décomposée, pavé `1-20` pour saisir son dé physique, bouton de jet virtuel et journal des derniers jets
+- [x] Flux interactif de **Repos Court** (dépense de Dés de Vie) et **Repos Long** (avec création automatique d'un snapshot préalable)
 
 ## Jalon 4 — Interface "Mode Édition (Forge)", Multi-Personnages & PWA
 - **Focus d'apprentissage** : Conception de formulaires complexes ergonomiques, gestion de bibliothèque multi-personnages et mise en cache hors-ligne par Service Worker (PWA).
@@ -42,6 +42,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [ ] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
 - [ ] Vue **Forge d'Édition** : édition de l'identité (avec **upload et compression automatique du portrait du personnage**), des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew), gestion des ressources suivies
 - [ ] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
+- [ ] Structuration du **Butin (Loot), de la Monnaie/Crédits et du Carnet de Notes** dans le modèle de données (ajout rapide d'objets trouvés en partie dans `inventory`, bourse/crédits et entrées de notes catégorisées persistées dans `IndexedDB` et les Snapshots)
 
 ## Jalon 5 — Hardening, Sécurité & Audit Qualité (Obligatoire)
 - **Focus d'apprentissage** : Durcissement applicatif, résilience face aux fichiers corrompus, accessibilité et performance de production.
@@ -56,3 +57,4 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 ## Parking Lot / Jalons Futurs (v2)
 - **Jalon v2.1 — Synchronisation Homelab (WireGuard + Nginx)** : Implémentation d'un `RemoteHomelabAdapter` branché sur `CharacterRepository` synchronisant `IndexedDB` avec un micro-service REST + SQLite hébergé sur le homelab personnel (accessible en local et à distance via le VPN WireGuard UniFi et le reverse proxy Nginx).
 - **Jalon v2.2 — Compendium SRD 5e (2014) & Catalogue Homebrew local** : Intégration d'une bibliothèque locale interrogeant une base SRD 5e et permettant de sauvegarder ses propres modèles d'armes, mutations, sorts et équipements post-apo réutilisables d'un personnage à l'autre.
+- **Jalon v2.3 — Gestion de l'XP (Points d'Expérience / Jalons) & Assistant de Montée de Niveau (Level-Up Wizard)** : Suivi de la jauge d'XP (avec table officielle des seuils de niveaux 1 à 20 D&D 5e ou mode *Progression par Jalons / Milestone*), et assistant interactif étape par étape lors du passage de niveau (choix de la classe à incrémenter ou multi-classage, tirage ou moyenne du nouveau Dé de Vie + mod. CON, évolution automatique du bonus de maîtrise, paliers d'Augmentation de Caractéristiques / Don aux niveaux 4/8/12/16/19, nouveaux emplacements de sorts et création automatique d'un Snapshot *Avant passage au Niveau N*).
