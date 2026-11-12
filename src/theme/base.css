@@ -749,16 +749,18 @@ dialog::backdrop {
 
 .ability-save-btn {
   min-height: 40px;
-  padding: 0 var(--space-2);
+  padding: 0 0.4rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-subtle);
   background-color: var(--bg-surface);
   color: var(--text-primary);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 700;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
 }
 
 .ability-main-btn[aria-pressed='true'],

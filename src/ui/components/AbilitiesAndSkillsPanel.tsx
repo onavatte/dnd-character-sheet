@@ -105,7 +105,10 @@ export function AbilitiesAndSkillsPanel({
                 }
                 title={`Jet de sauvegarde de ${meta.name}`}
               >
-                <span>{save.proficient ? '★ Sauv.' : '· Sauv.'}</span>
+                <span>
+                  {save.proficient ? '★ ' : ''}
+                  {termMode === 'en' ? 'Save' : 'Sauvegarde'}
+                </span>
                 <strong>{formatSignedModifier(save.modifier)}</strong>
               </button>
             </div>
