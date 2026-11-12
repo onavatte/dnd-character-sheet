@@ -697,29 +697,56 @@ dialog::backdrop {
   padding: var(--space-2);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
-.ability-card-header {
+.ability-main-btn {
+  width: 100%;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 0 0.25rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.ability-main-btn:hover,
+.ability-save-btn:hover {
+  background-color: var(--bg-interactive);
 }
 
 .ability-abbr {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
   color: var(--accent-primary);
 }
 
-.ability-score {
-  font-size: 0.75rem;
+.ability-value-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  line-height: 1.1;
+}
+
+.ability-raw-score {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.ability-mod-inline {
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.ability-roll-btn,
 .ability-save-btn {
   min-height: 40px;
   padding: 0 var(--space-2);
@@ -734,15 +761,42 @@ dialog::backdrop {
   align-items: center;
 }
 
-.ability-roll-btn {
-  justify-content: center;
-  font-size: 0.9375rem;
-}
-
-.ability-roll-btn[aria-pressed='true'],
+.ability-main-btn[aria-pressed='true'],
 .ability-save-btn[aria-pressed='true'] {
   border-color: var(--accent-primary);
   background-color: var(--accent-surface);
+}
+
+.proficiency-banner-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-elevated);
+}
+
+.proficiency-banner-label {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.proficiency-banner-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+}
+
+.section-subheading,
+.tab-panel-stack h3 {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .skills-filter-toolbar {
@@ -756,15 +810,6 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-}
-
-.tab-panel-stack h3 {
-  margin: var(--space-1) 0 0;
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .attack-cards-list,

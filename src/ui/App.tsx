@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import {
   computeDerivedCharacter,
-  formatSignedModifier,
   resolveDamageRoll,
 } from '../engine';
 import type { TermDisplayMode, ThemeMode } from '../engine';
@@ -225,9 +224,6 @@ export function App() {
               ))}
               <span className="badge-pill tabular-nums">
                 Niveau {derived.totalLevel}
-              </span>
-              <span className="badge-pill tabular-nums">
-                Maîtrise {formatSignedModifier(derived.proficiencyBonus)}
               </span>
             </p>
           </div>

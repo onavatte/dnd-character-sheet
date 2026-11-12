@@ -49,7 +49,7 @@ export function AbilitiesAndSkillsPanel({
         Caractéristiques, Sauvegardes & Compétences
       </h2>
 
-      {/* Grille des 6 caractéristiques + Jets de Sauvegarde */}
+      {/* Grille des 6 caractéristiques (clic sur la carte = test de carac) + Jets de Sauvegarde */}
       <div
         className="abilities-grid"
         role="group"
@@ -66,16 +66,9 @@ export function AbilitiesAndSkillsPanel({
 
           return (
             <div key={key} className="ability-card">
-              <div className="ability-card-header">
-                <span className="ability-abbr">{abbr}</span>
-                <span className="ability-score tabular-nums">
-                  Score {rawScore}
-                </span>
-              </div>
-
               <button
                 type="button"
-                className="ability-roll-btn tabular-nums"
+                className="ability-main-btn"
                 aria-pressed={activeRollTargetId === abilityTargetId}
                 onClick={() =>
                   onSelectRollTarget({
@@ -88,7 +81,13 @@ export function AbilitiesAndSkillsPanel({
                 }
                 title={`Tester ${meta.name} (${formatSignedModifier(mod)})`}
               >
-                Test {formatSignedModifier(mod)}
+                <span className="ability-abbr">{abbr}</span>
+                <span className="ability-value-line tabular-nums">
+                  <span className="ability-raw-score">{rawScore}</span>{' '}
+                  <span className="ability-mod-inline">
+                    ({formatSignedModifier(mod)})
+                  </span>
+                </span>
               </button>
 
               <button
@@ -113,6 +112,19 @@ export function AbilitiesAndSkillsPanel({
           );
         })}
       </div>
+
+      {/* Card pleine largeur : Bonus de Maîtrise / Proficiency Bonus */}
+      <div className="proficiency-banner-card">
+        <span className="proficiency-banner-label">
+          {renderTerm('Bonus de Maîtrise', 'Proficiency Bonus')} :
+        </span>
+        <strong className="proficiency-banner-value tabular-nums">
+          {formatSignedModifier(derived.proficiencyBonus)}
+        </strong>
+      </div>
+
+      {/* Sous-titre Compétences dans le même style que Armes & Attaques */}
+      <h3 className="section-subheading">Compétences</h3>
 
       {/* Filtres de compétences */}
       <div className="skills-filter-toolbar">
