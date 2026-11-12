@@ -132,19 +132,21 @@ export function RestDialogs({
                     </span>
                     <button
                       type="button"
-                      className="action-btn"
+                      className="stepper-btn tabular-nums"
                       disabled={toSpend <= 0}
                       onClick={() => adjustSpent(size, -1)}
+                      aria-label={`Retirer un dé de vie d${size}`}
                     >
-                      -1
+                      −
                     </button>
                     <button
                       type="button"
-                      className="action-btn"
+                      className="stepper-btn tabular-nums"
                       disabled={toSpend >= pool.available}
                       onClick={() => adjustSpent(size, 1)}
+                      aria-label={`Ajouter un dé de vie d${size}`}
                     >
-                      +1
+                      +
                     </button>
                   </div>
                 </div>

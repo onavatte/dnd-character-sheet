@@ -307,18 +307,6 @@ export function VitalityBanner({
               autoFocus
             />
           </div>
-          <div className="button-cluster">
-            {[1, 5, 10, 15, 20].map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                className="action-btn tabular-nums"
-                onClick={() => setHpInputAmount(preset)}
-              >
-                {preset} PV
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="dialog-actions-grid">

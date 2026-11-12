@@ -238,21 +238,21 @@ export function CombatAndResourcesPanel({
                     </span>
                     <button
                       type="button"
-                      className="action-btn tabular-nums"
+                      className="stepper-btn tabular-nums"
                       disabled={res.current <= 0}
                       onClick={() => onAdjustResource(res.id, -1)}
                       aria-label={`Dépenser 1 ${res.name}`}
                     >
-                      -1
+                      −
                     </button>
                     <button
                       type="button"
-                      className="action-btn tabular-nums"
+                      className="stepper-btn tabular-nums"
                       disabled={res.current >= res.max}
                       onClick={() => onAdjustResource(res.id, 1)}
                       aria-label={`Récupérer 1 ${res.name}`}
                     >
-                      +1
+                      +
                     </button>
                   </div>
                 </div>
@@ -324,22 +324,24 @@ export function CombatAndResourcesPanel({
                   </span>
                   <button
                     type="button"
-                    className="action-btn"
+                    className="stepper-btn tabular-nums"
                     disabled={
                       sheet.spellcasting.pactSlots.used >=
                       sheet.spellcasting.pactSlots.max
                     }
                     onClick={() => onAdjustPactSlotUsed(1)}
+                    aria-label="Dépenser un emplacement de pacte"
                   >
-                    Dépenser 1
+                    −
                   </button>
                   <button
                     type="button"
-                    className="action-btn"
+                    className="stepper-btn tabular-nums"
                     disabled={sheet.spellcasting.pactSlots.used <= 0}
                     onClick={() => onAdjustPactSlotUsed(-1)}
+                    aria-label="Restaurer un emplacement de pacte"
                   >
-                    Restaurer 1
+                    +
                   </button>
                 </div>
               </div>
@@ -374,19 +376,21 @@ export function CombatAndResourcesPanel({
                       </span>
                       <button
                         type="button"
-                        className="action-btn"
+                        className="stepper-btn tabular-nums"
                         disabled={available <= 0}
                         onClick={() => onAdjustSpellSlotUsed(level, 1)}
+                        aria-label={`Dépenser un emplacement de sort de niveau ${level}`}
                       >
-                        Dépenser
+                        −
                       </button>
                       <button
                         type="button"
-                        className="action-btn"
+                        className="stepper-btn tabular-nums"
                         disabled={slot.used <= 0}
                         onClick={() => onAdjustSpellSlotUsed(level, -1)}
+                        aria-label={`Restaurer un emplacement de sort de niveau ${level}`}
                       >
-                        +1
+                        +
                       </button>
                     </div>
                   </div>
