@@ -1,28 +1,22 @@
 import { useEffect, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import {
   ABILITY_GLOSSARY,
-  applyDamage,
-  applyHealing,
-  applyLongRest,
-  applyShortRest,
   computeDerivedCharacter,
-  createDemoCharacter,
   formatSignedModifier,
   matchesBilingualSearch,
   resolveDamageRoll,
   resolvePhysicalD20Check,
   rollVirtualD20Check,
-  setTemporaryHp,
-  updateResourceCurrent,
 } from '../engine';
 import type {
   AdvantageState,
-  CharacterSheetV1,
   D20Resolution,
   DamageResolution,
   TermDisplayMode,
   ThemeMode,
 } from '../engine';
+import { buildBackupFilename, useCharacterStore } from '../state';
 
 type SheetMode = 'cockpit' | 'forge';
 
@@ -32,7 +26,35 @@ function getInitialTheme(): ThemeMode {
 }
 
 export function App() {
-  const [sheet, setSheet] = useState<CharacterSheetV1>(() => createDemoCharacter());
+  const history = useCharacterStore((s) => s.history);
+  const snapshots = useCharacterStore((s) => s.snapshots);
+  const syncStatus = useCharacterStore((s) => s.syncStatus);
+  const lastError = useCharacterStore((s) => s.lastError);
+
+  const initialize = useCharacterStore((s) => s.initialize);
+  const damage = useCharacterStore((s) => s.damage);
+  const heal = useCharacterStore((s) => s.heal);
+  const tempHp = useCharacterStore((s) => s.tempHp);
+  const adjustResource = useCharacterStore((s) => s.adjustResource);
+  const shortRest = useCharacterStore((s) => s.shortRest);
+  const longRestWithAutoSnapshot = useCharacterStore(
+    (s) => s.longRestWithAutoSnapshot,
+  );
+  const undo = useCharacterStore((s) => s.undo);
+  const redo = useCharacterStore((s) => s.redo);
+  const createManualSnapshot = useCharacterStore((s) => s.createManualSnapshot);
+  const restoreSnapshot = useCharacterStore((s) => s.restoreSnapshot);
+  const deleteSnapshot = useCharacterStore((s) => s.deleteSnapshot);
+  const exportCurrentSheetJson = useCharacterStore(
+    (s) => s.exportCurrentSheetJson,
+  );
+  const importSheetJson = useCharacterStore((s) => s.importSheetJson);
+  const resetToDemo = useCharacterStore((s) => s.resetToDemo);
+
+  const sheet = history.present;
+  const undoCount = history.past.length;
+  const redoCount = history.future.length;
+
   const [sheetMode, setSheetMode] = useState<SheetMode>('cockpit');
   const [termMode, setTermMode] = useState<TermDisplayMode>('bilingual');
   const [theme, setTheme] = useState<ThemeMode>(getInitialTheme);
@@ -41,11 +63,21 @@ export function App() {
   const [selectedSkillId, setSelectedSkillId] = useState<string>('stealth');
   const [advantage, setAdvantage] = useState<AdvantageState>('normal');
   const [lastD20Result, setLastD20Result] = useState<D20Resolution | null>(null);
-  const [lastDamageResult, setLastDamageResult] = useState<DamageResolution | null>(null);
+  const [lastDamageResult, setLastDamageResult] =
+    useState<DamageResolution | null>(null);
+
+  const [snapshotLabel, setSnapshotLabel] = useState('');
+  const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    void initialize();
+  }, [initialize]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    const meta = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+    const meta = document.querySelector<HTMLMetaElement>(
+      'meta[name="color-scheme"]',
+    );
     if (meta) {
       meta.content = theme;
     }
@@ -111,6 +143,42 @@ export function App() {
     setLastDamageResult(dmg);
   };
 
+  const handleCreateSnapshot = async () => {
+    const snap = await createManualSnapshot(snapshotLabel);
+    setSnapshotLabel('');
+    setBackupFeedback(`Snapshot créé : "${snap.label}"`);
+  };
+
+  const handleExportJson = () => {
+    const rawJson = exportCurrentSheetJson();
+    const filename = buildBackupFilename(sheet);
+    const blob = new Blob([rawJson], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+    setBackupFeedback(`Sauvegarde téléchargée : ${filename}`);
+  };
+
+  const handleImportJsonFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const content = await file.text();
+    const res = await importSheetJson(content);
+    if (res.ok) {
+      setBackupFeedback(
+        `Import JSON réussi depuis "${file.name}" (snapshot de sécurité créé automatiquement).`,
+      );
+    } else {
+      setBackupFeedback(null);
+    }
+    e.target.value = '';
+  };
+
   const hpRatio = sheet.combat.hpCurrent / sheet.combat.hpMax;
   const hpColorClass =
     hpRatio <= 0.25
@@ -118,6 +186,15 @@ export function App() {
       : hpRatio <= 0.5
         ? 'vital-value--hp-warn'
         : 'vital-value--hp-ok';
+
+  const syncLabel =
+    syncStatus === 'saved'
+      ? 'IndexedDB : Synchronisé'
+      : syncStatus === 'pending'
+        ? 'IndexedDB : Écriture...'
+        : syncStatus === 'error'
+          ? 'IndexedDB : Erreur'
+          : 'IndexedDB : Prêt';
 
   return (
     <div className="app-shell">
@@ -143,6 +220,7 @@ export function App() {
               <span className="badge-pill tabular-nums">
                 Révision #{sheet.revision}
               </span>
+              <span className="badge-pill tabular-nums">{syncLabel}</span>
             </p>
           </div>
         </div>
@@ -150,9 +228,38 @@ export function App() {
         <div
           className="toolbar-controls"
           role="toolbar"
-          aria-label="Contrôles d'affichage de la fiche"
+          aria-label="Contrôles d'affichage et d'historique de la fiche"
         >
-          <div className="segmented-control" role="group" aria-label="Mode de la fiche">
+          <div
+            className="segmented-control"
+            role="group"
+            aria-label="Historique Annuler et Rétablir"
+          >
+            <button
+              type="button"
+              className="segmented-btn tabular-nums"
+              disabled={undoCount === 0}
+              onClick={undo}
+              title="Annuler la dernière modification en mémoire (Undo)"
+            >
+              Annuler ({undoCount})
+            </button>
+            <button
+              type="button"
+              className="segmented-btn tabular-nums"
+              disabled={redoCount === 0}
+              onClick={redo}
+              title="Rétablir la modification annulée (Redo)"
+            >
+              Rétablir ({redoCount})
+            </button>
+          </div>
+
+          <div
+            className="segmented-control"
+            role="group"
+            aria-label="Mode de la fiche"
+          >
             <button
               type="button"
               className="segmented-btn"
@@ -205,7 +312,9 @@ export function App() {
           <button
             type="button"
             className="action-btn"
-            onClick={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
+            onClick={() =>
+              setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))
+            }
           >
             Thème : {theme === 'light' ? 'Clair (Ivoire)' : 'Sombre (Obsidienne)'}
           </button>
@@ -234,7 +343,9 @@ export function App() {
             </div>
             <div className="vital-box">
               <span className="vital-label">Classe d’Armure</span>
-              <span className="vital-value tabular-nums">{derived.armorClass}</span>
+              <span className="vital-value tabular-nums">
+                {derived.armorClass}
+              </span>
             </div>
             <div className="vital-box">
               <span className="vital-label">Initiative</span>
@@ -262,28 +373,28 @@ export function App() {
             <button
               type="button"
               className="action-btn"
-              onClick={() => setSheet((prev) => applyDamage(prev, 6))}
+              onClick={() => damage(6)}
             >
               Dégâts -6
             </button>
             <button
               type="button"
               className="action-btn"
-              onClick={() => setSheet((prev) => applyDamage(prev, 15))}
+              onClick={() => damage(15)}
             >
               Dégâts -15
             </button>
             <button
               type="button"
               className="action-btn"
-              onClick={() => setSheet((prev) => applyHealing(prev, 8))}
+              onClick={() => heal(8)}
             >
               Soin +8
             </button>
             <button
               type="button"
               className="action-btn"
-              onClick={() => setSheet((prev) => setTemporaryHp(prev, 6))}
+              onClick={() => tempHp(6)}
             >
               PV Temp +6
             </button>
@@ -309,18 +420,14 @@ export function App() {
                 <button
                   type="button"
                   className="action-btn"
-                  onClick={() =>
-                    setSheet((prev) => updateResourceCurrent(prev, res.id, -1))
-                  }
+                  onClick={() => adjustResource(res.id, -1)}
                 >
                   -1
                 </button>
                 <button
                   type="button"
                   className="action-btn"
-                  onClick={() =>
-                    setSheet((prev) => updateResourceCurrent(prev, res.id, 1))
-                  }
+                  onClick={() => adjustResource(res.id, 1)}
                 >
                   +1
                 </button>
@@ -333,12 +440,10 @@ export function App() {
               type="button"
               className="action-btn action-btn--primary"
               onClick={() =>
-                setSheet((prev) =>
-                  applyShortRest(prev, {
-                    hitDiceSpent: { 10: 1 },
-                    healingRolled: 9,
-                  }),
-                )
+                shortRest({
+                  hitDiceSpent: { 10: 1 },
+                  healingRolled: 9,
+                })
               }
             >
               Repos Court (-1d10, +9 PV)
@@ -346,14 +451,14 @@ export function App() {
             <button
               type="button"
               className="action-btn action-btn--primary"
-              onClick={() => setSheet((prev) => applyLongRest(prev))}
+              onClick={() => void longRestWithAutoSnapshot()}
             >
-              Repos Long (Reset 5e)
+              Repos Long (Auto-Snapshot + Reset)
             </button>
             <button
               type="button"
               className="action-btn"
-              onClick={() => setSheet(createDemoCharacter())}
+              onClick={() => void resetToDemo()}
             >
               Réinitialiser Démo
             </button>
@@ -386,7 +491,11 @@ export function App() {
             </div>
           </search>
 
-          <div className="skill-list" role="group" aria-label="Liste des compétences">
+          <div
+            className="skill-list"
+            role="group"
+            aria-label="Liste des compétences"
+          >
             {filteredSkills.map((skill) => {
               const abilityMeta = ABILITY_GLOSSARY[skill.ability];
               const profBadge =
@@ -406,7 +515,10 @@ export function App() {
                   onClick={() => setSelectedSkillId(skill.id)}
                 >
                   <span>
-                    <strong className="tabular-nums" style={{ marginRight: '0.5rem' }}>
+                    <strong
+                      className="tabular-nums"
+                      style={{ marginRight: '0.5rem' }}
+                    >
                       {profBadge}
                     </strong>
                     {renderTerm(skill.name, skill.originalName)}{' '}
@@ -435,7 +547,9 @@ export function App() {
             <div className="stat-preview-row">
               <span>
                 Jet sélectionné :{' '}
-                <strong>{renderTerm(activeSkill.name, activeSkill.originalName)}</strong>
+                <strong>
+                  {renderTerm(activeSkill.name, activeSkill.originalName)}
+                </strong>
               </span>
               <span className="badge-pill tabular-nums">
                 1d20 {formatSignedModifier(activeSkill.modifier)}
@@ -488,7 +602,11 @@ export function App() {
                   key={val}
                   type="button"
                   className={`d20-key tabular-nums ${
-                    val === 20 ? 'd20-key--crit' : val === 1 ? 'd20-key--fumble' : ''
+                    val === 20
+                      ? 'd20-key--crit'
+                      : val === 1
+                        ? 'd20-key--fumble'
+                        : ''
                   }`}
                   onClick={() => handlePhysicalDieClick(val)}
                 >
@@ -522,16 +640,27 @@ export function App() {
             </button>
           </div>
 
-          <div aria-live="polite" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div
+            aria-live="polite"
+            style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}
+          >
             {lastD20Result && (
               <div className="roll-banner">
                 <div>
                   <strong>{lastD20Result.label}</strong> (
-                  {lastD20Result.mode === 'physical' ? 'Dé physique' : 'Jet virtuel'})
-                  {lastD20Result.isCriticalSuccess && ' — RÉUSSITE CRITIQUE (20) !'}
-                  {lastD20Result.isCriticalFailure && ' — ÉCHEC CRITIQUE (1) !'}
+                  {lastD20Result.mode === 'physical'
+                    ? 'Dé physique'
+                    : 'Jet virtuel'}
+                  )
+                  {lastD20Result.isCriticalSuccess &&
+                    ' — RÉUSSITE CRITIQUE (20) !'}
+                  {lastD20Result.isCriticalFailure &&
+                    ' — ÉCHEC CRITIQUE (1) !'}
                 </div>
-                <div className="tabular-nums" style={{ fontSize: '1.125rem', fontWeight: 700 }}>
+                <div
+                  className="tabular-nums"
+                  style={{ fontSize: '1.125rem', fontWeight: 700 }}
+                >
                   {lastD20Result.formulaBreakdown}
                 </div>
               </div>
@@ -541,12 +670,132 @@ export function App() {
               <div className="roll-banner">
                 <div>
                   <strong>Carabine magnétique M4</strong>{' '}
-                  {lastDamageResult.isCritical ? '(Critique x2 dés)' : '(Dégâts normaux)'}
+                  {lastDamageResult.isCritical
+                    ? '(Critique x2 dés)'
+                    : '(Dégâts normaux)'}
                 </div>
-                <div className="tabular-nums" style={{ fontSize: '1.125rem', fontWeight: 700 }}>
+                <div
+                  className="tabular-nums"
+                  style={{ fontSize: '1.125rem', fontWeight: 700 }}
+                >
                   {lastDamageResult.formulaBreakdown}
                 </div>
               </div>
+            )}
+          </div>
+        </section>
+
+        {/* Colonne 4 : Persistance IndexedDB, Snapshots & Backup JSON (Jalon 2) */}
+        <section
+          className="grimoire-card"
+          aria-labelledby="section-storage-title"
+        >
+          <h2 id="section-storage-title">
+            4. Stockage IndexedDB, Snapshots & Backup JSON (Jalon 2)
+          </h2>
+
+          <div className="field-group">
+            <label htmlFor="snapshot-label-input">
+              Créer un point de restauration manuel (Snapshot IndexedDB) :
+            </label>
+            <div className="inline-input-row">
+              <input
+                id="snapshot-label-input"
+                type="text"
+                value={snapshotLabel}
+                onChange={(e) => setSnapshotLabel(e.target.value)}
+                placeholder="Ex. Avant le boss du Bunker 7..."
+              />
+              <button
+                type="button"
+                className="action-btn action-btn--primary"
+                onClick={() => void handleCreateSnapshot()}
+              >
+                Capturer
+              </button>
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label>
+              Snapshots disponibles ({snapshots.length}) :
+            </label>
+            {snapshots.length === 0 ? (
+              <div className="stat-preview-row">
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
+                  Aucun snapshot enregistré. Cliquez sur « Capturer » ou lancez un
+                  Repos Long pour générer un snapshot automatique.
+                </span>
+              </div>
+            ) : (
+              <div className="snapshot-list">
+                {snapshots.map((snap) => (
+                  <div key={snap.snapshotId} className="snapshot-row">
+                    <div>
+                      <strong>{snap.label}</strong>
+                      <div
+                        className="tabular-nums"
+                        style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        PV {snap.payload.combat.hpCurrent}/
+                        {snap.payload.combat.hpMax} · Rév. #
+                        {snap.payload.revision}
+                      </div>
+                    </div>
+                    <div className="button-cluster">
+                      <button
+                        type="button"
+                        className="action-btn"
+                        onClick={() => void restoreSnapshot(snap.snapshotId)}
+                      >
+                        Restaurer
+                      </button>
+                      <button
+                        type="button"
+                        className="action-btn"
+                        onClick={() => void deleteSnapshot(snap.snapshotId)}
+                      >
+                        Supprimer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="field-group">
+            <label htmlFor="backup-file-input">
+              Sauvegarde externe portable (Export / Import fichier .json) :
+            </label>
+            <div className="button-cluster">
+              <button
+                type="button"
+                className="action-btn action-btn--primary"
+                onClick={handleExportJson}
+              >
+                Exporter JSON (.json)
+              </button>
+            </div>
+            <input
+              id="backup-file-input"
+              type="file"
+              accept=".json,application/json"
+              onChange={(e) => void handleImportJsonFile(e)}
+            />
+          </div>
+
+          <div aria-live="polite">
+            {backupFeedback && (
+              <div className="roll-banner" style={{ fontSize: '0.875rem' }}>
+                {backupFeedback}
+              </div>
+            )}
+            {lastError && (
+              <div className="status-banner-error">{lastError}</div>
             )}
           </div>
         </section>

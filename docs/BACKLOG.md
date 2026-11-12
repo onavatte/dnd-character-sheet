@@ -10,7 +10,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Mise en place de l'App Shell responsive (en-tête d'identité du personnage avec cadre du portrait, barre d'état rapide, bascule Mode Partie / Mode Édition et commutateur de thème Clair / Sombre)
 - [x] Configuration PWA (`vite-plugin-pwa`, manifest, icône SVG, Service Worker hors-ligne), exposition réseau local (`--host`) et workflow GitHub Actions pour déploiement GitHub Pages
 
-## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD) ⏳
+## Jalon 1 — Moteur de Règles D&D 5e Pur & Adaptations Post-Apo (TDD) ✅
 - **Focus d'apprentissage** : Séparation stricte entre données sources stockées et données dérivées calculées à la volée ; développement piloté par les tests (TDD) en TypeScript pur.
 - **Critère de validation** : 100 % des tests unitaires de `src/engine/` passent avec `npm test` (modificateurs, maîtrise, compétences personnalisées, CA, DD, repos court/long, assistant de jets).
 - [x] Définition des types du domaine versionnés (`src/engine/types.ts`), du lexique bilingue FR/EN (`src/engine/glossary.ts` : 6 caractéristiques, 18 compétences 5e, conditions, recherche bilingue) et d'un personnage de référence complet (fixture de test / démo)
@@ -19,13 +19,13 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Implémentation du moteur de l'Assistant de Jet Hybride (`src/engine/dice.ts` + tests) : résolution à partir d'une valeur de dé physique saisie par le joueur ou d'un tirage aléatoire, gestion Avantage/Désavantage et critiques (1 / 20)
 - [x] Validation stricte et migration de schéma (`src/engine/validators.ts` + tests)
 
-## Jalon 2 — Stockage IndexedDB, Undo/Redo Copy-on-Write & Backup JSON
+## Jalon 2 — Stockage IndexedDB, Undo/Redo Copy-on-Write & Backup JSON ⏳
 - **Focus d'apprentissage** : Architecture de stockage multi-tiers dans le navigateur (RAM Copy-on-Write avec `Zustand` + `Immer`, persistance asynchrone `IndexedDB`, snapshots immuables et portabilité JSON).
 - **Critère de validation** : Les modifications persistent après rechargement, le bouton Undo/Redo annule/rétablit instantanément les actions, les snapshots avant Repos Long sont restaurables, et l'export/import JSON transfère une fiche complète sans perte.
-- [ ] Définition du contrat abstrait `CharacterRepository` et implémentation de l'adaptateur `IndexedDB` (stores `characters` et `snapshots`)
-- [ ] Création du store `Zustand` + `Immer` avec écriture *Write-Behind* vers `IndexedDB` et pile d'historique **Undo/Redo** en mémoire
-- [ ] Service de **Snapshots locaux** (création manuelle nommée + snapshot automatique avant un Repos Long + restauration)
-- [ ] Service d'**Export / Import JSON** avec contrôle de validité du schéma à l'import
+- [x] Définition du contrat abstrait `CharacterRepository` et implémentation de l'adaptateur `IndexedDB` (stores `characters` et `snapshots`)
+- [x] Création du store `Zustand` + `Immer` avec écriture *Write-Behind* vers `IndexedDB` et pile d'historique **Undo/Redo** en mémoire
+- [x] Service de **Snapshots locaux** (création manuelle nommée + snapshot automatique avant un Repos Long + restauration)
+- [x] Service d'**Export / Import JSON** avec contrôle de validité du schéma à l'import
 
 ## Jalon 3 — Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride
 - **Focus d'apprentissage** : Ergonomie tactile Tablette sans friction (zéro édition accidentelle, densité d'information maîtrisée, micro-interactions de combat et de jets).
