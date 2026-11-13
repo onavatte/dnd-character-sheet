@@ -1648,19 +1648,54 @@ dialog::backdrop {
   gap: var(--space-1);
 }
 
-.forge-skill-controls {
+.forge-skill-meta-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
-.forge-skill-controls .forge-select {
-  width: auto;
-  flex: 1 1 130px;
+.forge-skill-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
 }
 
-.forge-skill-total {
-  min-width: 3.5rem;
+.forge-skill-controls > .field-group {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.forge-skill-total-card {
+  margin-left: auto;
+  min-width: 4.75rem;
+  min-height: 4.25rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+}
+
+.forge-skill-total-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.forge-skill-total-value {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--accent-primary);
 }

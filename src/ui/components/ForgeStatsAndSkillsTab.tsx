@@ -277,7 +277,7 @@ export function ForgeStatsAndSkillsTab({
         className="grimoire-card forge-card"
         aria-label="Édition des compétences et ajout de compétences personnalisées"
       >
-        <h2>Compétences (Officielles & Homebrew / Post-Apo)</h2>
+        <h2>Compétences</h2>
 
         <form
           className="forge-custom-skill-form"
@@ -354,15 +354,15 @@ export function ForgeStatsAndSkillsTab({
             </div>
 
             <div className="field-group">
-              <label htmlFor={`${baseId}-new-skill-flat`}>Bonus plat</label>
+              <label htmlFor={`${baseId}-new-skill-flat`}>Mod. divers</label>
               <NumberStepper
                 id={`${baseId}-new-skill-flat`}
                 name="customSkillFlat"
                 value={customBonusFlat}
                 min={-10}
                 max={20}
-                decrementLabel="Réduire bonus plat"
-                incrementLabel="Augmenter bonus plat"
+                decrementLabel="Réduire le modificateur divers"
+                incrementLabel="Augmenter le modificateur divers"
                 onChange={(val) => setCustomBonusFlat(Math.trunc(val))}
               />
             </div>
@@ -378,6 +378,7 @@ export function ForgeStatsAndSkillsTab({
         <div className="forge-skills-list">
           {sheet.skills.map((skill) => {
             const derivedSkill = derived.skills.find((s) => s.id === skill.id);
+            const abilityMod = derived.abilityModifiers[skill.ability];
             const totalMod = derivedSkill?.modifier ?? 0;
 
             return (
@@ -412,7 +413,7 @@ export function ForgeStatsAndSkillsTab({
                       </div>
                       <div className="field-group">
                         <label htmlFor={`${baseId}-sk-abil-${skill.id}`}>
-                          Caractéristique
+                          Caractéristique ({formatSignedModifier(abilityMod)})
                         </label>
                         <select
                           id={`${baseId}-sk-abil-${skill.id}`}
@@ -446,8 +447,11 @@ export function ForgeStatsAndSkillsTab({
                           ({skill.originalName})
                         </span>
                       )}
-                      <div className="attack-meta">
-                        Basée sur {ABILITY_GLOSSARY[skill.ability].abbrFr}
+                      <div className="attack-meta forge-skill-meta-row">
+                        <span>Basée sur {ABILITY_GLOSSARY[skill.ability].abbrFr}</span>
+                        <span className="badge-pill tabular-nums">
+                          {formatSignedModifier(abilityMod)}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -483,7 +487,7 @@ export function ForgeStatsAndSkillsTab({
 
                   <div className="field-group">
                     <label htmlFor={`${baseId}-sk-flat-${skill.id}`}>
-                      Bonus plat
+                      Mod. divers
                     </label>
                     <NumberStepper
                       id={`${baseId}-sk-flat-${skill.id}`}
@@ -491,8 +495,8 @@ export function ForgeStatsAndSkillsTab({
                       value={skill.bonusFlat}
                       min={-10}
                       max={20}
-                      decrementLabel={`Diminuer bonus de ${skill.name}`}
-                      incrementLabel={`Augmenter bonus de ${skill.name}`}
+                      decrementLabel={`Diminuer le modificateur divers de ${skill.name}`}
+                      incrementLabel={`Augmenter le modificateur divers de ${skill.name}`}
                       onChange={(nextFlat) =>
                         onMutate((draft) => {
                           const target = draft.skills.find(
@@ -504,9 +508,15 @@ export function ForgeStatsAndSkillsTab({
                     />
                   </div>
 
-                  <span className="badge-pill tabular-nums forge-skill-total">
-                    {formatSignedModifier(totalMod)}
-                  </span>
+                  <div
+                    className="forge-skill-total-card"
+                    aria-label={`Total pour ${skill.name} : ${formatSignedModifier(totalMod)}`}
+                  >
+                    <span className="forge-skill-total-label">Total</span>
+                    <strong className="forge-skill-total-value tabular-nums">
+                      {formatSignedModifier(totalMod)}
+                    </strong>
+                  </div>
 
                   {skill.isCustom && (
                     <button

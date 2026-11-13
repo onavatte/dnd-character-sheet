@@ -48,10 +48,7 @@ export function ForgeIdentityTab({
       onMutate((draft) => {
         draft.identity.portraitDataUrl = compressed.dataUrl;
       });
-      const sizeKb = Math.max(1, Math.round(compressed.byteEstimate / 1024));
-      setPortraitFeedback(
-        `Portrait optimisé (${sizeKb} Ko, ${compressed.mimeType === 'image/webp' ? 'WebP' : 'JPEG'}).`,
-      );
+      setPortraitFeedback('Portrait mis à jour.');
     } catch (err) {
       setPortraitError(
         err instanceof Error
@@ -115,9 +112,6 @@ export function ForgeIdentityTab({
           </div>
 
           <div className="forge-portrait-controls">
-            <p className="muted-note">
-              Image redimensionnée automatiquement côté client (max 512x512 px, format WebP/JPEG léger).
-            </p>
             <div className="button-cluster">
               <button
                 type="button"
@@ -126,7 +120,7 @@ export function ForgeIdentityTab({
                 onClick={() => portraitInputRef.current?.click()}
               >
                 {isCompressing
-                  ? 'Compression en cours...'
+                  ? 'Importation en cours...'
                   : sheet.identity.portraitDataUrl
                     ? 'Changer le portrait'
                     : 'Importer un portrait'}
@@ -149,6 +143,9 @@ export function ForgeIdentityTab({
                 onChange={(e) => void handlePortraitSelected(e)}
               />
             </div>
+            <p className="muted-note">
+              Formats acceptés : PNG, JPG ou WebP (taille ajustée automatiquement).
+            </p>
             <div aria-live="polite">
               {portraitFeedback && (
                 <p className="muted-note" style={{ color: 'var(--color-hp-ok)' }}>
@@ -218,11 +215,11 @@ export function ForgeIdentityTab({
         </fieldset>
       </section>
 
-      {/* Bloc 2 : Classes & Multi-classage */}
-      <section className="grimoire-card forge-card" aria-label="Classes et multi-classage">
+      {/* Bloc 2 : Classes */}
+      <section className="grimoire-card forge-card" aria-label="Classes">
         <div className="forge-card-header">
           <div>
-            <h2>Classes & Multi-classage</h2>
+            <h2>Classes</h2>
             <p className="muted-note tabular-nums">
               Niveau global : {derived.totalLevel} · Bonus de Maîtrise :{' '}
               {formatSignedModifier(derived.proficiencyBonus)}
