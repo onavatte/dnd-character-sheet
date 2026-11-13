@@ -56,6 +56,7 @@ Avant tout commit : lint, tests et build doivent passer sans erreur.
 ## 5. Conventions de Code & Git
 - **TypeScript** : `strict: true` + `noUncheckedIndexedAccess: true` (zéro `any`).
 - **Langue** : Interface en français (textes en dur, pas de bibliothèque i18n), commentaires et documentation en français.
+- **Typographie** : Interdiction d'utiliser le tiret quadratin (`U+2014`) et le demi-quadratin (`U+2013`) dans les titres, le texte courant, les échanges, les commentaires et l'UI. Remplacer systématiquement par deux-points (`:`), virgules, parenthèses ou tiret ASCII normal (`-`) selon le contexte.
 - **Commits Git** : En français, en minuscules, au format Conventional Commits (`docs: ...`, `feat: ...`, `fix: ...`, `refactor: ...`, `chore: ...`). Branche unique `main` sur dépôt GitHub privé.
 
 ---
