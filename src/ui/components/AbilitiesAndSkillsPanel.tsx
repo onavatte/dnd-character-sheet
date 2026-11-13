@@ -177,7 +177,7 @@ export function AbilitiesAndSkillsPanel({
             aria-label="Rechercher une compétence en français ou en anglais"
             value={skillQuery}
             onChange={(e) => setSkillQuery(e.target.value)}
-            placeholder="Filtrer FR/EN (Stealth, Discrétion, Hacking...)"
+            placeholder="Filtrer FR/EN (Stealth, Discrétion, Athlétisme...)"
             autoCorrect="off"
             autoCapitalize="none"
             spellCheck={false}

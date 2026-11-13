@@ -26,7 +26,7 @@ export const TOOL_PRESETS: readonly ToolPreset[] = [
   { name: 'Kit de déguisement', originalName: 'Disguise Kit', ability: 'CHA' },
   { name: 'Outils de bricoleur', originalName: "Tinker's Tools", ability: 'INT' },
   { name: 'Véhicules terrestres', originalName: 'Vehicles (Land)', ability: 'DEX' },
-  { name: 'Trousse de piratage', originalName: 'Cyberdeck / Hacking Kit', ability: 'INT' },
+  { name: 'Outils de cartographe', originalName: "Cartographer's Tools", ability: 'WIS' },
 ];
 
 export const LANGUAGE_PRESETS: readonly Omit<LanguageEntry, 'id'>[] = [
@@ -211,9 +211,9 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
   });
 
   skills.push({
-    id: 'custom_hacking',
-    name: 'Informatique & Systèmes',
-    originalName: 'Hacking & Systems',
+    id: 'custom_dungeoneering',
+    name: 'Connaissance des donjons',
+    originalName: 'Dungeoneering',
     ability: 'INT',
     proficiency: 'proficient',
     bonusFlat: 1,
@@ -237,7 +237,7 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
           name: 'Rôdeur',
           originalName: 'Ranger',
           subclass: {
-            name: 'Traqueur des Ruines',
+            name: 'Traqueur des ténèbres',
             originalName: 'Gloom Stalker',
           },
           level: 5,
@@ -252,10 +252,10 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
           hitDieSize: 8,
         },
       ],
-      background: 'Éclaireur du Secteur Zéro',
+      background: 'Éclaireur des Marches',
       ancestry: 'Humain (Variant)',
       backstory:
-        'Ancien éclaireur des corridors orbitaux et survivant de l’effondrement de la station Kepler. Parcourt les ruines du Secteur Zéro à la recherche de données pré-chute et de survivants.',
+        'Ancien éclaireur des Marches du Nord, familier des sentiers oubliés et des ruines elfiques. Il guide les compagnies d’aventuriers à travers les forêts frontalières et traque les créatures de l’Ombre.',
     },
     abilities: {
       STR: 12,
@@ -284,9 +284,9 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
         bonusFlat: 0,
       },
       {
-        id: 'tool-cyberdeck',
-        name: 'Trousse de piratage',
-        originalName: 'Cyberdeck / Hacking Kit',
+        id: 'tool-cartographer',
+        name: 'Outils de cartographe',
+        originalName: "Cartographer's Tools",
         ability: 'INT',
         proficiency: 'proficient',
         bonusFlat: 1,
@@ -317,24 +317,24 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     },
     resources: [
       {
-        id: 'res-cells',
-        name: 'Cellules railgun',
-        originalName: 'Railgun Cells',
+        id: 'res-arrows',
+        name: 'Flèches',
+        originalName: 'Arrows',
         current: 5,
         max: 6,
         recovery: 'manual',
       },
       {
-        id: 'res-stim',
-        name: 'Injecteur Adrénaline',
-        originalName: 'Adrenaline Surge',
+        id: 'res-vigor',
+        name: 'Sursaut de vigueur',
+        originalName: 'Vigor Surge',
         current: 1,
         max: 1,
         recovery: 'short_rest',
       },
       {
         id: 'res-veil',
-        name: 'Camouflage optique',
+        name: 'Voile de la nature',
         originalName: 'Nature’s Veil',
         current: 2,
         max: 3,
@@ -343,23 +343,23 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     ],
     attacks: [
       {
-        id: 'atk-carbine',
-        name: 'Carabine magnétique M4',
-        originalName: 'Magnetic Carbine',
+        id: 'atk-longbow',
+        name: 'Arc long +1',
+        originalName: 'Longbow +1',
         ability: 'DEX',
         proficient: true,
         attackBonusFlat: 1,
-        damageFormula: '1d10 + 5',
-        damageType: 'Balistique',
+        damageFormula: '1d8 + 5',
+        damageType: 'Perforant',
         range: '45/180 m',
         actionTiming: 'action',
-        ammoResourceId: 'res-cells',
-        notes: 'Arme à deux mains, rechargement, attaque sournoise (+1d6)',
+        ammoResourceId: 'res-arrows',
+        notes: 'Arme à deux mains, munitions, attaque sournoise (+1d6)',
       },
       {
-        id: 'atk-vibroknife',
-        name: 'Vibro-lame tactique',
-        originalName: 'Vibro-Dagger',
+        id: 'atk-dagger',
+        name: 'Dague en mithral',
+        originalName: 'Mithral Dagger',
         ability: 'DEX',
         proficient: true,
         attackBonusFlat: 0,
@@ -379,9 +379,9 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
       },
       abilitiesList: [
         {
-          id: 'spell-plasma-bolt',
+          id: 'spell-fire-bolt',
           level: 0,
-          name: 'Décharge thermique',
+          name: 'Trait de feu',
           originalName: 'Fire Bolt',
           ability: 'WIS',
           prepared: true,
@@ -389,8 +389,8 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
           range: '36 m',
           hasAttackRoll: true,
           damageFormula: '2d10',
-          damageType: 'Feu / Thermique',
-          description: 'Arc énergétique surchauffé tiré depuis le gantelet sur une cible à portée.',
+          damageType: 'Feu',
+          description: 'Trait incandescent projeté vers une créature ou un objet à portée.',
         },
         {
           id: 'spell-hunters-mark',
@@ -417,7 +417,7 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
           saveAbility: 'DEX',
           damageFormula: '1d10',
           damageType: 'Perforant',
-          description: 'Explosion de shrapnel au prochain tir : demi-dégâts en cas de JS DEX réussi.',
+          description: 'Pluie d’épines magiques au prochain tir : demi-dégâts en cas de JS DEX réussi.',
         },
         {
           id: 'spell-pass-without-trace',
@@ -435,24 +435,24 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     inventory: [
       {
         id: 'inv-armor',
-        name: 'Armure composite légère Mk-II',
-        originalName: 'Studded Kevlar Vest',
+        name: 'Armure de cuir clouté +1',
+        originalName: 'Studded Leather +1',
         quantity: 1,
         weight: 6,
         equipped: true,
         notes: 'CA 12 + Mod. DEX',
       },
       {
-        id: 'inv-cyberdeck',
-        name: 'Terminal de terrain décrypté',
-        originalName: 'Field Cyberdeck',
+        id: 'inv-pack',
+        name: 'Sacoche de pisteur & étui à cartes',
+        originalName: "Explorer's Pack & Map Case",
         quantity: 1,
         weight: 1.5,
         equipped: true,
-        notes: 'Outils de voleur & interface réseau (+1 Informatique)',
+        notes: 'Outils de voleur & cartes annotées',
       },
     ],
-    notes: 'Campagne Post-Apo : survivant de l’effondrement orbital.',
+    notes: 'Campagne Les Marches d’Argent : piste des gobelins repérée près du vieux moulin.',
   };
 }
 

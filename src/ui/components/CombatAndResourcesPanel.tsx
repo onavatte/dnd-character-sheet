@@ -579,7 +579,7 @@ export function CombatAndResourcesPanel({
                     handleAddQuickLoot();
                   }
                 }}
-                placeholder="Ex. +120 crédits, Carte d’accès Niveau 3, 2 rations..."
+                placeholder="Ex. +50 po, Potion de soins, Clé du donjon..."
               />
               <button
                 type="button"

@@ -53,11 +53,11 @@ describe('Machine à états Survie, Ressources & Repos (rest.ts)', () => {
 
   it('consomme et borne les ressources suivies entre 0 et max', () => {
     const demo = createDemoCharacter();
-    const afterShot = updateResourceCurrent(demo, 'res-cells', -2);
-    expect(afterShot.resources.find((r) => r.id === 'res-cells')?.current).toBe(3);
+    const afterShot = updateResourceCurrent(demo, 'res-arrows', -2);
+    expect(afterShot.resources.find((r) => r.id === 'res-arrows')?.current).toBe(3);
 
-    const afterDeplete = updateResourceCurrent(demo, 'res-cells', -99);
-    expect(afterDeplete.resources.find((r) => r.id === 'res-cells')?.current).toBe(0);
+    const afterDeplete = updateResourceCurrent(demo, 'res-arrows', -99);
+    expect(afterDeplete.resources.find((r) => r.id === 'res-arrows')?.current).toBe(0);
   });
 
   it('gère le Repos Court : dépense de Dés de Vie par taille, soins, ressources short_rest et emplacements de Pacte', () => {
@@ -86,9 +86,9 @@ describe('Machine à états Survie, Ressources & Repos (rest.ts)', () => {
     expect(afterShortRest.combat.hitDicePools[10].available).toBe(2); // 4 - 2
     expect(afterShortRest.combat.hitDicePools[8].available).toBe(1); // 2 - 1
     // 'short_rest' rechargé, mais 'long_rest' et 'manual' restent à 0
-    expect(afterShortRest.resources.find((r) => r.id === 'res-stim')?.current).toBe(1);
+    expect(afterShortRest.resources.find((r) => r.id === 'res-vigor')?.current).toBe(1);
     expect(afterShortRest.resources.find((r) => r.id === 'res-veil')?.current).toBe(0);
-    expect(afterShortRest.resources.find((r) => r.id === 'res-cells')?.current).toBe(0);
+    expect(afterShortRest.resources.find((r) => r.id === 'res-arrows')?.current).toBe(0);
     expect(afterShortRest.spellcasting?.pactSlots?.used).toBe(0);
   });
 
@@ -120,9 +120,9 @@ describe('Machine à états Survie, Ressources & Repos (rest.ts)', () => {
     expect(afterLongRest.combat.hitDicePools[10].available).toBe(4);
     expect(afterLongRest.combat.hitDicePools[8].available).toBe(0);
     // Ressources short_rest et long_rest rechargées, ressource manual inchangée
-    expect(afterLongRest.resources.find((r) => r.id === 'res-stim')?.current).toBe(1);
+    expect(afterLongRest.resources.find((r) => r.id === 'res-vigor')?.current).toBe(1);
     expect(afterLongRest.resources.find((r) => r.id === 'res-veil')?.current).toBe(3);
-    expect(afterLongRest.resources.find((r) => r.id === 'res-cells')?.current).toBe(0);
+    expect(afterLongRest.resources.find((r) => r.id === 'res-arrows')?.current).toBe(0);
     expect(afterLongRest.spellcasting?.slots[1]?.used).toBe(0);
   });
 });

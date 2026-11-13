@@ -348,7 +348,7 @@ export function ForgeStatsAndSkillsTab({
                 className="forge-input"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
-                placeholder="Ex. Pilotage, Technologie..."
+                placeholder="Ex. Navigation, Herboristerie..."
                 required
               />
             </div>
@@ -364,7 +364,7 @@ export function ForgeStatsAndSkillsTab({
                 className="forge-input"
                 value={customOriginalName}
                 onChange={(e) => setCustomOriginalName(e.target.value)}
-                placeholder="Ex. Piloting, Tech..."
+                placeholder="Ex. Sailing, Herbalism..."
               />
             </div>
 
@@ -648,7 +648,7 @@ export function ForgeStatsAndSkillsTab({
                   className="forge-input"
                   value={toolName}
                   onChange={(e) => setToolName(e.target.value)}
-                  placeholder="Ex. Outils de mécano, Kit de chimie..."
+                  placeholder="Ex. Outils de cartographe, Luth..."
                   required
                 />
               </div>
@@ -664,7 +664,7 @@ export function ForgeStatsAndSkillsTab({
                   className="forge-input"
                   value={toolOriginalName}
                   onChange={(e) => setToolOriginalName(e.target.value)}
-                  placeholder="Ex. Mechanic's Tools"
+                  placeholder="Ex. Cartographer's Tools"
                 />
               </div>
 

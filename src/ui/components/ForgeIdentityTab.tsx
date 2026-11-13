@@ -247,7 +247,7 @@ export function ForgeIdentityTab({
                 name="background"
                 value={sheet.identity.background}
                 maxLength={80}
-                placeholder="Ex. Éclaireur du Secteur Zéro..."
+                placeholder="Ex. Éclaireur, Sage, Soldat..."
                 onCommit={(val) =>
                   onMutate((draft) => {
                     draft.identity.background = val.trim();
@@ -327,7 +327,7 @@ export function ForgeIdentityTab({
                 maxLength={50}
                 value={langName}
                 onChange={(e) => setLangName(e.target.value)}
-                placeholder="Ex. Géant, Binaire..."
+                placeholder="Ex. Géant, Primordial..."
               />
             </div>
 
@@ -464,7 +464,7 @@ export function ForgeIdentityTab({
                     name={`class-sub-${cls.id}`}
                     value={cls.subclass?.name ?? ''}
                     maxLength={60}
-                    placeholder="Ex. Traqueur des Ruines"
+                    placeholder="Ex. Traqueur des ténèbres"
                     onCommit={(val) =>
                       onMutate((draft) => {
                         const target = draft.identity.classes.find(

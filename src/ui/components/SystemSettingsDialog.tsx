@@ -213,7 +213,7 @@ export function SystemSettingsDialog({
               type="text"
               value={snapshotLabel}
               onChange={(e) => setSnapshotLabel(e.target.value)}
-              placeholder="Ex. Avant le boss du Bunker 7..."
+              placeholder="Ex. Avant le boss du donjon..."
             />
             <button
               type="button"

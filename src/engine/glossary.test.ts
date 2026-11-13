@@ -42,7 +42,7 @@ describe('Lexique bilingue FR/EN & Recherche (glossary.ts)', () => {
 
     const demo = createDemoCharacter();
     expect(demo.identity.classes).toHaveLength(2);
-    expect(demo.skills).toHaveLength(19); // 18 canoniques + 1 post-apo custom
+    expect(demo.skills).toHaveLength(19); // 18 canoniques + 1 compétence personnalisée
 
     const blank = createBlankCharacter({ id: 'test-blank', name: 'Lyra' });
     expect(blank.identity.name).toBe('Lyra');

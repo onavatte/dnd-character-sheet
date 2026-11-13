@@ -123,18 +123,18 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     });
     expect(derived.totalWeight).toBe(7.5);
 
-    const hacking = derived.skills.find((s) => s.id === 'custom_hacking');
+    const dungeoneering = derived.skills.find((s) => s.id === 'custom_dungeoneering');
     // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) = +6
-    expect(hacking?.modifier).toBe(6);
+    expect(dungeoneering?.modifier).toBe(6);
 
     const demoCantrip = demo.spellcasting?.abilitiesList.find(
       (s) => s.level === 0 && s.hasAttackRoll,
     );
     expect(demoCantrip?.damageFormula).toBe('2d10');
 
-    const carbineStat = derived.attacks.find((a) => a.id === 'atk-carbine');
-    const daggerStat = derived.attacks.find((a) => a.id === 'atk-vibroknife');
-    expect(carbineStat?.critRangeMin).toBe(20);
+    const longbowStat = derived.attacks.find((a) => a.id === 'atk-longbow');
+    const daggerStat = derived.attacks.find((a) => a.id === 'atk-dagger');
+    expect(longbowStat?.critRangeMin).toBe(20);
     expect(daggerStat?.critRangeMin).toBe(19);
   });
 
@@ -185,9 +185,9 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     const thievesTools = derived.tools.find((t) => t.id === 'tool-thieves');
     expect(thievesTools?.modifier).toBe(7);
 
-    // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) => Trousse de piratage = +6
-    const cyberdeck = derived.tools.find((t) => t.id === 'tool-cyberdeck');
-    expect(cyberdeck?.modifier).toBe(6);
+    // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) => Outils de cartographe = +6
+    const cartographer = derived.tools.find((t) => t.id === 'tool-cartographer');
+    expect(cartographer?.modifier).toBe(6);
 
     const legacySheet = { ...demo };
     delete legacySheet.toolProficiencies;
