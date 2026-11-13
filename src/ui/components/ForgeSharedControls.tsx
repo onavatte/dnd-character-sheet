@@ -1,31 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
-export interface CommittedTextInputProps {
-  id: string;
-  name: string;
-  value: string;
-  placeholder?: string;
-  required?: boolean;
-  maxLength?: number;
-  ariaDescribedBy?: string;
-  onCommit: (nextValue: string) => void;
-}
-
-/**
- * Champ texte avec état local pendant la frappe et validation atomique au blur,
- * à la touche Entrée (hors composition IME) ou au démontage pour ne pas saturer Undo/Redo.
- */
-export function CommittedTextInput({
-  id,
-  name,
-  value,
-  placeholder,
-  required,
-  maxLength,
-  ariaDescribedBy,
-  onCommit,
-}: CommittedTextInputProps) {
+function useCommittedDraft(
+  value: string,
+  onCommit: (nextValue: string) => void,
+) {
   const [draft, setDraft] = useState(value);
   const draftRef = useRef(draft);
   const committedValueRef = useRef(value);
@@ -53,6 +32,36 @@ export function CommittedTextInput({
     }
   };
 
+  return { draft, setDraft, commitIfChanged };
+}
+
+export interface CommittedTextInputProps {
+  id: string;
+  name: string;
+  value: string;
+  placeholder?: string;
+  required?: boolean;
+  maxLength?: number;
+  ariaDescribedBy?: string;
+  onCommit: (nextValue: string) => void;
+}
+
+/**
+ * Champ texte avec état local pendant la frappe et validation atomique au blur,
+ * à la touche Entrée (hors composition IME) ou au démontage pour ne pas saturer Undo/Redo.
+ */
+export function CommittedTextInput({
+  id,
+  name,
+  value,
+  placeholder,
+  required,
+  maxLength,
+  ariaDescribedBy,
+  onCommit,
+}: CommittedTextInputProps) {
+  const { draft, setDraft, commitIfChanged } = useCommittedDraft(value, onCommit);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
       e.preventDefault();
@@ -75,6 +84,45 @@ export function CommittedTextInput({
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commitIfChanged}
       onKeyDown={handleKeyDown}
+    />
+  );
+}
+
+export interface CommittedTextAreaProps {
+  id: string;
+  name: string;
+  value: string;
+  rows?: number;
+  maxLength?: number;
+  placeholder?: string;
+  onCommit: (nextValue: string) => void;
+}
+
+/**
+ * Zone de saisie multiligne avec brouillon local et validation atomique au blur ou démontage.
+ */
+export function CommittedTextArea({
+  id,
+  name,
+  value,
+  rows = 5,
+  maxLength,
+  placeholder,
+  onCommit,
+}: CommittedTextAreaProps) {
+  const { draft, setDraft, commitIfChanged } = useCommittedDraft(value, onCommit);
+
+  return (
+    <textarea
+      id={id}
+      name={name}
+      className="grimoire-textarea"
+      rows={rows}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commitIfChanged}
     />
   );
 }

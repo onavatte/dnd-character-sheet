@@ -126,6 +126,7 @@ export interface CharacterSheetV1 {
     classes: CharacterClassEntry[];
     background: string;
     ancestry: string;
+    backstory: string;
   };
   abilities: Record<AbilityKey, number>;
   savingThrowProficiencies: Record<AbilityKey, boolean>;

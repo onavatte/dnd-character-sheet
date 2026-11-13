@@ -604,6 +604,17 @@ export function CombatAndResourcesPanel({
               placeholder="Notez ici votre butin, vos indices et vos notes de séance..."
             />
           </div>
+
+          <div className="cockpit-subblock">
+            <h3>Background du personnage</h3>
+            {sheet.identity.backstory?.trim() ? (
+              <p className="cockpit-backstory-box">{sheet.identity.backstory}</p>
+            ) : (
+              <p className="muted-note">
+                Aucun background rédigé (Mode Édition &gt; Identité &amp; Classes).
+              </p>
+            )}
+          </div>
         </div>
       )}
     </section>

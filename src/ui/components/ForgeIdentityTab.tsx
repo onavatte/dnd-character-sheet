@@ -15,7 +15,11 @@ import type {
   DerivedCharacterStats,
   HitDieSize,
 } from '../../engine';
-import { CommittedTextInput, NumberStepper } from './ForgeSharedControls';
+import {
+  CommittedTextArea,
+  CommittedTextInput,
+  NumberStepper,
+} from './ForgeSharedControls';
 import { DEFAULT_PORTRAIT_URL, compressPortraitFile } from './portrait-utils';
 
 export interface ForgeIdentityTabProps {
@@ -350,6 +354,28 @@ export function ForgeIdentityTab({
               </div>
             </div>
           </form>
+        </fieldset>
+
+        <fieldset className="forge-fieldset">
+          <legend>Background</legend>
+          <div className="field-group">
+            <label htmlFor={`${baseId}-backstory`}>
+              Histoire du personnage, origines et attaches
+            </label>
+            <CommittedTextArea
+              id={`${baseId}-backstory`}
+              name="backstory"
+              rows={5}
+              maxLength={4000}
+              value={sheet.identity.backstory || ''}
+              placeholder="Décrivez le passé, les motivations, les alliés ou les cicatrices de votre personnage..."
+              onCommit={(val) =>
+                onMutate((draft) => {
+                  draft.identity.backstory = val;
+                })
+              }
+            />
+          </div>
         </fieldset>
       </section>
 

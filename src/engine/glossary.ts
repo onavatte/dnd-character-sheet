@@ -254,6 +254,8 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
       ],
       background: 'Éclaireur du Secteur Zéro',
       ancestry: 'Humain (Variant)',
+      backstory:
+        'Ancien éclaireur des corridors orbitaux et survivant de l’effondrement de la station Kepler. Parcourt les ruines du Secteur Zéro à la recherche de données pré-chute et de survivants.',
     },
     abilities: {
       STR: 12,
@@ -494,6 +496,7 @@ export function createBlankCharacter(
       ],
       background: 'Voyageur',
       ancestry: 'Humain',
+      backstory: '',
     },
     abilities: {
       STR: 10,

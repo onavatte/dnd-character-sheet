@@ -57,6 +57,11 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
     if (!isNonEmptyString(identity['name'])) {
       errors.push('Le nom du personnage (identity.name) est obligatoire.');
     }
+    if (typeof identity['backstory'] !== 'string') {
+      errors.push(
+        'Le background du personnage (identity.backstory) doit être une chaîne de caractères.',
+      );
+    }
     if (
       identity['portraitDataUrl'] !== undefined &&
       (typeof identity['portraitDataUrl'] !== 'string' ||

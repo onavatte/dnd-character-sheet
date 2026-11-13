@@ -1755,3 +1755,20 @@ dialog::backdrop {
   outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
+
+.grimoire-textarea:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-color: var(--accent-primary);
+}
+
+.cockpit-backstory-box {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
