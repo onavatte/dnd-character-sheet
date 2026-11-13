@@ -214,6 +214,8 @@ export function DiceAssistantPanel({
     });
 
   /* === 1. RÉSOLUTION JET D20 (PHYSIQUE & VIRTUEL) === */
+  const activeCritThreshold = activeTarget.critThreshold ?? 20;
+
   const handlePhysicalD20Tap = (dieValue: number) => {
     if (advantage !== 'normal' && pendingFirstD20 === null) {
       setPendingFirstD20(dieValue);
@@ -230,9 +232,11 @@ export function DiceAssistantPanel({
       ...(secondaryDie !== undefined ? { secondaryDie } : {}),
       advantage,
       modifier: activeTarget.modifier,
+      critThreshold: activeCritThreshold,
     });
     setLastD20(res);
     setLastDamage(null);
+    setIsCriticalDamage(res.isCriticalSuccess);
 
     onPushRollLog({
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -256,9 +260,11 @@ export function DiceAssistantPanel({
       label: activeTarget.label,
       advantage,
       modifier: activeTarget.modifier,
+      critThreshold: activeCritThreshold,
     });
     setLastD20(res);
     setLastDamage(null);
+    setIsCriticalDamage(res.isCriticalSuccess);
 
     onPushRollLog({
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -288,6 +294,11 @@ export function DiceAssistantPanel({
   const expectedDamageDiceCount = isCriticalDamage
     ? parsedDamage.diceCount * 2
     : parsedDamage.diceCount;
+  const criticalDamageFormula = `${parsedDamage.diceCount * 2}d${parsedDamage.dieSides}${
+    parsedDamage.modifier !== 0
+      ? ` ${formatSignedModifier(parsedDamage.modifier)}`
+      : ''
+  }`;
 
   const handlePhysicalDamageDieTap = (val: number) => {
     const nextRolls = [...pendingDamageRolls, val];
@@ -505,7 +516,11 @@ export function DiceAssistantPanel({
               </span>
               {lastD20?.isCriticalSuccess && (
                 <span className="badge-pill dice-crit-badge--ok">
-                  CRITIQUE (20)
+                  CRITIQUE (
+                  {lastD20.critThreshold === 20
+                    ? '20'
+                    : `${lastD20.critThreshold}–20`}
+                  )
                 </span>
               )}
               {lastD20?.isCriticalFailure && (
@@ -610,7 +625,7 @@ export function DiceAssistantPanel({
                         key={val}
                         type="button"
                         className={`d20-key tabular-nums ${
-                          val === 20
+                          val >= activeCritThreshold
                             ? 'd20-key--crit'
                             : val === 1
                               ? 'd20-key--fumble'
@@ -636,7 +651,9 @@ export function DiceAssistantPanel({
               {activeTarget.damageFormula && (
                 <button
                   type="button"
-                  className="action-btn tabular-nums"
+                  className={`action-btn tabular-nums ${
+                    lastD20?.isCriticalSuccess ? 'action-btn--crit' : ''
+                  }`}
                   onClick={() => {
                     setAssistantView('formula');
                     setPendingDamageRolls([]);
@@ -644,7 +661,9 @@ export function DiceAssistantPanel({
                     setLastDamage(null);
                   }}
                 >
-                  Passer aux Dégâts ({activeTarget.damageFormula}) →
+                  {lastD20?.isCriticalSuccess
+                    ? `Critique ! Passer aux Dégâts (${criticalDamageFormula}) →`
+                    : `Passer aux Dégâts (${activeTarget.damageFormula}) →`}
                 </button>
               )}
             </>
@@ -671,7 +690,7 @@ export function DiceAssistantPanel({
                 </button>
                 <button
                   type="button"
-                  className="segmented-btn tabular-nums"
+                  className="segmented-btn segmented-btn--crit tabular-nums"
                   aria-pressed={isCriticalDamage}
                   onClick={() => {
                     setIsCriticalDamage(true);

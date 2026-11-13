@@ -69,6 +69,8 @@ export interface AttackEntry extends BilingualNamed {
   range: string;
   actionTiming?: ActionTiming;
   ammoResourceId?: string;
+  /** Score minimum naturel sur le d20 déclenchant un coup critique (20 par défaut, ex. 19 pour 19-20). */
+  critRangeMin?: number;
   notes: string;
 }
 
@@ -83,6 +85,8 @@ export interface SpellAbilityEntry extends BilingualNamed {
   saveAbility?: AbilityKey;
   damageFormula?: string;
   damageType?: string;
+  /** Score minimum naturel sur le d20 déclenchant un critique pour les sorts avec attaque (20 par défaut). */
+  critRangeMin?: number;
 }
 
 export interface SpellcastingState {
@@ -165,6 +169,7 @@ export interface DerivedAttackStat {
   damageFormula: string;
   damageType: string;
   range: string;
+  critRangeMin: number;
 }
 
 export interface DerivedCharacterStats {

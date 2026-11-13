@@ -130,6 +130,11 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
       (s) => s.level === 0 && s.hasAttackRoll,
     );
     expect(demoCantrip?.damageFormula).toBe('2d10');
+
+    const carbineStat = derived.attacks.find((a) => a.id === 'atk-carbine');
+    const daggerStat = derived.attacks.find((a) => a.id === 'atk-vibroknife');
+    expect(carbineStat?.critRangeMin).toBe(20);
+    expect(daggerStat?.critRangeMin).toBe(19);
   });
 
   it('calcule aussi la caractéristique spécifique de sorts offensifs multiclassés', () => {

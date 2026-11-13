@@ -129,7 +129,10 @@ export function CombatAndResourcesPanel({
                 <div
                   key={atk.id}
                   className={`attack-card ${
-                    activeRollTargetId === atk.id ? 'attack-card--selected' : ''
+                    activeRollTargetId === atk.id ||
+                    activeRollTargetId === `${atk.id}-dmg`
+                      ? 'attack-card--selected'
+                      : ''
                   }`}
                 >
                   <div className="attack-card-header">
@@ -137,6 +140,9 @@ export function CombatAndResourcesPanel({
                       <strong>{renderTerm(atk.name, atk.originalName)}</strong>
                       <div className="attack-meta">
                         Portée : {atk.range} · Type : {atk.damageType}
+                        {atk.critRangeMin < 20
+                          ? ` · Crit. ${atk.critRangeMin}–20`
+                          : ''}
                         {rawAttack?.notes ? ` · ${rawAttack.notes}` : ''}
                       </div>
                     </div>
@@ -165,6 +171,7 @@ export function CombatAndResourcesPanel({
                           modifier: atk.toHitBonus,
                           damageFormula: atk.damageFormula,
                           damageType: atk.damageType,
+                          critThreshold: atk.critRangeMin,
                           initialMode: 'd20',
                         });
                       }}
@@ -193,28 +200,6 @@ export function CombatAndResourcesPanel({
                       }
                     >
                       Dégâts ({atk.damageFormula})
-                    </button>
-
-                    <button
-                      type="button"
-                      className="action-btn tabular-nums"
-                      onClick={() =>
-                        onSelectRollTarget({
-                          id: `${atk.id}-crit`,
-                          label: `${atk.name} — Critique`,
-                          ...(atk.originalName !== undefined
-                            ? { originalLabel: `${atk.originalName} — Critical` }
-                            : {}),
-                          category: 'damage',
-                          modifier: atk.toHitBonus,
-                          damageFormula: atk.damageFormula,
-                          damageType: atk.damageType,
-                          initialMode: 'formula',
-                          isCritical: true,
-                        })
-                      }
-                    >
-                      Critique (x2 dés)
                     </button>
                   </div>
                 </div>
@@ -433,8 +418,7 @@ export function CombatAndResourcesPanel({
               const spellStats = derived.spellcastingByAbility[spellAbilityKey];
               const isSelected =
                 activeRollTargetId === spell.id ||
-                activeRollTargetId === `${spell.id}-dmg` ||
-                activeRollTargetId === `${spell.id}-crit`;
+                activeRollTargetId === `${spell.id}-dmg`;
               const isHealing =
                 spell.damageType !== undefined &&
                 /soin|heal|pv/i.test(spell.damageType);
@@ -450,22 +434,14 @@ export function CombatAndResourcesPanel({
                 (Boolean(spell.hasAttackRoll) && Boolean(spellStats)) ||
                 Boolean(spell.damageFormula);
 
-              const triggerSpellDamageRoll = (isCritical: boolean) => {
+              const triggerSpellDamageRoll = () => {
                 const formula = spell.damageFormula;
                 if (!formula) return;
-                const frSuffix = isCritical
-                  ? 'Critique'
-                  : isHealing
-                    ? 'Soins'
-                    : 'Dégâts';
-                const enSuffix = isCritical
-                  ? 'Critical'
-                  : isHealing
-                    ? 'Healing'
-                    : 'Damage';
+                const frSuffix = isHealing ? 'Soins' : 'Dégâts';
+                const enSuffix = isHealing ? 'Healing' : 'Damage';
 
                 onSelectRollTarget({
-                  id: `${spell.id}-${isCritical ? 'crit' : 'dmg'}`,
+                  id: `${spell.id}-dmg`,
                   label: `${spell.name} — ${frSuffix}`,
                   ...(spell.originalName !== undefined
                     ? { originalLabel: `${spell.originalName} — ${enSuffix}` }
@@ -477,7 +453,7 @@ export function CombatAndResourcesPanel({
                     ? { damageType: spell.damageType }
                     : {}),
                   initialMode: 'formula',
-                  isCritical,
+                  isCritical: false,
                 });
               };
 
@@ -499,6 +475,9 @@ export function CombatAndResourcesPanel({
                     Portée : {spell.range}
                     {saveAbbr && spellStats
                       ? ` · JS ${saveAbbr} DD ${spellStats.saveDC}`
+                      : ''}
+                    {spell.critRangeMin !== undefined && spell.critRangeMin < 20
+                      ? ` · Crit. ${spell.critRangeMin}–20`
                       : ''}
                     {spell.damageType ? ` · Type : ${spell.damageType}` : ''} —{' '}
                     {spell.description}
@@ -527,6 +506,9 @@ export function CombatAndResourcesPanel({
                               ...(spell.damageType !== undefined
                                 ? { damageType: spell.damageType }
                                 : {}),
+                              ...(spell.critRangeMin !== undefined
+                                ? { critThreshold: spell.critRangeMin }
+                                : {}),
                               initialMode: 'd20',
                             })
                           }
@@ -540,19 +522,9 @@ export function CombatAndResourcesPanel({
                         <button
                           type="button"
                           className="action-btn tabular-nums"
-                          onClick={() => triggerSpellDamageRoll(false)}
+                          onClick={triggerSpellDamageRoll}
                         >
                           {isHealing ? 'Soins' : 'Dégâts'} ({spell.damageFormula})
-                        </button>
-                      )}
-
-                      {spell.hasAttackRoll && spell.damageFormula && (
-                        <button
-                          type="button"
-                          className="action-btn tabular-nums"
-                          onClick={() => triggerSpellDamageRoll(true)}
-                        >
-                          Critique (x2 dés)
                         </button>
                       )}
                     </div>

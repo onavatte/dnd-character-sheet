@@ -152,6 +152,16 @@ export function computeSpellAttackBonus(
 }
 
 /**
+ * Normalise le seuil de coup critique d'un dé d20 entre 1 et 20 (défaut 20).
+ */
+export function normalizeCritRangeMin(value?: number): number {
+  if (value === undefined || !Number.isFinite(value)) {
+    return 20;
+  }
+  return Math.min(20, Math.max(1, Math.trunc(value)));
+}
+
+/**
  * Calcule le bonus au toucher d'une attaque (arme de mêlée, arme à feu, attaque spéciale).
  */
 export function computeAttackRollBonus(
@@ -264,6 +274,7 @@ export function computeDerivedCharacter(sheet: CharacterSheetV1): DerivedCharact
       damageFormula: attack.damageFormula,
       damageType: attack.damageType,
       range: attack.range,
+      critRangeMin: normalizeCritRangeMin(attack.critRangeMin),
     };
     if (attack.originalName !== undefined) {
       derivedAtk.originalName = attack.originalName;

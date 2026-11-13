@@ -210,6 +210,12 @@ input[type='number'] {
   border-color: var(--border-strong);
 }
 
+.segmented-btn--crit[aria-pressed='true'] {
+  border-color: var(--color-hp-ok);
+  color: var(--color-hp-ok);
+  background-color: color-mix(in srgb, var(--color-hp-ok) 14%, var(--bg-surface));
+}
+
 .action-btn {
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
@@ -242,6 +248,24 @@ input[type='number'] {
 
 .action-btn--primary:active:not(:disabled) {
   box-shadow: 0 1px 0 var(--accent-primary);
+}
+
+.action-btn--crit {
+  border-color: var(--color-hp-ok);
+  color: var(--color-hp-ok);
+  background: color-mix(in srgb, var(--color-hp-ok) 14%, var(--bg-surface));
+  font-weight: 700;
+  box-shadow:
+    0 2px 0 var(--color-hp-ok),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.action-btn--crit:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-hp-ok) 22%, var(--bg-surface));
+}
+
+.action-btn--crit:active:not(:disabled) {
+  box-shadow: 0 1px 0 var(--color-hp-ok);
 }
 
 .stepper-btn {

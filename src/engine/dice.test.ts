@@ -104,4 +104,35 @@ describe('Assistant de Jet Hybride — Physique & Virtuel (dice.ts)', () => {
     expect(manualCrit.effectiveDiceCount).toBe(2);
     expect(manualCrit.total).toBe(21);
   });
+
+  it('prend en charge les plages de critique étendues (ex. 19–20) en physique et virtuel', () => {
+    const critOn19 = resolvePhysicalD20Check({
+      label: 'Vibro-lame tactique',
+      primaryDie: 19,
+      modifier: 7,
+      critThreshold: 19,
+    });
+    expect(critOn19.critThreshold).toBe(19);
+    expect(critOn19.isCriticalSuccess).toBe(true);
+    expect(critOn19.total).toBe(26);
+
+    const missOn18 = resolvePhysicalD20Check({
+      label: 'Vibro-lame tactique',
+      primaryDie: 18,
+      modifier: 7,
+      critThreshold: 19,
+    });
+    expect(missOn18.isCriticalSuccess).toBe(false);
+
+    // 0.90 * 20 + 1 = 19 (critique sur plage 19-20)
+    const virtualCrit19 = rollVirtualD20Check({
+      label: 'Vibro-lame tactique',
+      modifier: 7,
+      critThreshold: 19,
+      rng: () => 0.9,
+    });
+    expect(virtualCrit19.keptDie).toBe(19);
+    expect(virtualCrit19.isCriticalSuccess).toBe(true);
+    expect(virtualCrit19.critThreshold).toBe(19);
+  });
 });

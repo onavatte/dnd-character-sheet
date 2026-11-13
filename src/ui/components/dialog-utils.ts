@@ -38,6 +38,7 @@ export interface ActiveRollTarget {
   modifier: number;
   damageFormula?: string;
   damageType?: string;
+  critThreshold?: number;
   initialMode?: 'd20' | 'formula' | 'free';
   isCritical?: boolean;
 }

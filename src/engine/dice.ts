@@ -3,7 +3,7 @@
  * Déterministe et injectable pour les tests unitaires.
  */
 
-import { formatSignedModifier } from './calculators';
+import { formatSignedModifier, normalizeCritRangeMin } from './calculators';
 import type { AdvantageState } from './types';
 
 export interface D20Resolution {
@@ -14,6 +14,7 @@ export interface D20Resolution {
   keptDie: number;
   modifier: number;
   total: number;
+  critThreshold: number;
   isCriticalSuccess: boolean;
   isCriticalFailure: boolean;
   formulaBreakdown: string;
@@ -25,12 +26,14 @@ export interface PhysicalD20Params {
   secondaryDie?: number;
   advantage?: AdvantageState;
   modifier: number;
+  critThreshold?: number;
 }
 
 export interface VirtualD20Params {
   label: string;
   advantage?: AdvantageState;
   modifier: number;
+  critThreshold?: number;
   rng?: () => number;
 }
 
@@ -54,10 +57,12 @@ function buildD20Resolution(params: {
   rolls: number[];
   keptDie: number;
   modifier: number;
+  critThreshold?: number;
 }): D20Resolution {
   const { label, mode, advantage, rolls, keptDie, modifier } = params;
   const total = keptDie + modifier;
-  const isCriticalSuccess = keptDie === 20;
+  const critThreshold = normalizeCritRangeMin(params.critThreshold);
+  const isCriticalSuccess = keptDie >= critThreshold;
   const isCriticalFailure = keptDie === 1;
 
   const rollDisplay =
@@ -72,6 +77,7 @@ function buildD20Resolution(params: {
     keptDie,
     modifier,
     total,
+    critThreshold,
     isCriticalSuccess,
     isCriticalFailure,
     formulaBreakdown,
@@ -93,6 +99,7 @@ export function resolvePhysicalD20Check(params: PhysicalD20CheckParams): D20Reso
       rolls: [d1],
       keptDie: d1,
       modifier: params.modifier,
+      ...(params.critThreshold !== undefined ? { critThreshold: params.critThreshold } : {}),
     });
   }
 
@@ -106,6 +113,7 @@ export function resolvePhysicalD20Check(params: PhysicalD20CheckParams): D20Reso
     rolls: [d1, d2],
     keptDie,
     modifier: params.modifier,
+    ...(params.critThreshold !== undefined ? { critThreshold: params.critThreshold } : {}),
   });
 }
 
@@ -127,6 +135,7 @@ export function rollVirtualD20Check(params: VirtualD20Params): D20Resolution {
       rolls: [d1],
       keptDie: d1,
       modifier: params.modifier,
+      ...(params.critThreshold !== undefined ? { critThreshold: params.critThreshold } : {}),
     });
   }
 
@@ -140,6 +149,7 @@ export function rollVirtualD20Check(params: VirtualD20Params): D20Resolution {
     rolls: [d1, d2],
     keptDie,
     modifier: params.modifier,
+    ...(params.critThreshold !== undefined ? { critThreshold: params.critThreshold } : {}),
   });
 }
 
