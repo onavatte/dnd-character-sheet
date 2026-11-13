@@ -186,4 +186,53 @@ describe('store - Intégration Zustand + Immer + Repository + Snapshots', () => 
     store.getState().updateNotes('Note remplacée');
     expect(store.getState().history.present.notes).toBe('Note remplacée');
   });
+
+  it('gère le multi-personnages (création vierge, duplication, bascule avec snapshots isolés et Empty State)', async () => {
+    const repo = new InMemoryCharacterRepository();
+    const store = createCharacterStore({ repository: repo, writeBehindMs: 0 });
+    await store.getState().initialize();
+
+    expect(store.getState().hasActiveCharacter).toBe(true);
+    expect(store.getState().characters).toHaveLength(1);
+    const demoId = store.getState().history.present.id;
+    await store.getState().createManualSnapshot('Snapshot Kaelen');
+    expect(store.getState().snapshots).toHaveLength(1);
+
+    // Création d'un personnage vierge -> actif, 0 snapshot, liste à 2 personnages
+    const blank = await store.getState().createNewCharacter('Lyra');
+    expect(blank.identity.name).toBe('Lyra');
+    expect(store.getState().history.present.id).toBe(blank.id);
+    expect(store.getState().characters).toHaveLength(2);
+    expect(store.getState().snapshots).toHaveLength(0);
+
+    // Duplication de Lyra -> liste à 3 personnages
+    const clone = await store.getState().duplicateCurrentCharacter();
+    expect(clone).not.toBeNull();
+    expect(clone?.identity.name).toBe('Lyra (Copie)');
+    expect(store.getState().characters).toHaveLength(3);
+
+    // Retour sur Kaelen -> ses snapshots propres réapparaissent
+    await store.getState().switchCharacter(demoId);
+    expect(store.getState().history.present.id).toBe(demoId);
+    expect(store.getState().snapshots).toHaveLength(1);
+    expect(store.getState().snapshots[0]?.label).toBe('Snapshot Kaelen');
+
+    // Suppression de tous les personnages -> Empty State (hasActiveCharacter = false)
+    await store.getState().deleteCharacter(demoId);
+    expect(store.getState().hasActiveCharacter).toBe(true);
+    expect(store.getState().characters).toHaveLength(2);
+
+    const remainingIds = store.getState().characters.map((c) => c.id);
+    for (const id of remainingIds) {
+      await store.getState().deleteCharacter(id);
+    }
+    expect(store.getState().characters).toHaveLength(0);
+    expect(store.getState().hasActiveCharacter).toBe(false);
+
+    // Rechargement du personnage démo depuis l'Empty State
+    const reloadedDemo = await store.getState().loadDemoCharacter();
+    expect(reloadedDemo.identity.name).toBe('Kaelen Vance');
+    expect(store.getState().hasActiveCharacter).toBe(true);
+    expect(store.getState().characters).toHaveLength(1);
+  });
 });

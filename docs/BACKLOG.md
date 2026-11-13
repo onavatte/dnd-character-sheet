@@ -27,7 +27,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Service de **Snapshots locaux** (création manuelle nommée + snapshot automatique avant un Repos Long + restauration)
 - [x] Service d'**Export / Import JSON** avec contrôle de validité du schéma à l'import
 
-## Jalon 3 - Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride ⏳
+## Jalon 3 - Interface "Mode Partie (Cockpit)" & Assistant de Jet Hybride ✅
 - **Focus d'apprentissage** : Ergonomie tactile Tablette sans friction (zéro édition accidentelle, densité d'information maîtrisée en 2 larges colonnes, micro-interactions de combat et de jets).
 - **Critère de validation** : En Mode Partie sur format Tablette et Desktop, l'utilisateur peut gérer un combat complet (PV, munitions, sorts, états, notes de butin), effectuer tous ses jets (`d4` à `d100`) en mode dé physique ou virtuel via la fenêtre flottante déplaçable, et déclencher un Repos Court/Long avec possibilité d'annuler.
 - [x] Vue **Cockpit de Partie** (grille responsive 2 colonnes Tablette/Desktop + modale `Système` séparée derrière l'icône Engrenage) : bandeau vital (PV, CA, Initiative, Vitesse, États/Épuisement) et modale rapide de Dégâts / Soins / PV temporaires
@@ -36,7 +36,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Composant **Assistant de Jet Hybride Universel** (`<dialog>` flottant non-modal déplaçable sans flou d'arrière-plan + bouton flottant permanent FAB) : pavé physique dynamique adapté au dé (`d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`), jets de dégâts normaux/critiques, mode **Jet Libre** et journal des derniers jets
 - [x] Flux interactif de **Repos Court** (dépense de Dés de Vie) et **Repos Long** (avec création automatique d'un snapshot préalable)
 
-## Jalon 4 - Interface "Mode Édition (Forge)", Multi-Personnages & PWA
+## Jalon 4 - Interface "Mode Édition (Forge)", Multi-Personnages & PWA ⏳
 - **Focus d'apprentissage** : Conception de formulaires complexes ergonomiques, gestion de bibliothèque multi-personnages et mise en cache hors-ligne par Service Worker (PWA).
 - **Critère de validation** : L'utilisateur peut créer un personnage de zéro (y compris avec des compétences/armes post-apo sur mesure), le faire monter de niveau, gérer ses snapshots et installer l'application en PWA 100 % hors-ligne.
 - [ ] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)

@@ -11,6 +11,7 @@ import {
   applyHealing,
   applyLongRest,
   applyShortRest,
+  createBlankCharacter,
   createDemoCharacter,
   setTemporaryHp,
   updateResourceCurrent,
@@ -37,8 +38,35 @@ import type { CharacterRepository } from './repository';
 
 export type SaveSyncStatus = 'idle' | 'pending' | 'saved' | 'error';
 
+const ACTIVE_CHAR_STORAGE_KEY = 'grimoire-active-character-id';
+const ROSTER_CLEARED_STORAGE_KEY = 'grimoire-roster-cleared';
+
+function readLocalStorageValue(key: string): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorageValue(key: string, value: string | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (value === null) {
+      window.localStorage.removeItem(key);
+    } else {
+      window.localStorage.setItem(key, value);
+    }
+  } catch {
+    // Ignore storage restrictions
+  }
+}
+
 export interface CharacterStoreState {
   history: HistoryStack<CharacterSheetV1>;
+  characters: CharacterSheetV1[];
+  hasActiveCharacter: boolean;
   snapshots: CharacterSnapshot[];
   isInitialized: boolean;
   syncStatus: SaveSyncStatus;
@@ -46,6 +74,13 @@ export interface CharacterStoreState {
 
   initialize(): Promise<void>;
   flushPendingWrite(): Promise<void>;
+
+  /* Gestion multi-personnages (Jalon 4) */
+  switchCharacter(characterId: string): Promise<void>;
+  createNewCharacter(name?: string): Promise<CharacterSheetV1>;
+  duplicateCurrentCharacter(customName?: string): Promise<CharacterSheetV1 | null>;
+  loadDemoCharacter(): Promise<CharacterSheetV1>;
+  deleteCharacter(characterId: string): Promise<void>;
 
   /* Actions métier immuables avec empilement Undo/Redo */
   applySheetUpdate(updater: (current: CharacterSheetV1) => CharacterSheetV1): void;
@@ -100,11 +135,22 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
   ): Promise<void> => {
     try {
       await repository.saveCharacter(sheet);
-      setState({ syncStatus: 'saved', lastError: null });
+      const list = await repository.listCharacters();
+      setState({ characters: list, syncStatus: 'saved', lastError: null });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Erreur d’écriture dans le stockage local.';
       setState({ syncStatus: 'error', lastError: message });
+    }
+  };
+
+  const cancelPendingWriteFor = (characterId: string): void => {
+    if (pendingSheetToPersist?.id === characterId) {
+      if (writeTimer !== null) {
+        clearTimeout(writeTimer);
+        writeTimer = null;
+      }
+      pendingSheetToPersist = null;
     }
   };
 
@@ -138,6 +184,8 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
 
   return createStore<CharacterStoreState>()((set, get) => ({
     history: createHistoryStack<CharacterSheetV1>(fallbackSheet),
+    characters: [],
+    hasActiveCharacter: true,
     snapshots: [],
     isInitialized: false,
     syncStatus: 'idle',
@@ -146,13 +194,35 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
     async initialize(): Promise<void> {
       try {
         const storedList = await repository.listCharacters();
-        const firstStored = storedList[0];
+        if (storedList.length > 0) {
+          const preferredId = readLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY);
+          const selected =
+            (preferredId
+              ? storedList.find((c) => c.id === preferredId)
+              : undefined) ?? storedList[0];
 
-        if (firstStored !== undefined) {
-          const snaps = await repository.listSnapshots(firstStored.id);
+          if (selected !== undefined) {
+            const snaps = await repository.listSnapshots(selected.id);
+            writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, selected.id);
+            writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+            set({
+              history: createHistoryStack(selected),
+              characters: storedList,
+              hasActiveCharacter: true,
+              snapshots: snaps,
+              isInitialized: true,
+              syncStatus: 'saved',
+              lastError: null,
+            });
+            return;
+          }
+        }
+
+        if (readLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY) === '1') {
           set({
-            history: createHistoryStack(firstStored),
-            snapshots: snaps,
+            characters: [],
+            hasActiveCharacter: false,
+            snapshots: [],
             isInitialized: true,
             syncStatus: 'saved',
             lastError: null,
@@ -161,9 +231,13 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
         }
 
         await repository.saveCharacter(fallbackSheet);
+        const list = await repository.listCharacters();
         const snaps = await repository.listSnapshots(fallbackSheet.id);
+        writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, fallbackSheet.id);
         set({
           history: createHistoryStack(fallbackSheet),
+          characters: list,
+          hasActiveCharacter: true,
           snapshots: snaps,
           isInitialized: true,
           syncStatus: 'saved',
@@ -180,6 +254,141 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
           lastError: message,
         });
       }
+    },
+
+    async switchCharacter(characterId: string): Promise<void> {
+      await get().flushPendingWrite();
+      const target = await repository.getCharacter(characterId);
+      if (target === null) return;
+      const snaps = await repository.listSnapshots(characterId);
+      const list = await repository.listCharacters();
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, target.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+      set({
+        history: createHistoryStack(target),
+        characters: list,
+        hasActiveCharacter: true,
+        snapshots: snaps,
+        syncStatus: 'saved',
+        lastError: null,
+      });
+    },
+
+    async createNewCharacter(name?: string): Promise<CharacterSheetV1> {
+      if (get().hasActiveCharacter) {
+        await get().flushPendingWrite();
+      }
+      const blank = createBlankCharacter(
+        name !== undefined ? { name } : {},
+      );
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, blank.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+      set({
+        history: createHistoryStack(blank),
+        hasActiveCharacter: true,
+        snapshots: [],
+      });
+      await persistImmediately(blank, set);
+      return blank;
+    },
+
+    async duplicateCurrentCharacter(
+      customName?: string,
+    ): Promise<CharacterSheetV1 | null> {
+      if (!get().hasActiveCharacter) return null;
+      await get().flushPendingWrite();
+      const current = get().history.present;
+      const nowIso = new Date().toISOString();
+      const suffix = Math.random().toString(36).slice(2, 7);
+      const duplicated: CharacterSheetV1 = {
+        ...structuredClone(current),
+        id: `char-${Date.now()}-${suffix}`,
+        revision: 1,
+        updatedAt: nowIso,
+        identity: {
+          ...structuredClone(current.identity),
+          name: customName?.trim() || `${current.identity.name} (Copie)`,
+        },
+      };
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, duplicated.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+      set({
+        history: createHistoryStack(duplicated),
+        hasActiveCharacter: true,
+        snapshots: [],
+      });
+      await persistImmediately(duplicated, set);
+      return duplicated;
+    },
+
+    async loadDemoCharacter(): Promise<CharacterSheetV1> {
+      if (get().hasActiveCharacter) {
+        await get().flushPendingWrite();
+      }
+      const nowIso = new Date().toISOString();
+      const demoBase = createDemoCharacter(nowIso);
+      const existing = await repository.getCharacter(demoBase.id);
+      const demo: CharacterSheetV1 =
+        existing !== null
+          ? {
+              ...demoBase,
+              id: `demo-kaelen-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            }
+          : demoBase;
+
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, demo.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+      set({
+        history: createHistoryStack(demo),
+        hasActiveCharacter: true,
+        snapshots: [],
+      });
+      await persistImmediately(demo, set);
+      return demo;
+    },
+
+    async deleteCharacter(characterId: string): Promise<void> {
+      const currentId = get().history.present.id;
+      if (currentId === characterId) {
+        cancelPendingWriteFor(characterId);
+      } else if (get().hasActiveCharacter) {
+        await get().flushPendingWrite();
+      }
+
+      await repository.deleteCharacter(characterId);
+      const remaining = await repository.listCharacters();
+
+      if (remaining.length === 0) {
+        writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, null);
+        writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, '1');
+        set({
+          characters: [],
+          hasActiveCharacter: false,
+          snapshots: [],
+          syncStatus: 'saved',
+          lastError: null,
+        });
+        return;
+      }
+
+      if (currentId === characterId || !get().hasActiveCharacter) {
+        const nextSheet = remaining[0];
+        if (nextSheet !== undefined) {
+          const snaps = await repository.listSnapshots(nextSheet.id);
+          writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, nextSheet.id);
+          set({
+            history: createHistoryStack(nextSheet),
+            characters: remaining,
+            hasActiveCharacter: true,
+            snapshots: snaps,
+            syncStatus: 'saved',
+            lastError: null,
+          });
+        }
+        return;
+      }
+
+      set({ characters: remaining, syncStatus: 'saved', lastError: null });
     },
 
     async flushPendingWrite(): Promise<void> {
@@ -366,18 +575,25 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
         return { ok: false, errors: parsed.errors };
       }
 
-      const currentSheet = get().history.present;
-      const safetySnap = createSnapshotRecord(
-        currentSheet,
-        `Auto - Avant Import JSON (Rév. #${currentSheet.revision})`,
-      );
-      await repository.saveSnapshot(safetySnap);
+      if (get().hasActiveCharacter) {
+        const currentSheet = get().history.present;
+        const safetySnap = createSnapshotRecord(
+          currentSheet,
+          `Auto - Avant Import JSON (Rév. #${currentSheet.revision})`,
+        );
+        await repository.saveSnapshot(safetySnap);
+      }
 
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, parsed.character.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
       await persistImmediately(parsed.character, set);
       const snaps = await repository.listSnapshots(parsed.character.id);
-      const nextHistory = pushHistoryState(get().history, parsed.character);
+      const nextHistory = get().hasActiveCharacter
+        ? pushHistoryState(get().history, parsed.character)
+        : createHistoryStack(parsed.character);
       set({
         history: nextHistory,
+        hasActiveCharacter: true,
         snapshots: snaps,
         lastError: null,
       });
@@ -387,8 +603,12 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
 
     async resetToDemo(): Promise<void> {
       const freshDemo = createDemoCharacter(new Date().toISOString());
-      const nextHistory = pushHistoryState(get().history, freshDemo);
-      set({ history: nextHistory });
+      const nextHistory = get().hasActiveCharacter
+        ? pushHistoryState(get().history, freshDemo)
+        : createHistoryStack(freshDemo);
+      writeLocalStorageValue(ACTIVE_CHAR_STORAGE_KEY, freshDemo.id);
+      writeLocalStorageValue(ROSTER_CLEARED_STORAGE_KEY, null);
+      set({ history: nextHistory, hasActiveCharacter: true });
       await persistImmediately(freshDemo, set);
       const snaps = await repository.listSnapshots(freshDemo.id);
       set({ snapshots: snaps });

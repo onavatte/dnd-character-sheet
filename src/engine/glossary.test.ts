@@ -3,11 +3,13 @@ import {
   ABILITY_GLOSSARY,
   CANONICAL_CONDITIONS_5E,
   CANONICAL_SKILLS_5E,
+  createBlankCharacter,
   createDefaultSkills,
   createDemoCharacter,
   matchesBilingualSearch,
   normalizeSearchText,
 } from './glossary';
+import { validateCharacterSheet } from './validators';
 
 describe('Lexique bilingue FR/EN & Recherche (glossary.ts)', () => {
   it('expose les 6 caractéristiques et les 18 compétences officielles D&D 5e (2014)', () => {
@@ -41,5 +43,10 @@ describe('Lexique bilingue FR/EN & Recherche (glossary.ts)', () => {
     const demo = createDemoCharacter();
     expect(demo.identity.classes).toHaveLength(2);
     expect(demo.skills).toHaveLength(19); // 18 canoniques + 1 post-apo custom
+
+    const blank = createBlankCharacter({ id: 'test-blank', name: 'Lyra' });
+    expect(blank.identity.name).toBe('Lyra');
+    expect(blank.skills).toHaveLength(18);
+    expect(validateCharacterSheet(blank).valid).toBe(true);
   });
 });

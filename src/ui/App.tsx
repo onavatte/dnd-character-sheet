@@ -4,6 +4,7 @@ import { computeDerivedCharacter } from '../engine';
 import type { TermDisplayMode, ThemeMode } from '../engine';
 import { buildBackupFilename, useCharacterStore } from '../state';
 import { AbilitiesAndSkillsPanel } from './components/AbilitiesAndSkillsPanel';
+import { CharacterSelectorDialog } from './components/CharacterSelectorDialog';
 import { CombatAndResourcesPanel } from './components/CombatAndResourcesPanel';
 import { DiceAssistantPanel } from './components/DiceAssistantPanel';
 import type { RollLogEntry } from './components/DiceAssistantPanel';
@@ -32,11 +33,21 @@ function getInitialDiceRollMode(): DiceRollMode {
 
 export function App() {
   const history = useCharacterStore((s) => s.history);
+  const characters = useCharacterStore((s) => s.characters);
+  const hasActiveCharacter = useCharacterStore((s) => s.hasActiveCharacter);
+  const isInitialized = useCharacterStore((s) => s.isInitialized);
   const snapshots = useCharacterStore((s) => s.snapshots);
   const syncStatus = useCharacterStore((s) => s.syncStatus);
   const lastError = useCharacterStore((s) => s.lastError);
 
   const initialize = useCharacterStore((s) => s.initialize);
+  const switchCharacter = useCharacterStore((s) => s.switchCharacter);
+  const createNewCharacter = useCharacterStore((s) => s.createNewCharacter);
+  const duplicateCurrentCharacter = useCharacterStore(
+    (s) => s.duplicateCurrentCharacter,
+  );
+  const loadDemoCharacter = useCharacterStore((s) => s.loadDemoCharacter);
+  const deleteCharacter = useCharacterStore((s) => s.deleteCharacter);
   const damage = useCharacterStore((s) => s.damage);
   const heal = useCharacterStore((s) => s.heal);
   const tempHp = useCharacterStore((s) => s.tempHp);
@@ -77,6 +88,8 @@ export function App() {
   const shortRestDialogRef = useRef<HTMLDialogElement>(null);
   const longRestDialogRef = useRef<HTMLDialogElement>(null);
   const settingsDialogRef = useRef<HTMLDialogElement>(null);
+  const characterDialogRef = useRef<HTMLDialogElement>(null);
+  const emptyImportInputRef = useRef<HTMLInputElement>(null);
 
   const derived = computeDerivedCharacter(sheet);
 
@@ -185,6 +198,40 @@ export function App() {
     e.target.value = '';
   };
 
+  const resetSessionRollUi = () => {
+    setSelectedRollTarget(null);
+    setIsDiceModalOpen(false);
+    setRollLog([]);
+  };
+
+  const handleSwitchCharacter = async (characterId: string) => {
+    await switchCharacter(characterId);
+    resetSessionRollUi();
+  };
+
+  const handleCreateCharacter = async (name?: string) => {
+    await createNewCharacter(name);
+    resetSessionRollUi();
+    setSheetMode('forge');
+  };
+
+  const handleDuplicateCharacter = async () => {
+    await duplicateCurrentCharacter();
+    resetSessionRollUi();
+    setSheetMode('forge');
+  };
+
+  const handleLoadDemoCharacter = async () => {
+    await loadDemoCharacter();
+    resetSessionRollUi();
+    setSheetMode('cockpit');
+  };
+
+  const handleDeleteCharacter = async (characterId: string) => {
+    await deleteCharacter(characterId);
+    resetSessionRollUi();
+  };
+
   const syncDotClass =
     syncStatus === 'saved'
       ? 'sync-dot--saved'
@@ -206,29 +253,39 @@ export function App() {
       <header className="sheet-header">
         <div className="identity-block">
           <div className="portrait-frame" aria-hidden="true">
-            {sheet.identity.portraitDataUrl ? (
-              <img
-                src={sheet.identity.portraitDataUrl}
-                alt={`Portrait de ${sheet.identity.name}`}
-              />
+            {hasActiveCharacter ? (
+              sheet.identity.portraitDataUrl ? (
+                <img
+                  src={sheet.identity.portraitDataUrl}
+                  alt={`Portrait de ${sheet.identity.name}`}
+                />
+              ) : (
+                initials
+              )
             ) : (
-              initials
+              'G5'
             )}
           </div>
           <div className="identity-text">
-            <h1>{sheet.identity.name}</h1>
-            <p className="identity-subtitle">
-              <span className="badge-pill">{sheet.identity.ancestry}</span>
-              {sheet.identity.classes.map((cls) => (
-                <span key={cls.id} className="badge-pill">
-                  {renderTerm(cls.name, cls.originalName)} {cls.level}
-                  {cls.subclass ? ` (${cls.subclass.name})` : ''}
+            <h1>{hasActiveCharacter ? sheet.identity.name : 'Grimoire 5e'}</h1>
+            {hasActiveCharacter ? (
+              <p className="identity-subtitle">
+                <span className="badge-pill">{sheet.identity.ancestry}</span>
+                {sheet.identity.classes.map((cls) => (
+                  <span key={cls.id} className="badge-pill">
+                    {renderTerm(cls.name, cls.originalName)} {cls.level}
+                    {cls.subclass ? ` (${cls.subclass.name})` : ''}
+                  </span>
+                ))}
+                <span className="badge-pill tabular-nums">
+                  Niveau {derived.totalLevel}
                 </span>
-              ))}
-              <span className="badge-pill tabular-nums">
-                Niveau {derived.totalLevel}
-              </span>
-            </p>
+              </p>
+            ) : (
+              <p className="identity-subtitle">
+                <span className="badge-pill">Aucun personnage actif</span>
+              </p>
+            )}
           </div>
         </div>
 
@@ -237,155 +294,238 @@ export function App() {
           role="toolbar"
           aria-label="Contrôles de la fiche de personnage"
         >
-          <div
-            className="segmented-control"
-            role="group"
-            aria-label="Historique Annuler et Rétablir"
-          >
+          {hasActiveCharacter && (
+            <>
+              <div
+                className="segmented-control"
+                role="group"
+                aria-label="Historique Annuler et Rétablir"
+              >
+                <button
+                  type="button"
+                  className="segmented-btn tabular-nums"
+                  disabled={undoCount === 0}
+                  onClick={undo}
+                  title="Annuler la dernière modification en mémoire (Undo)"
+                >
+                  Annuler ({undoCount})
+                </button>
+                <button
+                  type="button"
+                  className="segmented-btn tabular-nums"
+                  disabled={redoCount === 0}
+                  onClick={redo}
+                  title="Rétablir la modification annulée (Redo)"
+                >
+                  Rétablir ({redoCount})
+                </button>
+              </div>
+
+              <div
+                className="segmented-control"
+                role="group"
+                aria-label="Mode de la fiche"
+              >
+                <button
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={sheetMode === 'cockpit'}
+                  onClick={() => setSheetMode('cockpit')}
+                >
+                  Mode Partie (Cockpit)
+                </button>
+                <button
+                  type="button"
+                  className="segmented-btn"
+                  aria-pressed={sheetMode === 'forge'}
+                  onClick={() => setSheetMode('forge')}
+                >
+                  Mode Édition (Forge)
+                </button>
+              </div>
+            </>
+          )}
+
+          <div className="toolbar-utility-actions">
             <button
               type="button"
-              className="segmented-btn tabular-nums"
-              disabled={undoCount === 0}
-              onClick={undo}
-              title="Annuler la dernière modification en mémoire (Undo)"
+              className="action-btn roster-btn tabular-nums"
+              onClick={() => characterDialogRef.current?.showModal()}
+              aria-label={`Ouvrir la gestion des personnages (${characters.length})`}
+              title="Changer de personnage, créer, dupliquer ou supprimer une fiche"
             >
-              Annuler ({undoCount})
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+              <span>Personnages ({characters.length})</span>
             </button>
+
             <button
               type="button"
-              className="segmented-btn tabular-nums"
-              disabled={redoCount === 0}
-              onClick={redo}
-              title="Rétablir la modification annulée (Redo)"
+              className="action-btn settings-gear-btn"
+              onClick={() => settingsDialogRef.current?.showModal()}
+              aria-label="Ouvrir les paramètres, le stockage IndexedDB et les sauvegardes"
+              title="Paramètres, Thème, Snapshots IndexedDB & Export/Import JSON"
             >
-              Rétablir ({redoCount})
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <span>Système</span>
+              <span className={`sync-dot ${syncDotClass}`} aria-hidden="true" />
             </button>
           </div>
-
-          <div
-            className="segmented-control"
-            role="group"
-            aria-label="Mode de la fiche"
-          >
-            <button
-              type="button"
-              className="segmented-btn"
-              aria-pressed={sheetMode === 'cockpit'}
-              onClick={() => setSheetMode('cockpit')}
-            >
-              Mode Partie (Cockpit)
-            </button>
-            <button
-              type="button"
-              className="segmented-btn"
-              aria-pressed={sheetMode === 'forge'}
-              onClick={() => setSheetMode('forge')}
-            >
-              Mode Édition (Forge)
-            </button>
-          </div>
-
-          <button
-            type="button"
-            className="action-btn settings-gear-btn"
-            onClick={() => settingsDialogRef.current?.showModal()}
-            aria-label="Ouvrir les paramètres, le stockage IndexedDB et les sauvegardes"
-            title="Paramètres, Thème, Snapshots IndexedDB & Export/Import JSON"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-            <span>Système</span>
-            <span className={`sync-dot ${syncDotClass}`} aria-hidden="true" />
-          </button>
         </div>
       </header>
 
-      {/* Bandeau Vital permanent (PV, CA, Initiative, États, Repos Court / Long) */}
-      <VitalityBanner
-        sheet={sheet}
-        derived={derived}
-        renderTerm={renderTerm}
-        onSelectRollTarget={handleSelectRollTarget}
-        onDamage={damage}
-        onHeal={heal}
-        onTempHp={tempHp}
-        onToggleCondition={toggleCondition}
-        onSetExhaustion={setExhaustionLevel}
-        onSetDeathSaves={setDeathSaves}
-        onOpenShortRest={() => shortRestDialogRef.current?.showModal()}
-        onOpenLongRest={() => longRestDialogRef.current?.showModal()}
-      />
+      {isInitialized && !hasActiveCharacter ? (
+        <main className="empty-roster-card grimoire-card">
+          <h2>Aucun personnage dans votre grimoire</h2>
+          <p className="muted-note">
+            Créez un aventurier vierge pour commencer de zéro, chargez le personnage de démonstration pré-rempli ou importez une sauvegarde externe `.json`.
+          </p>
+          <div className="button-cluster empty-roster-actions">
+            <button
+              type="button"
+              className="action-btn action-btn--primary"
+              onClick={() => void handleCreateCharacter()}
+            >
+              Créer un personnage vierge
+            </button>
+            <button
+              type="button"
+              className="action-btn"
+              onClick={() => void handleLoadDemoCharacter()}
+            >
+              Charger la fiche démo (Kaelen Vance)
+            </button>
+            <button
+              type="button"
+              className="action-btn"
+              onClick={() => emptyImportInputRef.current?.click()}
+            >
+              Importer une fiche (.json)
+            </button>
+            <input
+              ref={emptyImportInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="visually-hidden"
+              onChange={(e) => void handleImportJsonFile(e)}
+            />
+          </div>
+          {lastError && <div className="status-banner-error">{lastError}</div>}
+        </main>
+      ) : (
+        <>
+          {/* Bandeau Vital permanent (PV, CA, Initiative, États, Repos Court / Long) */}
+          <VitalityBanner
+            sheet={sheet}
+            derived={derived}
+            renderTerm={renderTerm}
+            onSelectRollTarget={handleSelectRollTarget}
+            onDamage={damage}
+            onHeal={heal}
+            onTempHp={tempHp}
+            onToggleCondition={toggleCondition}
+            onSetExhaustion={setExhaustionLevel}
+            onSetDeathSaves={setDeathSaves}
+            onOpenShortRest={() => shortRestDialogRef.current?.showModal()}
+            onOpenLongRest={() => longRestDialogRef.current?.showModal()}
+          />
 
-      {sheetMode === 'forge' && (
-        <div className="roll-banner" role="status">
-          <strong>Mode Édition (Forge) - Prévu au Jalon 4</strong>
-          <span>
-            L’éditeur complet de personnage (création multi-personnages, upload
-            et compression du portrait, édition des caractéristiques, compétences
-            homebrew, armes et sorts) sera construit lors du Jalon 4. Vous pouvez
-            tester dès maintenant l’intégralité du Mode Partie (Cockpit) ci-dessous.
-          </span>
-        </div>
+          {sheetMode === 'forge' && (
+            <div className="roll-banner" role="status">
+              <strong>Mode Édition (Forge) - Onglets en cours de construction (Lots 4.2 à 4.4)</strong>
+              <span>
+                La gestion multi-personnages et la création de fiches vierges sont actives via le bouton « Personnages ». Les formulaires d’édition (identité/portrait, stats, compétences, armes, sorts et butin) arrivent dans les lots suivants du Jalon 4.
+              </span>
+            </div>
+          )}
+
+          {/* Grille principale élargie en 2 grandes colonnes (Caractéristiques/Compétences & Actions/Inventaire) */}
+          <main className="workspace-grid">
+            <AbilitiesAndSkillsPanel
+              sheet={sheet}
+              derived={derived}
+              termMode={termMode}
+              activeRollTargetId={activeRollTarget.id}
+              renderTerm={renderTerm}
+              onSelectRollTarget={handleSelectRollTarget}
+            />
+
+            <CombatAndResourcesPanel
+              sheet={sheet}
+              derived={derived}
+              termMode={termMode}
+              activeRollTargetId={activeRollTarget.id}
+              renderTerm={renderTerm}
+              onSelectRollTarget={handleSelectRollTarget}
+              onAdjustResource={adjustResource}
+              onAdjustSpellSlotUsed={adjustSpellSlotUsed}
+              onAdjustPactSlotUsed={adjustPactSlotUsed}
+              onUpdateNotes={updateNotes}
+              onAppendQuickNote={appendQuickNote}
+            />
+          </main>
+
+          {/* Assistant de Jet Hybride Universel (Modale flottante déplaçable sans flou + Bouton flottant FAB) */}
+          <DiceAssistantPanel
+            isOpen={isDiceModalOpen}
+            onToggleOpen={setIsDiceModalOpen}
+            diceRollMode={diceRollMode}
+            activeTarget={activeRollTarget}
+            hasExplicitTarget={selectedRollTarget !== null}
+            rollLog={rollLog}
+            renderTerm={renderTerm}
+            onPushRollLog={pushRollLog}
+            onClearRollLog={() => setRollLog([])}
+          />
+
+          <RestDialogs
+            sheet={sheet}
+            derived={derived}
+            shortRestDialogRef={shortRestDialogRef}
+            longRestDialogRef={longRestDialogRef}
+            onConfirmShortRest={shortRest}
+            onConfirmLongRest={longRestWithAutoSnapshot}
+          />
+        </>
       )}
 
-      {/* Grille principale élargie en 2 grandes colonnes (Caractéristiques/Compétences & Actions/Inventaire) */}
-      <main className="workspace-grid">
-        <AbilitiesAndSkillsPanel
-          sheet={sheet}
-          derived={derived}
-          termMode={termMode}
-          activeRollTargetId={activeRollTarget.id}
-          renderTerm={renderTerm}
-          onSelectRollTarget={handleSelectRollTarget}
-        />
-
-        <CombatAndResourcesPanel
-          sheet={sheet}
-          derived={derived}
-          termMode={termMode}
-          activeRollTargetId={activeRollTarget.id}
-          renderTerm={renderTerm}
-          onSelectRollTarget={handleSelectRollTarget}
-          onAdjustResource={adjustResource}
-          onAdjustSpellSlotUsed={adjustSpellSlotUsed}
-          onAdjustPactSlotUsed={adjustPactSlotUsed}
-          onUpdateNotes={updateNotes}
-          onAppendQuickNote={appendQuickNote}
-        />
-      </main>
-
-      {/* Assistant de Jet Hybride Universel (Modale flottante déplaçable sans flou + Bouton flottant FAB) */}
-      <DiceAssistantPanel
-        isOpen={isDiceModalOpen}
-        onToggleOpen={setIsDiceModalOpen}
-        diceRollMode={diceRollMode}
-        activeTarget={activeRollTarget}
-        hasExplicitTarget={selectedRollTarget !== null}
-        rollLog={rollLog}
-        renderTerm={renderTerm}
-        onPushRollLog={pushRollLog}
-        onClearRollLog={() => setRollLog([])}
-      />
-
-      <RestDialogs
-        sheet={sheet}
-        derived={derived}
-        shortRestDialogRef={shortRestDialogRef}
-        longRestDialogRef={longRestDialogRef}
-        onConfirmShortRest={shortRest}
-        onConfirmLongRest={longRestWithAutoSnapshot}
+      <CharacterSelectorDialog
+        dialogRef={characterDialogRef}
+        characters={characters}
+        activeCharacterId={sheet.id}
+        hasActiveCharacter={hasActiveCharacter}
+        onSwitchCharacter={handleSwitchCharacter}
+        onCreateNewCharacter={handleCreateCharacter}
+        onDuplicateCurrentCharacter={handleDuplicateCharacter}
+        onLoadDemoCharacter={handleLoadDemoCharacter}
+        onDeleteCharacter={handleDeleteCharacter}
       />
 
       <SystemSettingsDialog

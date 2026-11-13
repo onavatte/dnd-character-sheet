@@ -399,3 +399,86 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     notes: 'Campagne Post-Apo : survivant de l’effondrement orbital.',
   };
 }
+
+export interface BlankCharacterOptions {
+  id?: string;
+  name?: string;
+  nowIso?: string;
+}
+
+/**
+ * Crée une fiche de personnage vierge de niveau 1 prête à être façonnée en Mode Édition (Forge).
+ */
+export function createBlankCharacter(
+  options: BlankCharacterOptions = {},
+): CharacterSheetV1 {
+  const nowIso = options.nowIso ?? new Date().toISOString();
+  const id =
+    options.id ??
+    `char-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  const name = options.name?.trim() || 'Nouvel Aventurier';
+
+  return {
+    schemaVersion: 1,
+    id,
+    updatedAt: nowIso,
+    revision: 1,
+    preferences: {
+      termDisplayMode: 'bilingual',
+      theme: 'light',
+    },
+    identity: {
+      name,
+      classes: [
+        {
+          id: 'class-1',
+          name: 'Aventurier',
+          originalName: 'Adventurer',
+          level: 1,
+          hitDieSize: 10,
+        },
+      ],
+      background: 'Voyageur',
+      ancestry: 'Humain',
+    },
+    abilities: {
+      STR: 10,
+      DEX: 10,
+      CON: 10,
+      INT: 10,
+      WIS: 10,
+      CHA: 10,
+    },
+    savingThrowProficiencies: {
+      STR: false,
+      DEX: false,
+      CON: false,
+      INT: false,
+      WIS: false,
+      CHA: false,
+    },
+    skills: createDefaultSkills(),
+    combat: {
+      hpCurrent: 10,
+      hpMax: 10,
+      hpTemp: 0,
+      armorClassBase: 10,
+      armorClassBonus: 0,
+      speed: 9,
+      initiativeBonusFlat: 0,
+      hitDicePools: {
+        6: { total: 0, available: 0 },
+        8: { total: 0, available: 0 },
+        10: { total: 1, available: 1 },
+        12: { total: 0, available: 0 },
+      },
+      deathSaves: { successes: 0, failures: 0 },
+      exhaustionLevel: 0,
+      conditions: [],
+    },
+    resources: [],
+    attacks: [],
+    inventory: [],
+    notes: '',
+  };
+}
