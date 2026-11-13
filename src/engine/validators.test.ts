@@ -123,4 +123,38 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     };
     expect(validateCharacterSheet(badNoteCategory).valid).toBe(false);
   });
+
+  it('accepte les fiches anciennes sans features ni defenses mais rejette les formats invalides', () => {
+    const demo = createDemoCharacter();
+    const legacy = { ...demo } as Record<string, unknown>;
+    delete legacy['features'];
+    delete legacy['defenses'];
+
+    expect(validateCharacterSheet(legacy).valid).toBe(true);
+
+    const badFeatureCategory = {
+      ...demo,
+      features: [
+        {
+          id: 'f1',
+          category: 'mythic',
+          name: 'Test',
+          description: 'desc',
+        },
+      ],
+    };
+    expect(validateCharacterSheet(badFeatureCategory).valid).toBe(false);
+
+    const badDefenses = {
+      ...demo,
+      defenses: {
+        senses: ['Vision dans le noir 18 m'],
+        resistances: 'Feu',
+        damageImmunities: [],
+        conditionImmunities: [],
+        vulnerabilities: [],
+      },
+    };
+    expect(validateCharacterSheet(badDefenses).valid).toBe(false);
+  });
 });

@@ -6,6 +6,7 @@
 import {
   ABILITY_KEYS,
   CREATURE_SIZES,
+  FEATURE_CATEGORIES,
   HIT_DIE_SIZES,
   INVENTORY_CATEGORIES,
   NOTE_CATEGORIES,
@@ -14,6 +15,7 @@ import {
 import type {
   CharacterSheetV1,
   CreatureSize,
+  FeatureCategory,
   InventoryCategory,
   NoteCategory,
 } from './types';
@@ -276,6 +278,62 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
           errors.push(`Contenu ou date invalide pour l’entrée de note #${index + 1}.`);
         }
       });
+    }
+  }
+
+  const features = payload['features'];
+  if (features !== undefined) {
+    if (!Array.isArray(features)) {
+      errors.push('Les aptitudes et traits (features) doivent être un tableau.');
+    } else {
+      features.forEach((entry, index) => {
+        if (!isRecord(entry)) {
+          errors.push(`L’aptitude #${index + 1} est invalide.`);
+          return;
+        }
+        if (!isNonEmptyString(entry['id']) || !isNonEmptyString(entry['name'])) {
+          errors.push(`L’aptitude #${index + 1} doit avoir un id et un nom.`);
+        }
+        if (
+          typeof entry['category'] !== 'string' ||
+          !FEATURE_CATEGORIES.includes(entry['category'] as FeatureCategory)
+        ) {
+          errors.push(`Catégorie invalide pour l’aptitude #${index + 1}.`);
+        }
+        if (entry['source'] !== undefined && typeof entry['source'] !== 'string') {
+          errors.push(`Source invalide pour l’aptitude #${index + 1}.`);
+        }
+        if (typeof entry['description'] !== 'string') {
+          errors.push(`Description invalide pour l’aptitude #${index + 1}.`);
+        }
+      });
+    }
+  }
+
+  const defenses = payload['defenses'];
+  if (defenses !== undefined) {
+    if (!isRecord(defenses)) {
+      errors.push('Le bloc de défenses et sens (defenses) est invalide.');
+    } else {
+      const defenseListKeys = [
+        'senses',
+        'resistances',
+        'damageImmunities',
+        'conditionImmunities',
+        'vulnerabilities',
+      ] as const;
+      for (const key of defenseListKeys) {
+        const list = defenses[key];
+        if (
+          !Array.isArray(list) ||
+          !list.every((item) => typeof item === 'string')
+        ) {
+          errors.push(`La liste défensive "${key}" doit être un tableau de chaînes.`);
+        }
+      }
+      if (defenses['notes'] !== undefined && typeof defenses['notes'] !== 'string') {
+        errors.push('Les notes défensives (defenses.notes) doivent être une chaîne.');
+      }
     }
   }
 

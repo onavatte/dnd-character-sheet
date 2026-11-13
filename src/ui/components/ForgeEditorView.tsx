@@ -2,11 +2,17 @@ import { useState } from 'react';
 import type { Draft } from 'immer';
 import type { CharacterSheetV1, DerivedCharacterStats } from '../../engine/types';
 import { ForgeCombatAndSpellsTab } from './ForgeCombatAndSpellsTab';
+import { ForgeFeaturesAndDefensesTab } from './ForgeFeaturesAndDefensesTab';
 import { ForgeIdentityTab } from './ForgeIdentityTab';
 import { ForgeInventoryTab } from './ForgeInventoryTab';
 import { ForgeStatsAndSkillsTab } from './ForgeStatsAndSkillsTab';
 
-export type ForgeTabId = 'identity' | 'stats' | 'combat' | 'inventory';
+export type ForgeTabId =
+  | 'identity'
+  | 'stats'
+  | 'features'
+  | 'combat'
+  | 'inventory';
 
 interface ForgeTabMeta {
   id: ForgeTabId;
@@ -16,8 +22,9 @@ interface ForgeTabMeta {
 const FORGE_TABS: readonly ForgeTabMeta[] = [
   { id: 'identity', label: '1. Identité & Classes' },
   { id: 'stats', label: '2. Stats & Compétences' },
-  { id: 'combat', label: '3. Ressources, Armes & Sorts' },
-  { id: 'inventory', label: '4. Inventaire & Notes' },
+  { id: 'features', label: '3. Aptitudes & Défenses' },
+  { id: 'combat', label: '4. Ressources, Armes & Sorts' },
+  { id: 'inventory', label: '5. Inventaire & Notes' },
 ];
 
 export interface ForgeEditorViewProps {
@@ -82,6 +89,16 @@ export function ForgeEditorView({ sheet, derived, onMutate }: ForgeEditorViewPro
             derived={derived}
             onMutate={onMutate}
           />
+        </div>
+      )}
+
+      {activeTab === 'features' && (
+        <div
+          role="tabpanel"
+          id="forge-panel-features"
+          aria-labelledby="forge-tab-features"
+        >
+          <ForgeFeaturesAndDefensesTab sheet={sheet} onMutate={onMutate} />
         </div>
       )}
 

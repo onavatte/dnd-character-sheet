@@ -2719,3 +2719,193 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   color: var(--text-secondary);
   white-space: pre-wrap;
 }
+
+/* =========================================================
+   Aptitudes, Traits & Défenses (Forge & Cockpit)
+   ========================================================= */
+
+.vital-defenses-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.vital-defense-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.vital-defense-pill--sense {
+  border-color: var(--color-arcane);
+  background-color: color-mix(in srgb, var(--color-arcane) 10%, var(--bg-surface));
+}
+
+.vital-defense-pill--res {
+  border-color: var(--color-hp-ok);
+  background-color: color-mix(in srgb, var(--color-hp-ok) 12%, var(--bg-surface));
+}
+
+.vital-defense-pill--imm {
+  border-color: var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-surface));
+}
+
+.vital-defense-pill--vuln {
+  border-color: var(--color-hp-crit);
+  color: var(--color-hp-crit);
+  background-color: color-mix(in srgb, var(--color-hp-crit) 10%, var(--bg-surface));
+}
+
+.vital-defense-note {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-left: var(--space-1);
+}
+
+.forge-preset-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.forge-defense-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+}
+
+.forge-defense-group legend,
+.forge-defense-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.forge-preset-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.forge-preset-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 36px;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
+}
+
+.forge-preset-pill:hover,
+.forge-preset-pill:focus-visible {
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.forge-preset-pill[aria-pressed='true'] {
+  border-color: var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 15%, var(--bg-surface));
+  color: var(--text-primary);
+}
+
+.forge-chip-removable {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.4rem 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-surface));
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.forge-chip-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.forge-chip-remove-btn:hover,
+.forge-chip-remove-btn:focus-visible {
+  color: var(--color-hp-crit);
+  border-color: var(--color-hp-crit);
+  background-color: color-mix(in srgb, var(--color-hp-crit) 12%, var(--bg-surface));
+}
+
+.cockpit-features-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.cockpit-feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cockpit-feature-card {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cockpit-feature-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cockpit-feature-source {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.cockpit-feature-desc {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}

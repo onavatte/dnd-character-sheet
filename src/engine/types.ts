@@ -172,6 +172,31 @@ export interface NoteEntry {
   createdAt: string;
 }
 
+export const FEATURE_CATEGORIES = [
+  'trait',
+  'class',
+  'feat',
+  'background',
+  'other',
+] as const;
+
+export type FeatureCategory = (typeof FEATURE_CATEGORIES)[number];
+
+export interface FeatureEntry extends BilingualNamed {
+  category: FeatureCategory;
+  source?: string;
+  description: string;
+}
+
+export interface CharacterDefenses {
+  senses: string[];
+  resistances: string[];
+  damageImmunities: string[];
+  conditionImmunities: string[];
+  vulnerabilities: string[];
+  notes?: string;
+}
+
 export interface CharacterSheetV1 {
   schemaVersion: 1;
   id: string;
@@ -216,6 +241,8 @@ export interface CharacterSheetV1 {
   resources: TrackedResource[];
   attacks: AttackEntry[];
   spellcasting?: SpellcastingState;
+  features?: FeatureEntry[];
+  defenses?: CharacterDefenses;
   inventory: InventoryItem[];
   currency?: CurrencyPurse;
   notes: string;

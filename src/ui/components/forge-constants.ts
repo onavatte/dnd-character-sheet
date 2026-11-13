@@ -1,5 +1,6 @@
 import type {
   ActionTiming,
+  FeatureCategory,
   InventoryCategory,
   NoteCategory,
   ProficiencyLevel,
@@ -99,3 +100,123 @@ export function getNoteCategoryLabel(category: NoteCategory): string {
   const found = NOTE_CATEGORY_OPTIONS.find((opt) => opt.value === category);
   return found ? found.label : 'Divers';
 }
+
+export const FEATURE_CATEGORY_OPTIONS: ReadonlyArray<{
+  value: FeatureCategory;
+  label: string;
+}> = [
+  { value: 'trait', label: 'Traits & Espèce' },
+  { value: 'class', label: 'Classe & Sous-classe' },
+  { value: 'feat', label: 'Dons' },
+  { value: 'background', label: 'Historique' },
+  { value: 'other', label: 'Autre' },
+];
+
+export function getFeatureCategoryLabel(category: FeatureCategory): string {
+  const found = FEATURE_CATEGORY_OPTIONS.find((opt) => opt.value === category);
+  return found ? found.label : 'Autre';
+}
+
+export interface FeaturePreset {
+  key: string;
+  category: FeatureCategory;
+  source: string;
+  name: string;
+  originalName: string;
+  description: string;
+}
+
+export const FEATURE_PRESETS_5E: ReadonlyArray<FeaturePreset> = [
+  {
+    key: 'darkvision-18',
+    category: 'trait',
+    source: 'Espèce',
+    name: 'Vision dans le noir (18 m)',
+    originalName: 'Darkvision (60 ft.)',
+    description:
+      'Dans un rayon de 18 m, voit en lumière faible comme en lumière vive et dans les ténèbres comme en lumière faible (en nuances de gris).',
+  },
+  {
+    key: 'fey-ancestry',
+    category: 'trait',
+    source: 'Elfe / Demi-elfe',
+    name: 'Ascendance féerique',
+    originalName: 'Fey Ancestry',
+    description:
+      'Avantage aux jets de sauvegarde contre l’état charmé, et la magie ne peut pas vous endormir.',
+  },
+  {
+    key: 'dwarven-resilience',
+    category: 'trait',
+    source: 'Nain',
+    name: 'Résistance naine',
+    originalName: 'Dwarven Resilience',
+    description:
+      'Avantage aux jets de sauvegarde contre le poison et résistance aux dégâts de poison.',
+  },
+  {
+    key: 'halfling-lucky',
+    category: 'trait',
+    source: 'Halfelin',
+    name: 'Chanceux (Halfelin)',
+    originalName: 'Lucky',
+    description:
+      'Lorsque vous obtenez 1 sur le d20 d’un jet d’attaque, de caractéristique ou de sauvegarde, vous pouvez relancer le dé (nouveau résultat conservé).',
+  },
+  {
+    key: 'relentless-endurance',
+    category: 'trait',
+    source: 'Demi-orque',
+    name: 'Endurance implacable',
+    originalName: 'Relentless Endurance',
+    description:
+      'Une fois par repos long, si vous tombez à 0 PV sans être tué sur le coup, vous tombez à 1 PV à la place.',
+  },
+  {
+    key: 'alert-feat',
+    category: 'feat',
+    source: 'Don',
+    name: 'Vigilant',
+    originalName: 'Alert',
+    description:
+      '+5 à l’initiative, ne peut être surpris tant que conscient, et les créatures cachées n’ont pas l’avantage contre vous.',
+  },
+];
+
+export const SENSE_PRESETS_5E: ReadonlyArray<string> = [
+  'Vision dans le noir 18 m',
+  'Vision dans le noir 36 m',
+  'Vision aveugle 3 m',
+  'Perception des vibrations 9 m',
+  'Vision véritable 18 m',
+];
+
+export const DAMAGE_TYPE_PRESETS_5E: ReadonlyArray<string> = [
+  'Acide',
+  'Contondant',
+  'Feu',
+  'Froid',
+  'Force',
+  'Foudre',
+  'Nécrotique',
+  'Perforant',
+  'Poison',
+  'Psychique',
+  'Radiant',
+  'Tonnerre',
+  'Tranchant',
+  'Non magique (C/P/T)',
+];
+
+export const CONDITION_IMMUNITY_PRESETS_5E: ReadonlyArray<string> = [
+  'Sommeil magique',
+  'Charmé',
+  'Effrayé',
+  'Empoisonné',
+  'Paralysé',
+  'Pétrifié',
+  'Étourdi',
+  'Aveuglé',
+  'Assourdi',
+  'Épuisement',
+];

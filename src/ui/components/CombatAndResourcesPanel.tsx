@@ -9,6 +9,7 @@ import type {
   AbilityKey,
   CharacterSheetV1,
   DerivedCharacterStats,
+  FeatureCategory,
   InventoryCategory,
   NoteCategory,
   TermDisplayMode,
@@ -16,6 +17,8 @@ import type {
 import type { ActiveRollTarget } from './dialog-utils';
 import { CurrencyPurseGrid } from './CurrencyPurseGrid';
 import {
+  FEATURE_CATEGORY_OPTIONS,
+  getFeatureCategoryLabel,
   getInventoryCategoryLabel,
   getNoteCategoryLabel,
   INVENTORY_CATEGORY_OPTIONS,
@@ -79,6 +82,9 @@ export function CombatAndResourcesPanel({
     useState<NoteCategory>('loot');
   const [quickLootText, setQuickLootText] = useState('');
   const [noteFilter, setNoteFilter] = useState<CockpitNoteFilter>('all');
+  const [featureFilter, setFeatureFilter] = useState<'all' | FeatureCategory>(
+    'all',
+  );
 
   const handleToggleItemEquipped = (itemId: string) => {
     onMutate((draft) => {
@@ -594,6 +600,83 @@ export function CombatAndResourcesPanel({
                 </div>
               );
             })}
+          </div>
+
+          {/* Aptitudes, Traits & Dons */}
+          <div className="cockpit-features-section">
+            <h3>Aptitudes & Traits ({(sheet.features ?? []).length})</h3>
+
+            {(sheet.features ?? []).length > 0 ? (
+              <>
+                <div
+                  className="forge-filter-pills"
+                  role="group"
+                  aria-label="Filtrer les aptitudes"
+                >
+                  <button
+                    type="button"
+                    className="forge-filter-pill"
+                    aria-pressed={featureFilter === 'all'}
+                    onClick={() => setFeatureFilter('all')}
+                  >
+                    Tout ({(sheet.features ?? []).length})
+                  </button>
+                  {FEATURE_CATEGORY_OPTIONS.map((opt) => {
+                    const count = (sheet.features ?? []).filter(
+                      (item) => item.category === opt.value,
+                    ).length;
+                    if (count === 0) return null;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className="forge-filter-pill"
+                        aria-pressed={featureFilter === opt.value}
+                        onClick={() => setFeatureFilter(opt.value)}
+                      >
+                        {opt.label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="cockpit-feature-list">
+                  {(sheet.features ?? [])
+                    .filter(
+                      (feat) =>
+                        featureFilter === 'all' ||
+                        feat.category === featureFilter,
+                    )
+                    .map((feat) => (
+                      <article key={feat.id} className="cockpit-feature-card">
+                        <div className="cockpit-feature-header">
+                          <strong>
+                            {renderTerm(feat.name, feat.originalName)}
+                          </strong>
+                          <span className="badge-pill">
+                            {getFeatureCategoryLabel(feat.category)}
+                          </span>
+                        </div>
+                        {feat.source ? (
+                          <div className="cockpit-feature-source">
+                            Origine : {feat.source}
+                          </div>
+                        ) : null}
+                        {feat.description ? (
+                          <p className="cockpit-feature-desc">
+                            {feat.description}
+                          </p>
+                        ) : null}
+                      </article>
+                    ))}
+                </div>
+              </>
+            ) : (
+              <p className="attack-meta">
+                Aucune aptitude renseignée. Ajoutez vos traits d’espèce,
+                aptitudes de classe ou dons dans Mode Édition (onglet 3).
+              </p>
+            )}
           </div>
         </div>
       )}

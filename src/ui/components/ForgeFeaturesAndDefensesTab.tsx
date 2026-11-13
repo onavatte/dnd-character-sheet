@@ -1,0 +1,634 @@
+import { useId, useState } from 'react';
+import type { KeyboardEvent } from 'react';
+import type { Draft } from 'immer';
+import type {
+  CharacterDefenses,
+  CharacterSheetV1,
+  FeatureCategory,
+  FeatureEntry,
+} from '../../engine';
+import {
+  CONDITION_IMMUNITY_PRESETS_5E,
+  DAMAGE_TYPE_PRESETS_5E,
+  FEATURE_CATEGORY_OPTIONS,
+  FEATURE_PRESETS_5E,
+  getFeatureCategoryLabel,
+  SENSE_PRESETS_5E,
+} from './forge-constants';
+import type { FeaturePreset } from './forge-constants';
+import { CommittedTextArea, CommittedTextInput } from './ForgeSharedControls';
+
+export interface ForgeFeaturesAndDefensesTabProps {
+  sheet: CharacterSheetV1;
+  onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
+}
+
+type FeatureFilter = 'all' | FeatureCategory;
+type DefenseListKey =
+  | 'senses'
+  | 'resistances'
+  | 'damageImmunities'
+  | 'conditionImmunities'
+  | 'vulnerabilities';
+
+function ensureDefenses(draft: Draft<CharacterSheetV1>): CharacterDefenses {
+  if (!draft.defenses) {
+    draft.defenses = {
+      senses: [],
+      resistances: [],
+      damageImmunities: [],
+      conditionImmunities: [],
+      vulnerabilities: [],
+      notes: '',
+    };
+  }
+  return draft.defenses;
+}
+
+interface DefenseTagGroupProps {
+  legend: string;
+  inputId: string;
+  placeholder: string;
+  presets: ReadonlyArray<string>;
+  selectedValues: ReadonlyArray<string>;
+  onToggleValue: (value: string) => void;
+  onAddCustom: (value: string) => void;
+  onRemoveValue: (value: string) => void;
+}
+
+/**
+ * Groupe réutilisable de sélecteurs rapides (pilules) + saisie libre pour les sens et défenses.
+ */
+function DefenseTagGroup({
+  legend,
+  inputId,
+  placeholder,
+  presets,
+  selectedValues,
+  onToggleValue,
+  onAddCustom,
+  onRemoveValue,
+}: DefenseTagGroupProps) {
+  const [customInput, setCustomInput] = useState('');
+
+  const handleSubmitCustom = () => {
+    const trimmed = customInput.trim();
+    if (!trimmed) return;
+    onAddCustom(trimmed);
+    setCustomInput('');
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && !event.nativeEvent.isComposing) {
+      event.preventDefault();
+      handleSubmitCustom();
+    }
+  };
+
+  const customOnlyValues = selectedValues.filter((val) => !presets.includes(val));
+
+  return (
+    <fieldset className="forge-defense-group">
+      <legend>{legend}</legend>
+
+      <div className="forge-preset-pills">
+        {presets.map((preset) => {
+          const isActive = selectedValues.includes(preset);
+          return (
+            <button
+              key={preset}
+              type="button"
+              className="forge-preset-pill"
+              aria-pressed={isActive}
+              onClick={() => onToggleValue(preset)}
+            >
+              {isActive ? `✓ ${preset}` : `+ ${preset}`}
+            </button>
+          );
+        })}
+
+        {customOnlyValues.map((val) => (
+          <span key={val} className="forge-chip-removable">
+            <span>{val}</span>
+            <button
+              type="button"
+              className="forge-chip-remove-btn"
+              aria-label={`Retirer ${val}`}
+              onClick={() => onRemoveValue(val)}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+
+      <div className="inline-input-row">
+        <label htmlFor={inputId} className="sr-only">
+          Ajouter manuellement ({legend})
+        </label>
+        <input
+          id={inputId}
+          name={inputId}
+          type="text"
+          className="grimoire-input"
+          placeholder={placeholder}
+          value={customInput}
+          maxLength={60}
+          onChange={(e) => setCustomInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          type="button"
+          className="action-btn"
+          onClick={handleSubmitCustom}
+          disabled={customInput.trim().length === 0}
+        >
+          Ajouter
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
+/**
+ * Onglet 3 de la Forge d'édition : Aptitudes, Traits & Dons (gauche) + Sens & Défenses (droite).
+ */
+export function ForgeFeaturesAndDefensesTab({
+  sheet,
+  onMutate,
+}: ForgeFeaturesAndDefensesTabProps) {
+  const baseId = useId();
+  const [categoryFilter, setCategoryFilter] = useState<FeatureFilter>('all');
+  const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+
+  const features = sheet.features ?? [];
+  const defenses: CharacterDefenses = sheet.defenses ?? {
+    senses: [],
+    resistances: [],
+    damageImmunities: [],
+    conditionImmunities: [],
+    vulnerabilities: [],
+    notes: '',
+  };
+
+  const filteredFeatures =
+    categoryFilter === 'all'
+      ? features
+      : features.filter((item) => item.category === categoryFilter);
+
+  const toggleExpanded = (id: string, isOpen: boolean) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (isOpen) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const handleAddBlankFeature = () => {
+    const nextId = `feat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const defaultCategory: FeatureCategory =
+      categoryFilter === 'all' ? 'trait' : categoryFilter;
+    onMutate((draft) => {
+      if (!draft.features) {
+        draft.features = [];
+      }
+      const nextEntry: FeatureEntry = {
+        id: nextId,
+        category: defaultCategory,
+        source: '',
+        name: 'Nouvelle aptitude',
+        description: '',
+      };
+      draft.features.unshift(nextEntry);
+    });
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      next.add(nextId);
+      return next;
+    });
+  };
+
+  const handleAddPresetFeature = (preset: FeaturePreset) => {
+    const alreadyExists = features.some(
+      (item) => item.name.toLowerCase() === preset.name.toLowerCase(),
+    );
+    if (alreadyExists) return;
+
+    const nextId = `feat-${preset.key}-${Date.now().toString(36)}`;
+    onMutate((draft) => {
+      if (!draft.features) {
+        draft.features = [];
+      }
+      draft.features.push({
+        id: nextId,
+        category: preset.category,
+        source: preset.source,
+        name: preset.name,
+        originalName: preset.originalName,
+        description: preset.description,
+      });
+    });
+  };
+
+  const handleDeleteFeature = (id: string) => {
+    onMutate((draft) => {
+      if (!draft.features) return;
+      draft.features = draft.features.filter((entry) => entry.id !== id);
+    });
+  };
+
+  const toggleDefenseItem = (key: DefenseListKey, value: string) => {
+    onMutate((draft) => {
+      const target = ensureDefenses(draft);
+      const list = target[key];
+      const existingIndex = list.indexOf(value);
+      if (existingIndex >= 0) {
+        list.splice(existingIndex, 1);
+      } else {
+        list.push(value);
+      }
+    });
+  };
+
+  const addCustomDefenseItem = (key: DefenseListKey, rawValue: string) => {
+    const trimmed = rawValue.trim();
+    if (!trimmed) return;
+    onMutate((draft) => {
+      const target = ensureDefenses(draft);
+      const exists = target[key].some(
+        (item) => item.toLowerCase() === trimmed.toLowerCase(),
+      );
+      if (!exists) {
+        target[key].push(trimmed);
+      }
+    });
+  };
+
+  const removeDefenseItem = (key: DefenseListKey, value: string) => {
+    onMutate((draft) => {
+      const target = ensureDefenses(draft);
+      target[key] = target[key].filter((item) => item !== value);
+    });
+  };
+
+  return (
+    <div className="forge-grid">
+      {/* Colonne gauche : Aptitudes, Traits d'espèce, Classe & Dons */}
+      <section
+        className="forge-card"
+        aria-labelledby={`${baseId}-features-heading`}
+      >
+        <div className="forge-card-header">
+          <h3 id={`${baseId}-features-heading`}>
+            Aptitudes, Traits & Dons ({features.length})
+          </h3>
+          <button
+            type="button"
+            className="action-btn action-btn--primary"
+            onClick={handleAddBlankFeature}
+          >
+            + Ajouter une aptitude
+          </button>
+        </div>
+
+        <p className="forge-help-text">
+          Ajouts rapides D&D 5e ou saisie libre (espèce, classe, dons,
+          historique) :
+        </p>
+
+        <div className="forge-preset-strip">
+          {FEATURE_PRESETS_5E.map((preset) => {
+            const exists = features.some(
+              (item) => item.name.toLowerCase() === preset.name.toLowerCase(),
+            );
+            return (
+              <button
+                key={preset.key}
+                type="button"
+                className="forge-preset-pill"
+                aria-pressed={exists}
+                disabled={exists}
+                onClick={() => handleAddPresetFeature(preset)}
+              >
+                {exists ? `✓ ${preset.name}` : `+ ${preset.name}`}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          className="forge-filter-pills"
+          role="group"
+          aria-label="Filtrer les aptitudes par catégorie"
+        >
+          <button
+            type="button"
+            className="forge-filter-pill"
+            aria-pressed={categoryFilter === 'all'}
+            onClick={() => setCategoryFilter('all')}
+          >
+            Tout ({features.length})
+          </button>
+          {FEATURE_CATEGORY_OPTIONS.map((opt) => {
+            const count = features.filter(
+              (item) => item.category === opt.value,
+            ).length;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                className="forge-filter-pill"
+                aria-pressed={categoryFilter === opt.value}
+                onClick={() => setCategoryFilter(opt.value)}
+              >
+                {opt.label} ({count})
+              </button>
+            );
+          })}
+        </div>
+
+        {filteredFeatures.length === 0 ? (
+          <p className="forge-help-text">
+            Aucune aptitude dans cette catégorie. Utilisez un modèle ci-dessus
+            ou cliquez sur « + Ajouter une aptitude ».
+          </p>
+        ) : (
+          <div className="forge-repeat-list">
+            {filteredFeatures.map((entry) => {
+              const nameId = `${baseId}-feat-name-${entry.id}`;
+              const voId = `${baseId}-feat-vo-${entry.id}`;
+              const catId = `${baseId}-feat-cat-${entry.id}`;
+              const srcId = `${baseId}-feat-src-${entry.id}`;
+              const descId = `${baseId}-feat-desc-${entry.id}`;
+
+              return (
+                <div key={entry.id} className="forge-entry-card">
+                  <details
+                    className="forge-entry-details"
+                    open={expandedIds.has(entry.id)}
+                    onToggle={(e) =>
+                      toggleExpanded(entry.id, e.currentTarget.open)
+                    }
+                  >
+                    <summary className="forge-entry-summary">
+                      <span className="forge-entry-summary-title">
+                        {entry.name || 'Aptitude sans nom'}
+                        {entry.originalName ? ` (${entry.originalName})` : ''}
+                      </span>
+                      <span className="forge-entry-summary-meta">
+                        <span className="badge-pill">
+                          {getFeatureCategoryLabel(entry.category)}
+                        </span>
+                        {entry.source ? <span>{entry.source}</span> : null}
+                      </span>
+                    </summary>
+
+                    <div className="forge-entry-body">
+                      <div className="forge-two-cols">
+                        <div className="forge-field">
+                          <label htmlFor={nameId}>Nom FR</label>
+                          <CommittedTextInput
+                            id={nameId}
+                            name={nameId}
+                            value={entry.name}
+                            maxLength={80}
+                            placeholder="Ex : Vision dans le noir (18 m)"
+                            onCommit={(nextVal) => {
+                              const trimmed = nextVal.trim();
+                              if (!trimmed) return;
+                              onMutate((draft) => {
+                                const target = draft.features?.find(
+                                  (f) => f.id === entry.id,
+                                );
+                                if (target) target.name = trimmed;
+                              });
+                            }}
+                          />
+                        </div>
+
+                        <div className="forge-field">
+                          <label htmlFor={voId}>Nom VO (optionnel)</label>
+                          <CommittedTextInput
+                            id={voId}
+                            name={voId}
+                            value={entry.originalName ?? ''}
+                            maxLength={80}
+                            placeholder="Ex : Darkvision"
+                            onCommit={(nextVal) => {
+                              const trimmed = nextVal.trim();
+                              onMutate((draft) => {
+                                const target = draft.features?.find(
+                                  (f) => f.id === entry.id,
+                                );
+                                if (!target) return;
+                                if (trimmed) {
+                                  target.originalName = trimmed;
+                                } else {
+                                  delete target.originalName;
+                                }
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="forge-two-cols">
+                        <div className="forge-field">
+                          <label htmlFor={catId}>Catégorie</label>
+                          <select
+                            id={catId}
+                            name={catId}
+                            className="forge-select"
+                            value={entry.category}
+                            onChange={(e) => {
+                              const nextCat = e.target.value as FeatureCategory;
+                              onMutate((draft) => {
+                                const target = draft.features?.find(
+                                  (f) => f.id === entry.id,
+                                );
+                                if (target) target.category = nextCat;
+                              });
+                            }}
+                          >
+                            {FEATURE_CATEGORY_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="forge-field">
+                          <label htmlFor={srcId}>Source / Origine</label>
+                          <CommittedTextInput
+                            id={srcId}
+                            name={srcId}
+                            value={entry.source ?? ''}
+                            maxLength={60}
+                            placeholder="Ex : Elfe des bois, Rôdeur Niv. 3..."
+                            onCommit={(nextVal) => {
+                              const trimmed = nextVal.trim();
+                              onMutate((draft) => {
+                                const target = draft.features?.find(
+                                  (f) => f.id === entry.id,
+                                );
+                                if (!target) return;
+                                if (trimmed) {
+                                  target.source = trimmed;
+                                } else {
+                                  delete target.source;
+                                }
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="forge-field">
+                        <label htmlFor={descId}>
+                          Description & effets mécaniques
+                        </label>
+                        <CommittedTextArea
+                          id={descId}
+                          name={descId}
+                          rows={3}
+                          maxLength={800}
+                          value={entry.description}
+                          placeholder="Détails de règle, avantages aux sauvegardes, portée, usage..."
+                          onCommit={(nextVal) => {
+                            onMutate((draft) => {
+                              const target = draft.features?.find(
+                                (f) => f.id === entry.id,
+                              );
+                              if (target) target.description = nextVal;
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <div className="forge-item-footer">
+                        <button
+                          type="button"
+                          className="action-btn action-btn--danger"
+                          onClick={() => handleDeleteFeature(entry.id)}
+                        >
+                          Supprimer
+                        </button>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {/* Colonne droite : Sens, Résistances, Immunités & Vulnérabilités */}
+      <section
+        className="forge-card"
+        aria-labelledby={`${baseId}-defenses-heading`}
+      >
+        <div className="forge-card-header">
+          <h3 id={`${baseId}-defenses-heading`}>
+            Sens, Résistances & Immunités
+          </h3>
+        </div>
+
+        <p className="forge-help-text">
+          Ces éléments s’affichent en accès direct sous la barre d’état dans le
+          Cockpit de Partie.
+        </p>
+
+        <div className="forge-repeat-list">
+          <DefenseTagGroup
+            legend="Sens spéciaux"
+            inputId={`${baseId}-sense-custom`}
+            placeholder="Ex : Vision nocturne 27 m, Odorat aiguisé..."
+            presets={SENSE_PRESETS_5E}
+            selectedValues={defenses.senses}
+            onToggleValue={(val) => toggleDefenseItem('senses', val)}
+            onAddCustom={(val) => addCustomDefenseItem('senses', val)}
+            onRemoveValue={(val) => removeDefenseItem('senses', val)}
+          />
+
+          <DefenseTagGroup
+            legend="Résistances aux dégâts (1/2 dégâts)"
+            inputId={`${baseId}-res-custom`}
+            placeholder="Autre résistance (ex : Radiation, Argent)..."
+            presets={DAMAGE_TYPE_PRESETS_5E}
+            selectedValues={defenses.resistances}
+            onToggleValue={(val) => toggleDefenseItem('resistances', val)}
+            onAddCustom={(val) => addCustomDefenseItem('resistances', val)}
+            onRemoveValue={(val) => removeDefenseItem('resistances', val)}
+          />
+
+          <DefenseTagGroup
+            legend="Immunités aux dégâts (0 dégât)"
+            inputId={`${baseId}-imm-dmg-custom`}
+            placeholder="Autre immunité aux dégâts..."
+            presets={DAMAGE_TYPE_PRESETS_5E}
+            selectedValues={defenses.damageImmunities}
+            onToggleValue={(val) => toggleDefenseItem('damageImmunities', val)}
+            onAddCustom={(val) => addCustomDefenseItem('damageImmunities', val)}
+            onRemoveValue={(val) => removeDefenseItem('damageImmunities', val)}
+          />
+
+          <DefenseTagGroup
+            legend="Immunités aux états & effets"
+            inputId={`${baseId}-imm-cond-custom`}
+            placeholder="Autre état ou effet (ex : Vieillissement)..."
+            presets={CONDITION_IMMUNITY_PRESETS_5E}
+            selectedValues={defenses.conditionImmunities}
+            onToggleValue={(val) =>
+              toggleDefenseItem('conditionImmunities', val)
+            }
+            onAddCustom={(val) =>
+              addCustomDefenseItem('conditionImmunities', val)
+            }
+            onRemoveValue={(val) =>
+              removeDefenseItem('conditionImmunities', val)
+            }
+          />
+
+          <DefenseTagGroup
+            legend="Vulnérabilités (x2 dégâts)"
+            inputId={`${baseId}-vuln-custom`}
+            placeholder="Autre vulnérabilité (ex : Lumière du soleil)..."
+            presets={DAMAGE_TYPE_PRESETS_5E}
+            selectedValues={defenses.vulnerabilities}
+            onToggleValue={(val) => toggleDefenseItem('vulnerabilities', val)}
+            onAddCustom={(val) => addCustomDefenseItem('vulnerabilities', val)}
+            onRemoveValue={(val) => removeDefenseItem('vulnerabilities', val)}
+          />
+
+          <div className="forge-field">
+            <label htmlFor={`${baseId}-def-notes`}>
+              Particularités & avantages aux sauvegardes
+            </label>
+            <CommittedTextArea
+              id={`${baseId}-def-notes`}
+              name={`${baseId}-def-notes`}
+              rows={2}
+              maxLength={400}
+              value={defenses.notes ?? ''}
+              placeholder="Ex : Avantage aux JS contre le charme (Ascendance féerique) ou le poison..."
+              onCommit={(nextVal) => {
+                onMutate((draft) => {
+                  const target = ensureDefenses(draft);
+                  target.notes = nextVal;
+                });
+              }}
+            />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

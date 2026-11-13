@@ -267,6 +267,66 @@ export function VitalityBanner({
         </div>
       </div>
 
+      {sheet.defenses &&
+        (sheet.defenses.senses.length > 0 ||
+          sheet.defenses.resistances.length > 0 ||
+          sheet.defenses.damageImmunities.length > 0 ||
+          sheet.defenses.conditionImmunities.length > 0 ||
+          sheet.defenses.vulnerabilities.length > 0 ||
+          Boolean(sheet.defenses.notes?.trim())) && (
+          <div
+            className="vital-defenses-strip"
+            role="group"
+            aria-label="Sens, résistances et immunités"
+          >
+            {sheet.defenses.senses.map((sense) => (
+              <span
+                key={`sense-${sense}`}
+                className="vital-defense-pill vital-defense-pill--sense"
+              >
+                Sens : {sense}
+              </span>
+            ))}
+            {sheet.defenses.resistances.map((res) => (
+              <span
+                key={`res-${res}`}
+                className="vital-defense-pill vital-defense-pill--res"
+              >
+                Rés. : {res}
+              </span>
+            ))}
+            {sheet.defenses.damageImmunities.map((imm) => (
+              <span
+                key={`imm-dmg-${imm}`}
+                className="vital-defense-pill vital-defense-pill--imm"
+              >
+                Imm. dégâts : {imm}
+              </span>
+            ))}
+            {sheet.defenses.conditionImmunities.map((imm) => (
+              <span
+                key={`imm-cond-${imm}`}
+                className="vital-defense-pill vital-defense-pill--imm"
+              >
+                Imm. état : {imm}
+              </span>
+            ))}
+            {sheet.defenses.vulnerabilities.map((vuln) => (
+              <span
+                key={`vuln-${vuln}`}
+                className="vital-defense-pill vital-defense-pill--vuln"
+              >
+                Vuln. : {vuln}
+              </span>
+            ))}
+            {sheet.defenses.notes?.trim() ? (
+              <span className="vital-defense-note">
+                {sheet.defenses.notes.trim()}
+              </span>
+            ) : null}
+          </div>
+        )}
+
       {/* Modale native <dialog> : Gestion rapide des Points de Vie */}
       <dialog
         ref={hpDialogRef}
