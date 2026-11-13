@@ -1463,6 +1463,16 @@ dialog::backdrop {
   gap: var(--space-3);
 }
 
+.forge-card-header > :first-child {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.forge-card-header > .action-btn,
+.forge-card-header > .button-cluster {
+  flex-shrink: 0;
+}
+
 .muted-caption {
   margin: 0;
   font-size: 0.875rem;
@@ -1619,6 +1629,10 @@ input[type='number'].forge-number-input::-webkit-outer-spin-button {
   gap: var(--space-2);
   padding-top: var(--space-2);
   border-top: 1px solid var(--border-subtle);
+}
+
+.forge-item-footer:has(> :only-child) {
+  justify-content: flex-end;
 }
 
 .forge-abilities-grid {
@@ -2051,4 +2065,315 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   color: var(--text-primary);
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+/* Lot 4.3 : Cartes accordéons (Armes, Sorts) et Emplacements */
+.forge-entry-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.forge-spell-card--prepared {
+  border-inline-start: 4px solid var(--accent-primary);
+}
+
+.forge-entry-details::details-content {
+  interpolate-size: allow-keywords;
+  overflow: clip;
+  contain: layout;
+}
+
+.forge-entry-details:not([open])::details-content {
+  block-size: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .forge-entry-details::details-content {
+    transition: block-size 0.22s ease, content-visibility 0.22s ease;
+    transition-behavior: allow-discrete;
+  }
+}
+
+.forge-entry-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 52px;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.forge-entry-summary::-webkit-details-marker {
+  display: none;
+}
+
+.forge-entry-summary::before,
+.forge-disclosure-btn::before {
+  content: '';
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  flex-shrink: 0;
+  border-inline-end: 2px solid var(--accent-primary);
+  border-block-end: 2px solid var(--accent-primary);
+  transform: rotate(-45deg);
+  margin-inline-end: 0.25rem;
+}
+
+.forge-entry-details[open] > .forge-entry-summary::before,
+.forge-disclosure-btn[aria-expanded='true']::before {
+  transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .forge-entry-summary::before,
+  .forge-disclosure-btn::before {
+    transition: transform 150ms ease;
+  }
+}
+
+.forge-entry-summary:hover,
+.forge-disclosure-btn:hover {
+  background-color: var(--bg-interactive);
+}
+
+.forge-entry-summary:focus-visible,
+.forge-disclosure-btn:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
+.forge-entry-summary-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.forge-entry-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.forge-entry-submeta {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.forge-entry-badges {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.forge-entry-body {
+  padding: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-field-spacer {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: transparent;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .forge-field-spacer {
+    display: none;
+  }
+}
+
+.forge-check-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.forge-check-pill input[type='checkbox'] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.forge-check-pill--active {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+  color: var(--text-primary);
+}
+
+.forge-spell-overview {
+  display: grid;
+  grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: end;
+}
+
+@media (max-width: 720px) {
+  .forge-spell-overview {
+    grid-template-columns: 1fr;
+  }
+}
+
+.forge-spell-kpi-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.forge-spell-kpi-card {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+}
+
+.forge-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+  gap: var(--space-3);
+}
+
+.forge-slot-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.forge-slot-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.forge-slot-card-header .action-btn {
+  min-height: 36px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.8125rem;
+}
+
+.forge-slot-steppers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.forge-slot-steppers .forge-number-stepper {
+  grid-template-columns: auto minmax(2.5rem, 1fr) auto;
+  gap: 0.25rem;
+}
+
+.forge-slot-steppers .stepper-btn {
+  min-width: 36px;
+  min-height: 40px;
+  font-size: 1.1rem;
+}
+
+.forge-grimoire-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-filter-bar .field-group {
+  max-width: 280px;
+}
+
+.forge-spell-bar {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding-inline-start: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .forge-spell-bar {
+    flex-wrap: wrap;
+    padding: var(--space-2);
+    gap: var(--space-1);
+  }
+}
+
+.forge-prep-pill {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 38px;
+  padding: 0 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.forge-prep-pill input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.forge-prep-pill--active {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+  color: var(--text-primary);
+}
+
+.forge-disclosure-btn {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font: inherit;
+  cursor: pointer;
 }
