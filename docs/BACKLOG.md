@@ -36,13 +36,13 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Composant **Assistant de Jet Hybride Universel** (`<dialog>` flottant non-modal déplaçable sans flou d'arrière-plan + bouton flottant permanent FAB) : pavé physique dynamique adapté au dé (`d4`, `d6`, `d8`, `d10`, `d12`, `d20`, `d100`), jets de dégâts normaux/critiques, mode **Jet Libre** et journal des derniers jets
 - [x] Flux interactif de **Repos Court** (dépense de Dés de Vie) et **Repos Long** (avec création automatique d'un snapshot préalable)
 
-## Jalon 4 - Interface "Mode Édition (Forge)", Multi-Personnages & PWA ⏳
+## Jalon 4 - Interface "Mode Édition (Forge)", Multi-Personnages & PWA ✅
 - **Focus d'apprentissage** : Conception de formulaires complexes ergonomiques, gestion de bibliothèque multi-personnages et mise en cache hors-ligne par Service Worker (PWA).
 - **Critère de validation** : L'utilisateur peut créer un personnage de zéro (y compris avec des compétences/armes post-apo sur mesure), le faire monter de niveau, gérer ses snapshots et installer l'application en PWA 100 % hors-ligne.
 - [x] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
 - [x] Vue **Forge d'Édition** : édition de l'identité (avec **upload et compression automatique du portrait du personnage**), des langues maîtrisées, des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew) et maîtrises d'outils (avec jets de réussite en Cockpit et Forge), gestion des ressources suivies
-- [ ] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
-- [ ] Structuration du **Butin (Loot), de la Monnaie/Crédits et du Carnet de Notes** dans le modèle de données (ajout rapide d'objets trouvés en partie dans `inventory`, bourse/crédits et entrées de notes catégorisées persistées dans `IndexedDB` et les Snapshots)
+- [x] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
+- [x] Structuration du **Butin (Loot), de la Monnaie/Crédits et du Carnet de Notes** dans le modèle de données (ajout rapide d'objets trouvés en partie dans `inventory`, bourse/crédits et entrées de notes catégorisées persistées dans `IndexedDB` et les Snapshots)
 
 ## Correctifs UX, Tablette & Règles en attente
 - [ ] **Historique des jets** : augmenter la limite de rétention dans l'Assistant de Jet de `12` à `100` entrées.

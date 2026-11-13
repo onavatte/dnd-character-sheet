@@ -22,13 +22,20 @@ flowchart TD
 ## 1. Structure des dossiers
 ```text
 src/
-  engine/       types.ts, glossary.ts, rules.ts, calculators.ts, rest.ts, dice.ts, validators.ts, migrations.ts, *.test.ts
-  state/        store.ts, repository.ts, indexeddb-adapter.ts, backup-service.ts, history.ts
+  main.tsx
+  engine/       types.ts, glossary.ts, calculators.ts, rest.ts, dice.ts, validators.ts, index.ts, *.test.ts
+  state/        store.ts, repository.ts, indexeddb-adapter.ts, backup-service.ts, history.ts, index.ts, state.test.ts
   ui/
-    components/ common/, cockpit/, forge/, dice-assistant/, snapshots/
-    views/      CharacterSheetView.tsx, CharacterListView.tsx
-    hooks/      useDerivedCharacter.ts, useUndoRedo.ts
-  theme/        tokens.css, base.css, utilities.css
+    App.tsx
+    assets/     avatar_placeholder_512.png
+    components/ VitalityBanner.tsx, AbilitiesAndSkillsPanel.tsx, CombatAndResourcesPanel.tsx,
+                CurrencyPurseGrid.tsx, DiceAssistantPanel.tsx, CharacterSelectorDialog.tsx,
+                RestDialogs.tsx, SystemSettingsDialog.tsx, ForgeEditorView.tsx,
+                ForgeIdentityTab.tsx, ForgeStatsAndSkillsTab.tsx, ForgeCombatAndSpellsTab.tsx,
+                ForgeInventoryTab.tsx, ForgeAttacksSection.tsx, ForgeResourcesSection.tsx,
+                ForgeSpellcastingSection.tsx, ForgeInventorySection.tsx, ForgePurseAndNotesSection.tsx,
+                ForgeSharedControls.tsx, forge-constants.ts, dialog-utils.ts, portrait-utils.ts
+  theme/        tokens.css, base.css
 ```
 
 ---
@@ -82,19 +89,28 @@ export interface CharacterSheetV1 {
   updatedAt: string;                // ISO 8601 (prépare la réplication future)
   revision: number;                 // Compteur monotone incrémenté à chaque mutation
   preferences?: {
-    termDisplayMode: TermDisplayMode; // 'bilingual' par défaut ("Discrétion · Stealth")
+    termDisplayMode: TermDisplayMode; // 'bilingual' par défaut
     theme?: ThemeMode;                // 'light' par défaut ("Ivoire & Encre"), commutable en 'dark'
   };
   identity: {
     name: string;
     portraitDataUrl?: string;       // Portrait du personnage (Data URL WebP/JPEG redimensionnée côté client, ex. max 512x512)
     classes: CharacterClassEntry[]; // Support natif du multi-classage (1 à N classes)
+    race: string;
+    subrace: string;
+    heritage: string;
+    creatureType: string;
+    size: CreatureSize;             // 'TP' | 'P' | 'M' | 'G' | 'TG' | 'Gig'
+    alignment: string;
+    deityOrPatron: string;
     background: string;
-    ancestry: string;
+    backstory: string;
   };
   abilities: Record<AbilityKey, number>;
   savingThrowProficiencies: Record<AbilityKey, boolean>;
   skills: SkillDefinition[];
+  toolProficiencies?: ToolProficiency[];
+  languages?: LanguageEntry[];
   combat: {
     hpCurrent: number;
     hpMax: number;
@@ -117,9 +133,11 @@ export interface CharacterSheetV1 {
     proficient: boolean;
     attackBonusFlat: number;
     damageFormula: string;          // ex: "2d6"
-    damageType: string;             // ex: "Balistique", "Slashing", "Radiant"
+    damageType: string;             // ex: "Perforant", "Slashing", "Radiant"
     range: string;
+    actionTiming?: ActionTiming;    // 'action' | 'bonus_action' | 'reaction' | 'special'
     ammoResourceId?: string;
+    critRangeMin?: number;          // Score critique minimum (20 par défaut, ex. 19 pour 19-20)
     notes: string;
   }>;
   spellcasting?: {
@@ -129,7 +147,7 @@ export interface CharacterSheetV1 {
     abilitiesList: Array<{
       id: string;
       level: number;
-      name: string;                 // ex: "Décharge thermique" ou "Eldritch Blast"
+      name: string;                 // ex: "Trait de feu" ou "Eldritch Blast"
       originalName?: string;        // ex: "Fire Bolt"
       ability?: AbilityKey;         // Surcharge par classe en cas de multi-classage d'incantateurs
       prepared: boolean;
@@ -140,10 +158,12 @@ export interface CharacterSheetV1 {
       saveAbility?: AbilityKey;     // Affiche le DD de sauvegarde ciblé (JS DEX, CON, WIS...)
       damageFormula?: string;       // Formule de dégâts ou soins envoyée à l'Assistant de Jet (ex: "2d10")
       damageType?: string;          // Type de dégâts ou mention "Soins"
+      critRangeMin?: number;        // Score critique minimum pour les sorts à jet d'attaque
     }>;
   };
   inventory: Array<{
     id: string;
+    category?: InventoryCategory;   // 'gear' | 'weapon' | 'armor' | 'consumable' | 'treasure' | 'other'
     name: string;
     originalName?: string;
     quantity: number;
@@ -151,7 +171,27 @@ export interface CharacterSheetV1 {
     equipped: boolean;
     notes: string;
   }>;
+  currency?: {
+    pp: number;
+    gp: number;
+    ep: number;
+    sp: number;
+    cp: number;
+    custom?: Array<{
+      id: string;
+      name: string;
+      amount: number;
+      gpEquivalent?: number;
+    }>;
+  };
   notes: string;
+  noteEntries?: Array<{
+    id: string;
+    title: string;
+    category: NoteCategory;         // 'loot' | 'quest' | 'npc' | 'location' | 'lore' | 'other'
+    content: string;
+    createdAt: string;
+  }>;
 }
 
 export interface CharacterSnapshot {
@@ -178,6 +218,6 @@ export interface CharacterSnapshot {
 ---
 
 ## 4. Sécurité & Chaîne de Build
-- **Validation stricte aux frontières** : Tout objet lu depuis `IndexedDB` ou depuis un fichier `.json` importé passe par le validateur du moteur (`validateCharacterPayload`) avant d'entrer dans le store React. Aucune exécution de code dynamique ni d'injection HTML (`dangerouslySetInnerHTML` interdit).
+- **Validation stricte aux frontières** : Tout objet lu depuis `IndexedDB` ou depuis un fichier `.json` importé passe par le validateur du moteur (`validateCharacterSheet`) avant d'entrer dans le store React. Aucune exécution de code dynamique ni d'injection HTML (`dangerouslySetInnerHTML` interdit).
 - **Zéro secret côté client** : Aucune clé ni URL interne en dur dans le code source.
 - **Build & Qualité** : TypeScript `strict: true`, `noUncheckedIndexedAccess: true`, `exactOptionalPropertyTypes: true`, tests unitaires Vitest sur 100 % des règles de `src/engine/`, Linter strict.
