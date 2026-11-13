@@ -39,10 +39,17 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 ## Jalon 4 - Interface "Mode Édition (Forge)", Multi-Personnages & PWA ⏳
 - **Focus d'apprentissage** : Conception de formulaires complexes ergonomiques, gestion de bibliothèque multi-personnages et mise en cache hors-ligne par Service Worker (PWA).
 - **Critère de validation** : L'utilisateur peut créer un personnage de zéro (y compris avec des compétences/armes post-apo sur mesure), le faire monter de niveau, gérer ses snapshots et installer l'application en PWA 100 % hors-ligne.
-- [ ] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
+- [x] Sélecteur de personnages (*Empty State*, création, duplication, suppression sécurisée, chargement d'un personnage de démonstration, gestionnaire de Snapshots et Export/Import JSON)
 - [ ] Vue **Forge d'Édition** : édition de l'identité (avec **upload et compression automatique du portrait du personnage**), des scores de caractéristiques, ajout/personnalisation de compétences (post-apo/homebrew), gestion des ressources suivies
 - [ ] Éditeur d'armes/attaques, d'inventaire (poids, équipement équipé) et de grimoire de sorts/capacités
 - [ ] Structuration du **Butin (Loot), de la Monnaie/Crédits et du Carnet de Notes** dans le modèle de données (ajout rapide d'objets trouvés en partie dans `inventory`, bourse/crédits et entrées de notes catégorisées persistées dans `IndexedDB` et les Snapshots)
+
+## Correctifs UX, Tablette & Règles en attente
+- [ ] **Historique des jets** : augmenter la limite de rétention dans l'Assistant de Jet de `12` à `100` entrées.
+- [ ] **Assistant de Jet sur Tablette (Paysage)** : corriger le débordement du bouton `Passer aux Dégâts` hors de la modale et compacter la hauteur de la fenêtre flottante pour qu'elle tienne confortablement en format paysage.
+- [ ] **Visibilité du résultat (Assistant de Jet)** : améliorer la lisibilité et le contraste du bandeau de résultat fixe en haut de la modale.
+- [ ] **Épuration de la modale Système** : supprimer le jargon technique interne (`IndexedDB`, `Tier 1`, `Tier 2`, etc.), retirer la première ligne de séparation inutile tout en haut, enlever la numérotation des titres, agrandir les titres et ajouter plus de marge entre les sections.
+- [ ] **Règles d'États & d'Épuisement (D&D 5e)** : implémenter les effets mécaniques automatiques selon les règles 5e (désavantage sur les jets de caractéristiques/attaques/sauvegardes concernés, vitesse divisée par 2 dès l'épuisement niveau 2 puis 0 au niveau 5, PV max divisés par 2 au niveau 4, impacts d'états comme *Empoisonné*, *Effrayé*, *À terre*, etc.).
 
 ## Jalon 5 - Hardening, Sécurité & Audit Qualité (Obligatoire)
 - **Focus d'apprentissage** : Durcissement applicatif, résilience face aux fichiers corrompus, accessibilité et performance de production.
