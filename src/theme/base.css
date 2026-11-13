@@ -1361,3 +1361,306 @@ dialog::backdrop {
 .empty-roster-actions {
   width: 100%;
 }
+
+/* ============================================================================
+ * Mode Édition (Forge) - Onglets, Formulaires & Contrôles tactiles
+ * ============================================================================ */
+
+.forge-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.forge-tabs-bar {
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+}
+
+.forge-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.forge-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.forge-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .forge-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.forge-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.forge-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.muted-caption {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.portrait-frame--large {
+  width: 5.5rem;
+  height: 5.5rem;
+  font-size: 1.75rem;
+}
+
+.forge-portrait-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.forge-portrait-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 220px;
+}
+
+.forge-fieldset {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-fieldset legend {
+  padding: 0 var(--space-2);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.forge-two-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.forge-three-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.forge-input,
+.forge-select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: max(1rem, 1em);
+  line-height: 1.3;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.forge-input:focus-visible,
+.forge-select:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-color: var(--accent-primary);
+}
+
+.forge-number-stepper {
+  display: grid;
+  grid-template-columns: auto minmax(3.5rem, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.forge-number-input {
+  text-align: center;
+  font-weight: 600;
+}
+
+.forge-repeat-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-item-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-item-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.forge-abilities-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-ability-row {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.forge-ability-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.forge-ability-controls {
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (max-width: 560px) {
+  .forge-ability-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.forge-checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+.forge-checkbox-inline input[type='checkbox'] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.forge-custom-skill-form {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-strong);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-custom-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.forge-skills-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.forge-skill-row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.4fr) minmax(260px, 2fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+}
+
+.forge-skill-row--custom {
+  border-color: var(--accent-primary);
+}
+
+@media (max-width: 820px) {
+  .forge-skill-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.forge-skill-title {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.forge-skill-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.forge-skill-controls .forge-select {
+  width: auto;
+  flex: 1 1 130px;
+}
+
+.forge-skill-total {
+  min-width: 3.5rem;
+  justify-content: center;
+}

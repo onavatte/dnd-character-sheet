@@ -3,6 +3,7 @@ import type { FormEvent, RefObject } from 'react';
 import { computeTotalLevel } from '../../engine';
 import type { CharacterSheetV1 } from '../../engine';
 import { handleDialogBackdropClick } from './dialog-utils';
+import { DEFAULT_PORTRAIT_URL } from './portrait-utils';
 
 export interface CharacterSelectorDialogProps {
   dialogRef: RefObject<HTMLDialogElement | null>;
@@ -135,12 +136,6 @@ export function CharacterSelectorDialog({
               const classesLabel = char.identity.classes
                 .map((cls) => `${cls.name} ${cls.level}`)
                 .join(' / ');
-              const initials = char.identity.name
-                .split(' ')
-                .map((part) => part[0] ?? '')
-                .join('')
-                .slice(0, 2)
-                .toUpperCase();
 
               return (
                 <div
@@ -151,14 +146,10 @@ export function CharacterSelectorDialog({
                 >
                   <div className="character-roster-main">
                     <div className="roster-avatar" aria-hidden="true">
-                      {char.identity.portraitDataUrl ? (
-                        <img
-                          src={char.identity.portraitDataUrl}
-                          alt={`Portrait de ${char.identity.name}`}
-                        />
-                      ) : (
-                        initials || '?'
-                      )}
+                      <img
+                        src={char.identity.portraitDataUrl ?? DEFAULT_PORTRAIT_URL}
+                        alt={`Portrait de ${char.identity.name}`}
+                      />
                     </div>
                     <div className="character-roster-meta">
                       <div className="character-roster-title-row">

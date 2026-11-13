@@ -3,7 +3,7 @@
  * Aucune mutation d'état, aucun effet de bord.
  */
 
-import { ABILITY_KEYS } from './types';
+import { ABILITY_KEYS, HIT_DIE_SIZES } from './types';
 import type {
   AbilityKey,
   AdvantageState,
@@ -13,6 +13,7 @@ import type {
   DerivedAttackStat,
   DerivedCharacterStats,
   DerivedSkillStat,
+  HitDicePools,
   HitDieSize,
   ProficiencyLevel,
   SkillDefinition,
@@ -68,6 +69,35 @@ export function computeExpectedHitDiceTotals(
   }
 
   return totals;
+}
+
+/**
+ * Synchronise les réserves de Dés de Vie après modification des classes ou des niveaux,
+ * en ajoutant les nouveaux dés disponibles lors d'un gain de niveau et en bornant les disponibles.
+ */
+export function syncHitDicePoolsWithClasses(
+  currentPools: HitDicePools,
+  nextClasses: readonly CharacterClassEntry[],
+): HitDicePools {
+  const expectedTotals = computeExpectedHitDiceTotals(nextClasses);
+  const nextPools: HitDicePools = {
+    6: { total: 0, available: 0 },
+    8: { total: 0, available: 0 },
+    10: { total: 0, available: 0 },
+    12: { total: 0, available: 0 },
+  };
+
+  for (const size of HIT_DIE_SIZES) {
+    const prev = currentPools[size];
+    const nextTotal = expectedTotals[size];
+    const gainedDice = Math.max(0, nextTotal - prev.total);
+    nextPools[size] = {
+      total: nextTotal,
+      available: Math.min(nextTotal, Math.max(0, prev.available + gainedDice)),
+    };
+  }
+
+  return nextPools;
 }
 
 /**

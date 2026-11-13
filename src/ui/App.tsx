@@ -8,6 +8,8 @@ import { CharacterSelectorDialog } from './components/CharacterSelectorDialog';
 import { CombatAndResourcesPanel } from './components/CombatAndResourcesPanel';
 import { DiceAssistantPanel } from './components/DiceAssistantPanel';
 import type { RollLogEntry } from './components/DiceAssistantPanel';
+import { ForgeEditorView } from './components/ForgeEditorView';
+import { DEFAULT_PORTRAIT_URL } from './components/portrait-utils';
 import { RestDialogs } from './components/RestDialogs';
 import { SystemSettingsDialog } from './components/SystemSettingsDialog';
 import { VitalityBanner } from './components/VitalityBanner';
@@ -48,6 +50,7 @@ export function App() {
   );
   const loadDemoCharacter = useCharacterStore((s) => s.loadDemoCharacter);
   const deleteCharacter = useCharacterStore((s) => s.deleteCharacter);
+  const mutateWithImmer = useCharacterStore((s) => s.mutateWithImmer);
   const damage = useCharacterStore((s) => s.damage);
   const heal = useCharacterStore((s) => s.heal);
   const tempHp = useCharacterStore((s) => s.tempHp);
@@ -241,27 +244,16 @@ export function App() {
           ? 'sync-dot--error'
           : '';
 
-  const initials = sheet.identity.name
-    .split(' ')
-    .map((p) => p[0] ?? '')
-    .join('')
-    .slice(0, 2)
-    .toUpperCase();
-
   return (
     <div className="app-shell">
       <header className="sheet-header">
         <div className="identity-block">
           <div className="portrait-frame" aria-hidden="true">
             {hasActiveCharacter ? (
-              sheet.identity.portraitDataUrl ? (
-                <img
-                  src={sheet.identity.portraitDataUrl}
-                  alt={`Portrait de ${sheet.identity.name}`}
-                />
-              ) : (
-                initials
-              )
+              <img
+                src={sheet.identity.portraitDataUrl ?? DEFAULT_PORTRAIT_URL}
+                alt={`Portrait de ${sheet.identity.name}`}
+              />
             ) : (
               'G5'
             )}
@@ -439,6 +431,12 @@ export function App() {
           </div>
           {lastError && <div className="status-banner-error">{lastError}</div>}
         </main>
+      ) : sheetMode === 'forge' ? (
+        <ForgeEditorView
+          sheet={sheet}
+          derived={derived}
+          onMutate={mutateWithImmer}
+        />
       ) : (
         <>
           {/* Bandeau Vital permanent (PV, CA, Initiative, États, Repos Court / Long) */}
@@ -456,15 +454,6 @@ export function App() {
             onOpenShortRest={() => shortRestDialogRef.current?.showModal()}
             onOpenLongRest={() => longRestDialogRef.current?.showModal()}
           />
-
-          {sheetMode === 'forge' && (
-            <div className="roll-banner" role="status">
-              <strong>Mode Édition (Forge) - Onglets en cours de construction (Lots 4.2 à 4.4)</strong>
-              <span>
-                La gestion multi-personnages et la création de fiches vierges sont actives via le bouton « Personnages ». Les formulaires d’édition (identité/portrait, stats, compétences, armes, sorts et butin) arrivent dans les lots suivants du Jalon 4.
-              </span>
-            </div>
-          )}
 
           {/* Grille principale élargie en 2 grandes colonnes (Caractéristiques/Compétences & Actions/Inventaire) */}
           <main className="workspace-grid">

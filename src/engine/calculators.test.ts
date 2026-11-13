@@ -12,6 +12,7 @@ import {
   computeSpellSaveDC,
   computeTotalLevel,
   formatSignedModifier,
+  syncHitDicePoolsWithClasses,
 } from './calculators';
 import { createDemoCharacter } from './glossary';
 import type { SkillDefinition } from './types';
@@ -160,5 +161,19 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
       saveDC: 11,
       attackBonus: 3,
     });
+  });
+
+  it('synchronise les réserves de Dés de Vie lors d’un changement de classe ou de niveau', () => {
+    const demo = createDemoCharacter(); // 5d10 (4 dispo), 2d8 (2 dispo)
+    const leveledUp = syncHitDicePoolsWithClasses(demo.combat.hitDicePools, [
+      { id: 'c1', name: 'Rôdeur', level: 6, hitDieSize: 10 },
+      { id: 'c2', name: 'Roublard', level: 1, hitDieSize: 8 },
+      { id: 'c3', name: 'Barbare', level: 2, hitDieSize: 12 },
+    ]);
+
+    expect(leveledUp[10]).toEqual({ total: 6, available: 5 });
+    expect(leveledUp[8]).toEqual({ total: 1, available: 1 });
+    expect(leveledUp[12]).toEqual({ total: 2, available: 2 });
+    expect(leveledUp[6]).toEqual({ total: 0, available: 0 });
   });
 });
