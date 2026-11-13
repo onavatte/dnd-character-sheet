@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeAbilityModifier,
   computeAttackRollBonus,
+  computeCarryingCapacityKg,
   computeDerivedCharacter,
   computeExpectedHitDiceTotals,
   computePassiveScore,
@@ -11,6 +12,7 @@ import {
   computeSpellAttackBonus,
   computeSpellSaveDC,
   computeTotalLevel,
+  computeTotalWealthGp,
   formatSignedModifier,
   syncHitDicePoolsWithClasses,
 } from './calculators';
@@ -121,7 +123,11 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
       saveDC: 14,
       attackBonus: 6,
     });
-    expect(derived.totalWeight).toBe(7.5);
+    expect(derived.totalWeight).toBe(8);
+    expect(derived.carryingCapacityKg).toBe(90); // FOR 12 * 7.5 kg
+    expect(derived.encumbered).toBe(false);
+    // 1 pp (10) + 42 po + 15 pa (1.5) + 8 pc (0.08) = 53.58 po
+    expect(derived.totalWealthGp).toBe(53.58);
 
     const dungeoneering = derived.skills.find((s) => s.id === 'custom_dungeoneering');
     // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) = +6
@@ -193,5 +199,40 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     delete legacySheet.toolProficiencies;
     delete legacySheet.languages;
     expect(computeDerivedCharacter(legacySheet).tools).toEqual([]);
+  });
+
+  it('calcule la capacité de charge, le statut encombré et la richesse en po (avec espèces personnalisées)', () => {
+    expect(computeCarryingCapacityKg(10)).toBe(75);
+    expect(computeCarryingCapacityKg(15)).toBe(112.5);
+
+    expect(
+      computeTotalWealthGp({
+        pp: 2,
+        gp: 10,
+        ep: 3,
+        sp: 5,
+        cp: 7,
+        custom: [
+          { id: 'c1', name: 'Rubis', amount: 2, gpEquivalent: 50 },
+          { id: 'c2', name: 'Jetons de guilde', amount: 12 },
+        ],
+      }),
+    ).toBe(132.07); // 20 + 10 + 1.5 + 0.5 + 0.07 + 100
+
+    const heavy = createDemoCharacter();
+    heavy.abilities.STR = 8; // Capacité = 60 kg
+    heavy.inventory.push({
+      id: 'inv-heavy',
+      category: 'gear',
+      name: 'Coffre en fer',
+      quantity: 1,
+      weight: 60,
+      equipped: false,
+      notes: '',
+    });
+    const derived = computeDerivedCharacter(heavy);
+    expect(derived.carryingCapacityKg).toBe(60);
+    expect(derived.totalWeight).toBe(68);
+    expect(derived.encumbered).toBe(true);
   });
 });

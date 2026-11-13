@@ -3,8 +3,20 @@
  * Protège l'application contre les fichiers JSON malformés, tronqués ou corrompus.
  */
 
-import { ABILITY_KEYS, CREATURE_SIZES, HIT_DIE_SIZES } from './types';
-import type { CharacterSheetV1, CreatureSize } from './types';
+import {
+  ABILITY_KEYS,
+  CREATURE_SIZES,
+  HIT_DIE_SIZES,
+  INVENTORY_CATEGORIES,
+  NOTE_CATEGORIES,
+  STANDARD_CURRENCY_KEYS,
+} from './types';
+import type {
+  CharacterSheetV1,
+  CreatureSize,
+  InventoryCategory,
+  NoteCategory,
+} from './types';
 
 export type ValidationResult =
   | { valid: true; data: CharacterSheetV1 }
@@ -184,6 +196,87 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
 
   if (!Array.isArray(payload['inventory'])) {
     errors.push('L’inventaire (inventory) doit être un tableau.');
+  } else {
+    payload['inventory'].forEach((rawItem, index) => {
+      if (!isRecord(rawItem)) {
+        errors.push(`L’objet d’inventaire #${index + 1} est invalide.`);
+        return;
+      }
+      if (
+        rawItem['category'] !== undefined &&
+        (typeof rawItem['category'] !== 'string' ||
+          !INVENTORY_CATEGORIES.includes(rawItem['category'] as InventoryCategory))
+      ) {
+        errors.push(`Catégorie invalide pour l’objet d’inventaire #${index + 1}.`);
+      }
+    });
+  }
+
+  const currency = payload['currency'];
+  if (currency !== undefined) {
+    if (!isRecord(currency)) {
+      errors.push('La bourse (currency) doit être un objet.');
+    } else {
+      for (const coin of STANDARD_CURRENCY_KEYS) {
+        const val = currency[coin];
+        if (!isFiniteNumber(val) || val < 0) {
+          errors.push(`Le montant de monnaie ${coin} doit être un nombre >= 0.`);
+        }
+      }
+      const custom = currency['custom'];
+      if (custom !== undefined) {
+        if (!Array.isArray(custom)) {
+          errors.push('Les espèces personnalisées (currency.custom) doivent être un tableau.');
+        } else {
+          custom.forEach((entry, index) => {
+            if (!isRecord(entry)) {
+              errors.push(`L’espèce personnalisée #${index + 1} est invalide.`);
+              return;
+            }
+            if (!isNonEmptyString(entry['id']) || !isNonEmptyString(entry['name'])) {
+              errors.push(`L’espèce personnalisée #${index + 1} doit avoir un id et un nom.`);
+            }
+            if (!isFiniteNumber(entry['amount']) || entry['amount'] < 0) {
+              errors.push(`Le montant de l’espèce personnalisée #${index + 1} doit être >= 0.`);
+            }
+            if (
+              entry['gpEquivalent'] !== undefined &&
+              (!isFiniteNumber(entry['gpEquivalent']) || entry['gpEquivalent'] < 0)
+            ) {
+              errors.push(
+                `La valeur en po de l’espèce personnalisée #${index + 1} doit être >= 0.`,
+              );
+            }
+          });
+        }
+      }
+    }
+  }
+
+  const noteEntries = payload['noteEntries'];
+  if (noteEntries !== undefined) {
+    if (!Array.isArray(noteEntries)) {
+      errors.push('Les notes catégorisées (noteEntries) doivent être un tableau.');
+    } else {
+      noteEntries.forEach((entry, index) => {
+        if (!isRecord(entry)) {
+          errors.push(`L’entrée de note #${index + 1} est invalide.`);
+          return;
+        }
+        if (!isNonEmptyString(entry['id']) || typeof entry['title'] !== 'string') {
+          errors.push(`L’entrée de note #${index + 1} doit avoir un id et un titre.`);
+        }
+        if (
+          typeof entry['category'] !== 'string' ||
+          !NOTE_CATEGORIES.includes(entry['category'] as NoteCategory)
+        ) {
+          errors.push(`Catégorie invalide pour l’entrée de note #${index + 1}.`);
+        }
+        if (typeof entry['content'] !== 'string' || typeof entry['createdAt'] !== 'string') {
+          errors.push(`Contenu ou date invalide pour l’entrée de note #${index + 1}.`);
+        }
+      });
+    }
   }
 
   if (errors.length > 0) {

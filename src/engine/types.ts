@@ -114,11 +114,62 @@ export interface SpellcastingState {
   abilitiesList: SpellAbilityEntry[];
 }
 
+export const INVENTORY_CATEGORIES = [
+  'gear',
+  'weapon',
+  'armor',
+  'consumable',
+  'treasure',
+  'other',
+] as const;
+
+export type InventoryCategory = (typeof INVENTORY_CATEGORIES)[number];
+
 export interface InventoryItem extends BilingualNamed {
+  category?: InventoryCategory;
   quantity: number;
   weight: number;
   equipped: boolean;
   notes: string;
+}
+
+export const STANDARD_CURRENCY_KEYS = ['pp', 'gp', 'ep', 'sp', 'cp'] as const;
+
+export type StandardCurrencyKey = (typeof STANDARD_CURRENCY_KEYS)[number];
+
+export interface CustomCurrencyEntry {
+  id: string;
+  name: string;
+  amount: number;
+  gpEquivalent?: number;
+}
+
+export interface CurrencyPurse {
+  pp: number;
+  gp: number;
+  ep: number;
+  sp: number;
+  cp: number;
+  custom?: CustomCurrencyEntry[];
+}
+
+export const NOTE_CATEGORIES = [
+  'loot',
+  'quest',
+  'npc',
+  'location',
+  'lore',
+  'other',
+] as const;
+
+export type NoteCategory = (typeof NOTE_CATEGORIES)[number];
+
+export interface NoteEntry {
+  id: string;
+  title: string;
+  category: NoteCategory;
+  content: string;
+  createdAt: string;
 }
 
 export interface CharacterSheetV1 {
@@ -166,7 +217,9 @@ export interface CharacterSheetV1 {
   attacks: AttackEntry[];
   spellcasting?: SpellcastingState;
   inventory: InventoryItem[];
+  currency?: CurrencyPurse;
   notes: string;
+  noteEntries?: NoteEntry[];
 }
 
 export interface CharacterSnapshot {
@@ -225,4 +278,7 @@ export interface DerivedCharacterStats {
     Record<AbilityKey, { saveDC: number; attackBonus: number }>
   >;
   totalWeight: number;
+  carryingCapacityKg: number;
+  encumbered: boolean;
+  totalWealthGp: number;
 }

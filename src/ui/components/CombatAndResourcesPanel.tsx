@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
+import type { Draft } from 'immer';
 import {
   ABILITY_GLOSSARY,
   formatSignedModifier,
@@ -8,9 +9,18 @@ import type {
   AbilityKey,
   CharacterSheetV1,
   DerivedCharacterStats,
+  InventoryCategory,
+  NoteCategory,
   TermDisplayMode,
 } from '../../engine';
 import type { ActiveRollTarget } from './dialog-utils';
+import { CurrencyPurseGrid } from './CurrencyPurseGrid';
+import {
+  getInventoryCategoryLabel,
+  getNoteCategoryLabel,
+  INVENTORY_CATEGORY_OPTIONS,
+  NOTE_CATEGORY_OPTIONS,
+} from './forge-constants';
 
 type CentralTab = 'combat' | 'spells' | 'inventory';
 
@@ -41,8 +51,11 @@ export interface CombatAndResourcesPanelProps {
   onAdjustSpellSlotUsed: (level: number, delta: number) => void;
   onAdjustPactSlotUsed: (delta: number) => void;
   onUpdateNotes: (nextNotes: string) => void;
-  onAppendQuickNote: (entryText: string) => void;
+  onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
+
+type QuickAddTarget = 'inventory' | 'note';
+type CockpitNoteFilter = 'all' | NoteCategory;
 
 export function CombatAndResourcesPanel({
   sheet,
@@ -55,15 +68,64 @@ export function CombatAndResourcesPanel({
   onAdjustSpellSlotUsed,
   onAdjustPactSlotUsed,
   onUpdateNotes,
-  onAppendQuickNote,
+  onMutate,
 }: CombatAndResourcesPanelProps) {
   const [activeTab, setActiveTab] = useState<CentralTab>('combat');
+  const [quickAddTarget, setQuickAddTarget] =
+    useState<QuickAddTarget>('inventory');
+  const [quickItemCategory, setQuickItemCategory] =
+    useState<InventoryCategory>('treasure');
+  const [quickNoteCategory, setQuickNoteCategory] =
+    useState<NoteCategory>('loot');
   const [quickLootText, setQuickLootText] = useState('');
+  const [noteFilter, setNoteFilter] = useState<CockpitNoteFilter>('all');
+
+  const handleToggleItemEquipped = (itemId: string) => {
+    onMutate((draft) => {
+      const target = draft.inventory.find((item) => item.id === itemId);
+      if (target) {
+        target.equipped = !target.equipped;
+      }
+    });
+  };
+
+  const handleRemoveInventoryItem = (itemId: string) => {
+    onMutate((draft) => {
+      draft.inventory = draft.inventory.filter((item) => item.id !== itemId);
+    });
+  };
 
   const handleAddQuickLoot = () => {
     const trimmed = quickLootText.trim();
     if (!trimmed) return;
-    onAppendQuickNote(trimmed);
+
+    if (quickAddTarget === 'inventory') {
+      onMutate((draft) => {
+        draft.inventory.push({
+          id: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          category: quickItemCategory,
+          name: trimmed,
+          quantity: 1,
+          weight: 0,
+          equipped: false,
+          notes: '',
+        });
+      });
+    } else {
+      onMutate((draft) => {
+        if (!draft.noteEntries) {
+          draft.noteEntries = [];
+        }
+        draft.noteEntries.unshift({
+          id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          title: trimmed,
+          category: quickNoteCategory,
+          content: '',
+          createdAt: new Date().toISOString(),
+        });
+      });
+    }
+
     setQuickLootText('');
   };
 
@@ -540,68 +602,281 @@ export function CombatAndResourcesPanel({
       {activeTab === 'inventory' && (
         <div className="tab-panel-stack">
           <div className="inventory-header-row">
-            <h3>Équipement & Inventaire</h3>
-            <span className="badge-pill tabular-nums">
-              Poids total : {derived.totalWeight} kg
+            <h3>Bourse & Monnaies</h3>
+            <span className="badge-pill badge-pill--active tabular-nums">
+              Total : {derived.totalWealthGp} po
             </span>
           </div>
 
-          <div className="resources-stack">
-            {sheet.inventory.map((item) => (
-              <div key={item.id} className="resource-row">
-                <div>
-                  <strong>{renderTerm(item.name, item.originalName)}</strong>
-                  <div className="attack-meta">
-                    {item.equipped ? 'Équipé' : 'Dans le sac'} · {item.notes}
-                  </div>
-                </div>
-                <span className="badge-pill tabular-nums">
-                  x{item.quantity} ({item.weight * item.quantity} kg)
-                </span>
-              </div>
-            ))}
+          <CurrencyPurseGrid
+            currency={sheet.currency}
+            onChangeStandardCoin={(coinKey, nextAmount) => {
+              onMutate((draft) => {
+                if (!draft.currency) {
+                  draft.currency = {
+                    pp: 0,
+                    gp: 0,
+                    ep: 0,
+                    sp: 0,
+                    cp: 0,
+                    custom: [],
+                  };
+                }
+                draft.currency[coinKey] = nextAmount;
+              });
+            }}
+            onChangeCustomCoin={(customId, nextAmount) => {
+              onMutate((draft) => {
+                const target = draft.currency?.custom?.find(
+                  (c) => c.id === customId,
+                );
+                if (target) {
+                  target.amount = nextAmount;
+                }
+              });
+            }}
+          />
+
+          <div className="inventory-header-row">
+            <h3>Équipement & Inventaire</h3>
+            <span
+              className={
+                derived.encumbered
+                  ? 'badge-pill badge-pill--alert tabular-nums'
+                  : 'badge-pill tabular-nums'
+              }
+            >
+              Charge : {derived.totalWeight} / {derived.carryingCapacityKg} kg
+              {derived.encumbered ? ' (Encombré)' : ''}
+            </span>
           </div>
 
-          <h3>Notes de Terrain & Butin (Loot)</h3>
-          <div className="field-group">
-            <label htmlFor="cockpit-quick-loot-input">
-              Ajout rapide (butin trouvé, crédits, indice, PNJ) :
-            </label>
-            <div className="inline-input-row">
-              <input
-                id="cockpit-quick-loot-input"
-                type="text"
-                value={quickLootText}
-                onChange={(e) => setQuickLootText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddQuickLoot();
-                  }
-                }}
-                placeholder="Ex. +50 po, Potion de soins, Clé du donjon..."
-              />
+          {sheet.inventory.length === 0 ? (
+            <p className="muted-note">
+              Votre inventaire est vide. Utilisez « Ajouter à l'inventaire » ci-dessous ou le Mode Édition.
+            </p>
+          ) : (
+            <div className="resources-stack">
+              {sheet.inventory.map((item) => {
+                const lineWeight =
+                  Math.round(
+                    Math.max(0, item.quantity) * Math.max(0, item.weight) * 100,
+                  ) / 100;
+                const categoryLabel = getInventoryCategoryLabel(item.category);
+                return (
+                  <div key={item.id} className="resource-row cockpit-inventory-row">
+                    <div className="cockpit-inventory-main">
+                      <strong className="cockpit-inventory-title">
+                        {renderTerm(item.name, item.originalName)}
+                      </strong>
+                      <div className="attack-meta">
+                        {categoryLabel}
+                        {item.notes ? ` · ${item.notes}` : ''}
+                      </div>
+                      <div className="cockpit-inventory-weight tabular-nums">
+                        <span className="badge-pill">
+                          ×{item.quantity} ({lineWeight} kg)
+                        </span>
+                      </div>
+                    </div>
+                    <div className="cockpit-inventory-row-actions">
+                      <button
+                        type="button"
+                        className="cockpit-delete-btn"
+                        aria-label={`Supprimer ${item.name}`}
+                        onClick={() => handleRemoveInventoryItem(item.id)}
+                      >
+                        ×
+                      </button>
+                      <button
+                        type="button"
+                        className="cockpit-equip-btn"
+                        aria-pressed={item.equipped}
+                        onClick={() => handleToggleItemEquipped(item.id)}
+                      >
+                        {item.equipped ? 'Équipé' : 'Dans le sac'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <h3>Notes de Terrain & Butin</h3>
+          <div className="cockpit-quick-add-box">
+            <div
+              className="cockpit-quick-mode-tabs"
+              role="group"
+              aria-label="Destination de l'ajout rapide"
+            >
               <button
                 type="button"
-                className="action-btn action-btn--primary"
-                onClick={handleAddQuickLoot}
+                className={
+                  quickAddTarget === 'inventory'
+                    ? 'forge-filter-pill forge-filter-pill--active'
+                    : 'forge-filter-pill'
+                }
+                aria-pressed={quickAddTarget === 'inventory'}
+                onClick={() => setQuickAddTarget('inventory')}
               >
-                + Ajouter
+                Ajouter à l'inventaire
               </button>
+              <button
+                type="button"
+                className={
+                  quickAddTarget === 'note'
+                    ? 'forge-filter-pill forge-filter-pill--active'
+                    : 'forge-filter-pill'
+                }
+                aria-pressed={quickAddTarget === 'note'}
+                onClick={() => setQuickAddTarget('note')}
+              >
+                Ajouter au carnet de notes
+              </button>
+            </div>
+
+            <div className="field-group">
+              <label htmlFor="cockpit-quick-loot-input">
+                {quickAddTarget === 'inventory'
+                  ? 'Nom du butin ou objet trouvé :'
+                  : 'Titre de la note ou indice :'}
+              </label>
+              <div className="inline-input-row">
+                <input
+                  id="cockpit-quick-loot-input"
+                  type="text"
+                  value={quickLootText}
+                  onChange={(e) => setQuickLootText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddQuickLoot();
+                    }
+                  }}
+                  placeholder={
+                    quickAddTarget === 'inventory'
+                      ? 'Ex. Potion de soins, Bague en or, Torche...'
+                      : 'Ex. Clé du donjon, Trahison du capitaine...'
+                  }
+                />
+                {quickAddTarget === 'inventory' ? (
+                  <select
+                    aria-label="Catégorie d'objet"
+                    className="forge-select"
+                    value={quickItemCategory}
+                    onChange={(e) =>
+                      setQuickItemCategory(e.target.value as InventoryCategory)
+                    }
+                  >
+                    {INVENTORY_CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <select
+                    aria-label="Catégorie de note"
+                    className="forge-select"
+                    value={quickNoteCategory}
+                    onChange={(e) =>
+                      setQuickNoteCategory(e.target.value as NoteCategory)
+                    }
+                  >
+                    {NOTE_CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  type="button"
+                  className="action-btn action-btn--primary"
+                  onClick={handleAddQuickLoot}
+                >
+                  + Ajouter
+                </button>
+              </div>
             </div>
           </div>
 
+          {(sheet.noteEntries ?? []).length > 0 && (
+            <div className="cockpit-notes-log">
+              <div
+                className="forge-filter-pills"
+                role="group"
+                aria-label="Filtrer les notes du carnet"
+              >
+                <button
+                  type="button"
+                  className={
+                    noteFilter === 'all'
+                      ? 'forge-filter-pill forge-filter-pill--active'
+                      : 'forge-filter-pill'
+                  }
+                  aria-pressed={noteFilter === 'all'}
+                  onClick={() => setNoteFilter('all')}
+                >
+                  Tout ({sheet.noteEntries?.length ?? 0})
+                </button>
+                {NOTE_CATEGORY_OPTIONS.map((opt) => {
+                  const entries = (sheet.noteEntries ?? []).filter(
+                    (n) => n.category === opt.value,
+                  );
+                  if (entries.length === 0) return null;
+                  const active = noteFilter === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={
+                        active
+                          ? 'forge-filter-pill forge-filter-pill--active'
+                          : 'forge-filter-pill'
+                      }
+                      aria-pressed={active}
+                      onClick={() => setNoteFilter(opt.value)}
+                    >
+                      {opt.label} ({entries.length})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(sheet.noteEntries ?? [])
+                .filter(
+                  (entry) =>
+                    noteFilter === 'all' || entry.category === noteFilter,
+                )
+                .map((entry) => (
+                  <article key={entry.id} className="cockpit-note-card">
+                    <div className="cockpit-note-meta">
+                      <strong>{entry.title}</strong>
+                      <span className="badge-pill">
+                        {getNoteCategoryLabel(entry.category)}
+                      </span>
+                    </div>
+                    {entry.content.trim() && (
+                      <p className="cockpit-note-body">{entry.content}</p>
+                    )}
+                  </article>
+                ))}
+            </div>
+          )}
+
           <div className="field-group">
             <label htmlFor="cockpit-notes-textarea">
-              Carnet de campagne & inventaire libre :
+              Carnet de campagne &amp; notes libres :
             </label>
             <textarea
               id="cockpit-notes-textarea"
               className="grimoire-textarea"
-              rows={6}
+              rows={5}
               value={sheet.notes}
               onChange={(e) => onUpdateNotes(e.target.value)}
-              placeholder="Notez ici votre butin, vos indices et vos notes de séance..."
+              placeholder="Notez ici vos indices, contacts et notes de séance..."
             />
           </div>
 

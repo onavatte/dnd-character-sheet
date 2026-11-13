@@ -10,6 +10,7 @@ import type {
   AttackEntry,
   CharacterClassEntry,
   CharacterSheetV1,
+  CurrencyPurse,
   DerivedAttackStat,
   DerivedCharacterStats,
   DerivedSkillStat,
@@ -392,10 +393,15 @@ export function computeDerivedCharacter(sheet: CharacterSheetV1): DerivedCharact
     }
   }
 
-  const totalWeight = sheet.inventory.reduce(
-    (sum, item) => sum + Math.max(0, item.quantity) * Math.max(0, item.weight),
-    0,
-  );
+  const totalWeight =
+    Math.round(
+      sheet.inventory.reduce(
+        (sum, item) => sum + Math.max(0, item.quantity) * Math.max(0, item.weight),
+        0,
+      ) * 100,
+    ) / 100;
+  const carryingCapacityKg = computeCarryingCapacityKg(sheet.abilities.STR);
+  const totalWealthGp = computeTotalWealthGp(sheet.currency);
 
   return {
     totalLevel,
@@ -411,6 +417,43 @@ export function computeDerivedCharacter(sheet: CharacterSheetV1): DerivedCharact
     tools,
     attacks,
     spellcastingByAbility,
-    totalWeight: Math.round(totalWeight * 100) / 100,
+    totalWeight,
+    carryingCapacityKg,
+    encumbered: totalWeight > carryingCapacityKg,
+    totalWealthGp,
   };
+}
+
+/**
+ * Calcule la capacité de charge D&D 5e standard en kilogrammes (FOR * 7.5 kg).
+ */
+export function computeCarryingCapacityKg(strengthScore: number): number {
+  return Math.round(Math.max(0, strengthScore) * 7.5 * 100) / 100;
+}
+
+/**
+ * Calcule la valeur totale de la bourse exprimée en pièces d'or (po),
+ * incluant les espèces personnalisées disposant d'un équivalent en po.
+ */
+export function computeTotalWealthGp(currency?: CurrencyPurse): number {
+  if (currency === undefined) {
+    return 0;
+  }
+
+  const standardGp =
+    Math.max(0, currency.pp) * 10 +
+    Math.max(0, currency.gp) +
+    Math.max(0, currency.ep) * 0.5 +
+    Math.max(0, currency.sp) * 0.1 +
+    Math.max(0, currency.cp) * 0.01;
+
+  const customGp = (currency.custom ?? []).reduce((sum, entry) => {
+    const rate = entry.gpEquivalent;
+    if (rate === undefined || !Number.isFinite(rate) || rate <= 0) {
+      return sum;
+    }
+    return sum + Math.max(0, entry.amount) * rate;
+  }, 0);
+
+  return Math.round((standardGp + customGp) * 100) / 100;
 }

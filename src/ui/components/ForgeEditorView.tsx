@@ -3,6 +3,7 @@ import type { Draft } from 'immer';
 import type { CharacterSheetV1, DerivedCharacterStats } from '../../engine/types';
 import { ForgeCombatAndSpellsTab } from './ForgeCombatAndSpellsTab';
 import { ForgeIdentityTab } from './ForgeIdentityTab';
+import { ForgeInventoryTab } from './ForgeInventoryTab';
 import { ForgeStatsAndSkillsTab } from './ForgeStatsAndSkillsTab';
 
 export type ForgeTabId = 'identity' | 'stats' | 'combat' | 'inventory';
@@ -103,20 +104,12 @@ export function ForgeEditorView({ sheet, derived, onMutate }: ForgeEditorViewPro
           role="tabpanel"
           id="forge-panel-inventory"
           aria-labelledby="forge-tab-inventory"
-          className="forge-grid"
         >
-          <section className="grimoire-card forge-card">
-            <h2 className="panel-title">Inventaire, Monnaie & Notes</h2>
-            <p className="muted-caption">
-              L'édition structurée du butin (catégories, poids, quantité, équipements portés), des devises (po, pa, pc ou capsules/crédits) et des notes catégorisées arrivera dans les Lots 4.3 et 4.4.
-            </p>
-            <div className="roll-banner" role="status">
-              <strong>Prochaine étape : Lots 4.3 & 4.4</strong>
-              <span>
-                Vos notes actuelles et votre inventaire existant restent accessibles et consultables en Mode Cockpit.
-              </span>
-            </div>
-          </section>
+          <ForgeInventoryTab
+            sheet={sheet}
+            derived={derived}
+            onMutate={onMutate}
+          />
         </div>
       )}
     </main>

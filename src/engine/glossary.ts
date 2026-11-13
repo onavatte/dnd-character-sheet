@@ -467,6 +467,7 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     inventory: [
       {
         id: 'inv-armor',
+        category: 'armor',
         name: 'Armure de cuir clouté +1',
         originalName: 'Studded Leather +1',
         quantity: 1,
@@ -476,6 +477,7 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
       },
       {
         id: 'inv-pack',
+        category: 'gear',
         name: 'Sacoche de pisteur & étui à cartes',
         originalName: "Explorer's Pack & Map Case",
         quantity: 1,
@@ -483,8 +485,42 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
         equipped: true,
         notes: 'Outils de voleur & cartes annotées',
       },
+      {
+        id: 'inv-potion',
+        category: 'consumable',
+        name: 'Potion de soins',
+        originalName: 'Potion of Healing',
+        quantity: 2,
+        weight: 0.25,
+        equipped: false,
+        notes: 'Restaure 2d4 + 2 PV par action',
+      },
     ],
+    currency: {
+      pp: 1,
+      gp: 42,
+      ep: 0,
+      sp: 15,
+      cp: 8,
+      custom: [],
+    },
     notes: 'Campagne Les Marches d’Argent : piste des gobelins repérée près du vieux moulin.',
+    noteEntries: [
+      {
+        id: 'note-quest-mill',
+        title: 'Embuscade au vieux moulin',
+        category: 'quest',
+        content: 'Retrouver l’éclaireur disparu près du gué nord avant la tombée de la nuit.',
+        createdAt: '2026-04-01T18:30:00.000Z',
+      },
+      {
+        id: 'note-npc-elara',
+        title: 'Dame Elara de Lunargent',
+        category: 'npc',
+        content: 'Contact à la guilde des cartographes ; promet 50 po pour le relevé de la passe.',
+        createdAt: '2026-04-02T20:15:00.000Z',
+      },
+    ],
   };
 }
 
@@ -576,6 +612,15 @@ export function createBlankCharacter(
     resources: [],
     attacks: [],
     inventory: [],
+    currency: {
+      pp: 0,
+      gp: 0,
+      ep: 0,
+      sp: 0,
+      cp: 0,
+      custom: [],
+    },
     notes: '',
+    noteEntries: [],
   };
 }

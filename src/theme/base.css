@@ -2377,3 +2377,345 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   font: inherit;
   cursor: pointer;
 }
+
+/* Lot 4.4 : Inventaire, Bourse & Notes */
+.forge-capacity-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+}
+
+.forge-capacity-banner--encumbered {
+  border-color: var(--color-hp-warn);
+  background-color: color-mix(in srgb, var(--color-hp-warn) 10%, var(--bg-elevated));
+}
+
+.forge-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.forge-filter-pill {
+  min-height: 36px;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.forge-filter-pill:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.forge-filter-pill--active {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+  color: var(--accent-primary);
+}
+
+.forge-purse-total-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.forge-currency-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+@media (max-width: 560px) {
+  .forge-currency-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.forge-coin-card {
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.forge-coin-card--custom {
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.forge-coin-card--custom:hover {
+  border-color: var(--border-strong);
+}
+
+.forge-coin-card--selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-surface) 35%, var(--bg-elevated));
+}
+
+.forge-coin-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.forge-coin-edit-trigger {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.forge-coin-abbr {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.forge-coin-rate {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.forge-coin-card .forge-number-stepper {
+  grid-template-columns: auto minmax(4.25rem, 1fr) auto;
+  gap: 0.2rem;
+}
+
+.forge-coin-card .stepper-btn {
+  min-width: 30px;
+  min-height: 38px;
+  padding: 0;
+}
+
+.forge-coin-card .forge-number-input {
+  padding-inline: 0.35rem;
+}
+
+.forge-currency-editor {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.forge-subpanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.forge-subpanel-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.forge-subpanel-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cockpit-inventory-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  flex-wrap: nowrap;
+}
+
+.cockpit-inventory-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cockpit-inventory-title {
+  display: block;
+  min-width: 0;
+}
+
+.cockpit-inventory-title > span {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-1);
+  max-width: 100%;
+}
+
+.cockpit-inventory-title .original-term {
+  margin-inline-start: 0;
+}
+
+.cockpit-inventory-weight {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0.15rem;
+}
+
+.cockpit-inventory-row-actions {
+  justify-self: end;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.cockpit-equip-btn {
+  white-space: nowrap;
+  min-height: 36px;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cockpit-equip-btn[aria-pressed='true'] {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+  color: var(--accent-primary);
+}
+
+.cockpit-delete-btn {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0.2rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.cockpit-delete-btn:hover,
+.cockpit-delete-btn:focus-visible {
+  color: var(--color-hp-crit);
+  border-color: var(--color-hp-crit);
+  background-color: color-mix(in srgb, var(--color-hp-crit) 10%, var(--bg-surface));
+}
+
+.cockpit-quick-add-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+}
+
+.cockpit-quick-add-box .inline-input-row {
+  flex-wrap: wrap;
+}
+
+.cockpit-quick-add-box .inline-input-row > input {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+.cockpit-quick-add-box .inline-input-row > .forge-select {
+  width: auto;
+  max-width: 155px;
+  min-height: 44px;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.875rem;
+  flex: 0 1 auto;
+}
+
+.cockpit-quick-add-box .inline-input-row > .action-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cockpit-quick-mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.cockpit-notes-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cockpit-note-card {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.cockpit-note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.cockpit-note-body {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}

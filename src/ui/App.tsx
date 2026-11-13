@@ -61,7 +61,6 @@ export function App() {
   const adjustSpellSlotUsed = useCharacterStore((s) => s.adjustSpellSlotUsed);
   const adjustPactSlotUsed = useCharacterStore((s) => s.adjustPactSlotUsed);
   const updateNotes = useCharacterStore((s) => s.updateNotes);
-  const appendQuickNote = useCharacterStore((s) => s.appendQuickNote);
   const shortRest = useCharacterStore((s) => s.shortRest);
   const longRestWithAutoSnapshot = useCharacterStore(
     (s) => s.longRestWithAutoSnapshot,
@@ -484,7 +483,7 @@ export function App() {
               onAdjustSpellSlotUsed={adjustSpellSlotUsed}
               onAdjustPactSlotUsed={adjustPactSlotUsed}
               onUpdateNotes={updateNotes}
-              onAppendQuickNote={appendQuickNote}
+              onMutate={mutateWithImmer}
             />
           </main>
 

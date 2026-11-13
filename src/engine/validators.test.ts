@@ -76,4 +76,51 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     const res = validateCharacterSheet(badSize);
     expect(res.valid).toBe(false);
   });
+
+  it('valide les devises, espèces personnalisées, catégories d’inventaire et notes catégorisées avec rétro-compatibilité', () => {
+    const demo = createDemoCharacter();
+    const legacy = { ...demo };
+    delete legacy.currency;
+    delete legacy.noteEntries;
+    expect(validateCharacterSheet(legacy).valid).toBe(true);
+
+    const badCurrency = {
+      ...demo,
+      currency: { pp: -1, gp: 0, ep: 0, sp: 0, cp: 0 },
+    };
+    expect(validateCharacterSheet(badCurrency).valid).toBe(false);
+
+    const badCustomCurrency = {
+      ...demo,
+      currency: {
+        pp: 0,
+        gp: 10,
+        ep: 0,
+        sp: 0,
+        cp: 0,
+        custom: [{ id: 'c1', name: '', amount: 5 }],
+      },
+    };
+    expect(validateCharacterSheet(badCustomCurrency).valid).toBe(false);
+
+    const badCategory = {
+      ...demo,
+      inventory: [{ ...demo.inventory[0], category: 'spaceship' }],
+    };
+    expect(validateCharacterSheet(badCategory).valid).toBe(false);
+
+    const badNoteCategory = {
+      ...demo,
+      noteEntries: [
+        {
+          id: 'n1',
+          title: 'Test',
+          category: 'invalid',
+          content: 'abc',
+          createdAt: '2026-01-01T00:00:00.000Z',
+        },
+      ],
+    };
+    expect(validateCharacterSheet(badNoteCategory).valid).toBe(false);
+  });
 });
