@@ -1,4 +1,4 @@
-# Architecture Technique — Grimoire 5e
+# Architecture Technique - Grimoire 5e
 
 Stack : **React 19 + TypeScript 5 (`strict`) + Vite + Zustand & Immer + IndexedDB + Vitest + PWA (`vite-plugin-pwa`)**.
 
@@ -166,12 +166,12 @@ export interface CharacterSnapshot {
 ---
 
 ## 3. Stratégie de Persistance, Cache & Backup (Parallèle Infra / Stockage)
-- **Tier 0 — Mémoire Vive (`Zustand` + `Immer`)** :
+- **Tier 0 - Mémoire Vive (`Zustand` + `Immer`)** :
   Chaque action utilisateur produit un nouvel état immuable par partage structurel (*Copy-on-Write* en RAM). Une pile circulaire conserve les *N* derniers pointeurs d'état pour offrir un **Undo/Redo instantané** en cas de fausse manipulation tactile.
-- **Tier 1 — Stockage Local Transactionnel (`IndexedDB`)** :
+- **Tier 1 - Stockage Local Transactionnel (`IndexedDB`)** :
   - **Store `characters`** : Persistance automatique en mode *Write-Behind* (écriture différée de ~250 ms après la dernière mutation pour éviter l'amplification d'écriture lors de clics rapides sur les PV).
   - **Store `snapshots`** : Points de restauration immuables locaux (créés manuellement ou automatiquement avant un Repos Long).
-- **Tier 2 — Sauvegarde Externe & Synchronisation (`JSON` puis `Homelab`)** :
+- **Tier 2 - Sauvegarde Externe & Synchronisation (`JSON` puis `Homelab`)** :
   - **En v1** : Export et import de fichiers `.json` encapsulant la fiche, son numéro de révision, son horodatage et sa version de schéma (`schemaVersion: 1`).
   - **Préparation Homelab (v2)** : Toute la persistance passe par le contrat `CharacterRepository`. Les champs `updatedAt` et `revision` sont déjà présents sur chaque fiche pour permettre plus tard une réplication vers un conteneur Homelab derrière Nginx et VPN WireGuard sans modifier le modèle métier.
 

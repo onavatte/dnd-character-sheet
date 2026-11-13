@@ -519,7 +519,7 @@ export function DiceAssistantPanel({
                   CRITIQUE (
                   {lastD20.critThreshold === 20
                     ? '20'
-                    : `${lastD20.critThreshold}–20`}
+                    : `${lastD20.critThreshold}-20`}
                   )
                 </span>
               )}
@@ -532,8 +532,8 @@ export function DiceAssistantPanel({
           ) : (
             <span className="muted-note">
               {diceRollMode === 'physical'
-                ? 'Prêt — Touchez la valeur de votre dé'
-                : 'Prêt — Cliquez sur Lancer'}
+                ? 'Prêt - Touchez la valeur de votre dé'
+                : 'Prêt - Cliquez sur Lancer'}
             </span>
           )}
         </div>
@@ -612,7 +612,7 @@ export function DiceAssistantPanel({
                     <label id="modal-d20-keypad-label">
                       {pendingFirstD20 === null
                         ? 'Touchez le 1er dé d20 :'
-                        : `1er dé = ${pendingFirstD20} — Touchez le 2e dé :`}
+                        : `1er dé = ${pendingFirstD20} - Touchez le 2e dé :`}
                     </label>
                   )}
                   <div

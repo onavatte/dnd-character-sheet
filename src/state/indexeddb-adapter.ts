@@ -1,5 +1,5 @@
 /**
- * Adaptateur IndexedDB natif (Tier 1 — Stockage Transactionnel Navigateur).
+ * Adaptateur IndexedDB natif (Tier 1 - Stockage Transactionnel Navigateur).
  * Implémente CharacterRepository avec deux Object Stores :
  * - 'characters' (keyPath: 'id')
  * - 'snapshots' (keyPath: 'snapshotId', index: 'by_characterId')

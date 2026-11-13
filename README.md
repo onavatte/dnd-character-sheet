@@ -8,11 +8,11 @@ Conçue pour un usage fluide aussi bien sur **PC/Laptop** que sur **Tablette**, 
 
 ## Documentation Maîtresse
 
-- [AGENTS.md](AGENTS.md) — Règles de travail, conventions et garde-fous de sécurité
-- [docs/SPECS.md](docs/SPECS.md) — Spécifications fonctionnelles, parcours UX et Design System (*Ivoire & Encre* / *Obsidienne & Or*)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Architecture découplée (`src/engine/`, `src/state/`, `src/ui/`), modèle TypeScript et persistance multi-tiers
-- [docs/BACKLOG.md](docs/BACKLOG.md) — Feuille de route par jalons et Parking Lot (Synchronisation Homelab WireGuard/Nginx & Compendium)
-- [docs/DECISIONS.md](docs/DECISIONS.md) — Journal des décisions d'architecture (ADR)
+- [AGENTS.md](AGENTS.md) - Règles de travail, conventions et garde-fous de sécurité
+- [docs/SPECS.md](docs/SPECS.md) - Spécifications fonctionnelles, parcours UX et Design System (*Ivoire & Encre* / *Obsidienne & Or*)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Architecture découplée (`src/engine/`, `src/state/`, `src/ui/`), modèle TypeScript et persistance multi-tiers
+- [docs/BACKLOG.md](docs/BACKLOG.md) - Feuille de route par jalons et Parking Lot (Synchronisation Homelab WireGuard/Nginx & Compendium)
+- [docs/DECISIONS.md](docs/DECISIONS.md) - Journal des décisions d'architecture (ADR)
 
 ---
 

@@ -6,7 +6,7 @@ import {
   rollVirtualD20Check,
 } from './dice';
 
-describe('Assistant de Jet Hybride — Physique & Virtuel (dice.ts)', () => {
+describe('Assistant de Jet Hybride - Physique & Virtuel (dice.ts)', () => {
   it('résout un jet de dé physique d20 avec modificateur et détecte les critiques (1 et 20)', () => {
     const normal = resolvePhysicalD20Check({
       label: 'Discrétion (Stealth)',
@@ -105,7 +105,7 @@ describe('Assistant de Jet Hybride — Physique & Virtuel (dice.ts)', () => {
     expect(manualCrit.total).toBe(21);
   });
 
-  it('prend en charge les plages de critique étendues (ex. 19–20) en physique et virtuel', () => {
+  it('prend en charge les plages de critique étendues (ex. 19-20) en physique et virtuel', () => {
     const critOn19 = resolvePhysicalD20Check({
       label: 'Vibro-lame tactique',
       primaryDie: 19,

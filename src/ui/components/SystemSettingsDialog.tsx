@@ -202,7 +202,7 @@ export function SystemSettingsDialog({
 
       {/* 3. Gestionnaire de Snapshots IndexedDB */}
       <div className="settings-section">
-        <h3>3. Points de Restauration (Snapshots IndexedDB — {snapshots.length})</h3>
+        <h3>3. Points de Restauration (Snapshots IndexedDB - {snapshots.length})</h3>
         <div className="field-group">
           <label htmlFor="settings-snapshot-label">
             Capturer un Snapshot manuel de l’état actuel :
@@ -270,7 +270,7 @@ export function SystemSettingsDialog({
 
       {/* 4. Export / Import JSON (Tier 2) & Maintenance */}
       <div className="settings-section">
-        <h3>4. Sauvegarde Externe Portable (.json — Tier 2)</h3>
+        <h3>4. Sauvegarde Externe Portable (.json - Tier 2)</h3>
         <div className="field-group">
           <div className="button-cluster">
             <button

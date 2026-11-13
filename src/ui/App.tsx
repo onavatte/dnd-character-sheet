@@ -330,7 +330,7 @@ export function App() {
 
       {sheetMode === 'forge' && (
         <div className="roll-banner" role="status">
-          <strong>Mode Édition (Forge) — Prévu au Jalon 4</strong>
+          <strong>Mode Édition (Forge) - Prévu au Jalon 4</strong>
           <span>
             L’éditeur complet de personnage (création multi-personnages, upload
             et compression du portrait, édition des caractéristiques, compétences

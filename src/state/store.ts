@@ -296,7 +296,7 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
       const currentSheet = get().history.present;
       const autoSnap = createSnapshotRecord(
         currentSheet,
-        `Auto — Avant Repos Long (Rév. #${currentSheet.revision})`,
+        `Auto - Avant Repos Long (Rév. #${currentSheet.revision})`,
       );
       await repository.saveSnapshot(autoSnap);
       const updatedSnapshots = await repository.listSnapshots(currentSheet.id);
@@ -369,7 +369,7 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
       const currentSheet = get().history.present;
       const safetySnap = createSnapshotRecord(
         currentSheet,
-        `Auto — Avant Import JSON (Rév. #${currentSheet.revision})`,
+        `Auto - Avant Import JSON (Rév. #${currentSheet.revision})`,
       );
       await repository.saveSnapshot(safetySnap);
 

@@ -18,7 +18,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
       manifest: {
-        name: 'Grimoire 5e — Fiche de Personnage',
+        name: 'Grimoire 5e - Fiche de Personnage',
         short_name: 'Grimoire 5e',
         description:
           'Fiche de personnage Donjons & Dragons 5e (2014 & Moderne/Post-Apo) Local-First pour Tablette et PC',

@@ -141,7 +141,7 @@ export function CombatAndResourcesPanel({
                       <div className="attack-meta">
                         Portée : {atk.range} · Type : {atk.damageType}
                         {atk.critRangeMin < 20
-                          ? ` · Crit. ${atk.critRangeMin}–20`
+                          ? ` · Crit. ${atk.critRangeMin}-20`
                           : ''}
                         {rawAttack?.notes ? ` · ${rawAttack.notes}` : ''}
                       </div>
@@ -163,9 +163,9 @@ export function CombatAndResourcesPanel({
                         }
                         onSelectRollTarget({
                           id: atk.id,
-                          label: `${atk.name} — Attaque`,
+                          label: `${atk.name} - Attaque`,
                           ...(atk.originalName !== undefined
-                            ? { originalLabel: `${atk.originalName} — Attack` }
+                            ? { originalLabel: `${atk.originalName} - Attack` }
                             : {}),
                           category: 'attack',
                           modifier: atk.toHitBonus,
@@ -186,9 +186,9 @@ export function CombatAndResourcesPanel({
                       onClick={() =>
                         onSelectRollTarget({
                           id: `${atk.id}-dmg`,
-                          label: `${atk.name} — Dégâts`,
+                          label: `${atk.name} - Dégâts`,
                           ...(atk.originalName !== undefined
-                            ? { originalLabel: `${atk.originalName} — Damage` }
+                            ? { originalLabel: `${atk.originalName} - Damage` }
                             : {}),
                           category: 'damage',
                           modifier: atk.toHitBonus,
@@ -442,9 +442,9 @@ export function CombatAndResourcesPanel({
 
                 onSelectRollTarget({
                   id: `${spell.id}-dmg`,
-                  label: `${spell.name} — ${frSuffix}`,
+                  label: `${spell.name} - ${frSuffix}`,
                   ...(spell.originalName !== undefined
-                    ? { originalLabel: `${spell.originalName} — ${enSuffix}` }
+                    ? { originalLabel: `${spell.originalName} - ${enSuffix}` }
                     : {}),
                   category: 'damage',
                   modifier: spellStats?.attackBonus ?? 0,
@@ -477,9 +477,9 @@ export function CombatAndResourcesPanel({
                       ? ` · JS ${saveAbbr} DD ${spellStats.saveDC}`
                       : ''}
                     {spell.critRangeMin !== undefined && spell.critRangeMin < 20
-                      ? ` · Crit. ${spell.critRangeMin}–20`
+                      ? ` · Crit. ${spell.critRangeMin}-20`
                       : ''}
-                    {spell.damageType ? ` · Type : ${spell.damageType}` : ''} —{' '}
+                    {spell.damageType ? ` · Type : ${spell.damageType}` : ''} -{' '}
                     {spell.description}
                   </div>
 
@@ -492,10 +492,10 @@ export function CombatAndResourcesPanel({
                           onClick={() =>
                             onSelectRollTarget({
                               id: spell.id,
-                              label: `${spell.name} — Attaque de sort`,
+                              label: `${spell.name} - Attaque de sort`,
                               ...(spell.originalName !== undefined
                                 ? {
-                                    originalLabel: `${spell.originalName} — Spell Attack`,
+                                    originalLabel: `${spell.originalName} - Spell Attack`,
                                   }
                                 : {}),
                               category: 'attack',

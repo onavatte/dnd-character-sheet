@@ -1,4 +1,4 @@
-# Grimoire 5e — Règles et Contexte pour les Agents
+# Grimoire 5e - Règles et Contexte pour les Agents
 
 Application web Local-First (PWA) de fiche de personnage Donjons & Dragons 5e (édition 2014 + adaptations modernes/post-apo), pensée pour un usage fluide à la table de jeu comme en préparation, sur **PC/Laptop et Tablette**.
 Lire d'abord : [`docs/SPECS.md`](docs/SPECS.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/BACKLOG.md`](docs/BACKLOG.md), [`docs/DECISIONS.md`](docs/DECISIONS.md).

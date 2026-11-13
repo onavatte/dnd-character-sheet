@@ -1,12 +1,12 @@
 /* ==========================================================================
-   Design Tokens — Grimoire 5e ("Ivoire & Encre" Clair par défaut / "Obsidienne & Or" Sombre)
+   Design Tokens - Grimoire 5e ("Ivoire & Encre" Clair par défaut / "Obsidienne & Or" Sombre)
    ========================================================================== */
 
 :root {
   /* 1. Déclaration native du schéma de couleurs (modern-web-guidance: dark-mode & dark-mode-toggle) */
   color-scheme: light dark;
 
-  /* Palettes brutes — Thème Clair ("Ivoire & Encre") */
+  /* Palettes brutes - Thème Clair ("Ivoire & Encre") */
   --raw-bg-canvas-light: #f6f3ec;
   --raw-bg-surface-light: #fcfaf5;
   --raw-bg-elevated-light: #ede8dc;
@@ -26,7 +26,7 @@
   --raw-color-hp-crit-light: #b91c1c;
   --raw-color-arcane-light: #1864ab;
 
-  /* Palettes brutes — Thème Sombre ("Obsidienne & Or") */
+  /* Palettes brutes - Thème Sombre ("Obsidienne & Or") */
   --raw-bg-canvas-dark: #0d0f12;
   --raw-bg-surface-dark: #151921;
   --raw-bg-elevated-dark: #1e2430;
@@ -46,7 +46,7 @@
   --raw-color-hp-crit-dark: #f85149;
   --raw-color-arcane-dark: #58a6ff;
 
-  /* Valeurs sémantiques par défaut (Thème Clair — Fallback pour navigateurs sans light-dark()) */
+  /* Valeurs sémantiques par défaut (Thème Clair - Fallback pour navigateurs sans light-dark()) */
   --bg-canvas: var(--raw-bg-canvas-light);
   --bg-surface: var(--raw-bg-surface-light);
   --bg-elevated: var(--raw-bg-elevated-light);

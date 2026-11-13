@@ -12,7 +12,7 @@ import {
   undoHistoryState,
 } from './index';
 
-describe('history — Pile Undo / Redo Copy-on-Write', () => {
+describe('history - Pile Undo / Redo Copy-on-Write', () => {
   it('empile les états, annule (undo), rétablit (redo) et purge le futur sur nouvelle branche', () => {
     const s0 = createHistoryStack(10, 3);
     const s1 = pushHistoryState(s0, 20);
@@ -50,7 +50,7 @@ describe('history — Pile Undo / Redo Copy-on-Write', () => {
   });
 });
 
-describe('backup-service — Sérialisation & Validation JSON (Tier 2)', () => {
+describe('backup-service - Sérialisation & Validation JSON (Tier 2)', () => {
   it('sérialise une enveloppe JSON v1 et la réimporte sans perte', () => {
     const demo = createDemoCharacter('2026-03-30T12:00:00.000Z');
     const rawJson = serializeCharacterBackup(demo, '2026-03-30T12:05:00.000Z');
@@ -77,7 +77,7 @@ describe('backup-service — Sérialisation & Validation JSON (Tier 2)', () => {
   });
 });
 
-describe('store — Intégration Zustand + Immer + Repository + Snapshots', () => {
+describe('store - Intégration Zustand + Immer + Repository + Snapshots', () => {
   it('initialise le personnage, applique des mutations avec Undo/Redo et persiste en Write-Behind', async () => {
     const repo = new InMemoryCharacterRepository();
     const store = createCharacterStore({ repository: repo, writeBehindMs: 0 });
@@ -128,7 +128,7 @@ describe('store — Intégration Zustand + Immer + Repository + Snapshots', () =
     expect(store.getState().history.present.combat.hpCurrent).toBe(58);
     expect(store.getState().snapshots.length).toBe(1);
     const snap = store.getState().snapshots[0];
-    expect(snap?.label).toContain('Auto — Avant Repos Long');
+    expect(snap?.label).toContain('Auto - Avant Repos Long');
     expect(snap?.payload.combat.hpCurrent).toBe(41);
 
     // Restauration du snapshot : on retrouve les 41 PV d'avant le Repos Long
@@ -157,7 +157,7 @@ describe('store — Intégration Zustand + Immer + Repository + Snapshots', () =
     const importOutcome = await store.getState().importSheetJson(exportedJson);
     expect(importOutcome.ok).toBe(true);
     expect(store.getState().history.present.combat.hpCurrent).toBe(52);
-    expect(store.getState().snapshots.some((s) => s.label.includes('Auto — Avant Import JSON'))).toBe(true);
+    expect(store.getState().snapshots.some((s) => s.label.includes('Auto - Avant Import JSON'))).toBe(true);
   });
 
   it('gère les interactions du Cockpit (états, épuisement, jets contre la mort et emplacements de sorts)', async () => {

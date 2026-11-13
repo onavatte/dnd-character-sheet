@@ -208,7 +208,7 @@ export function VitalityBanner({
             role="group"
             aria-label="Jets de sauvegarde contre la mort"
           >
-            <strong className="vital-value--hp-crit">À 0 PV — Mort :</strong>
+            <strong className="vital-value--hp-crit">À 0 PV - Mort :</strong>
             <span className="tabular-nums">
               Succès {sheet.combat.deathSaves.successes}/3
             </span>
@@ -382,7 +382,7 @@ export function VitalityBanner({
                   onClick={() => onToggleCondition(cond.id)}
                 >
                   <span>{renderTerm(cond.name, cond.originalName)}</span>
-                  <strong>{active ? 'ACTIF' : '—'}</strong>
+                  <strong>{active ? 'ACTIF' : '-'}</strong>
                 </button>
               );
             })}

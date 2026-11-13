@@ -1,4 +1,4 @@
-# Spécifications Fonctionnelles — Grimoire 5e
+# Spécifications Fonctionnelles - Grimoire 5e
 
 ## 1. Vision & Périmètre v1
 Application web personnelle de **fiche de personnage Donjons & Dragons 5e (édition 2014)** avec prise en charge native d'adaptations **modernes / post-apocalyptiques** (compétences, armes, armures et ressources personnalisables). L'application combine la rigueur mathématique d'un calculateur de règles 5e automatisé et la souplesse d'une saisie libre (*Homebrew-friendly*), conçue pour être utilisée intégralement sur **PC/Laptop** comme sur **Tablette** (à la table de jeu comme hors session).
@@ -36,9 +36,9 @@ Application web personnelle de **fiche de personnage Donjons & Dragons 5e (édit
 ## 4. Parcours Utilisateur & États UI
 L'application offre **100 % des fonctionnalités sur tous les supports (Laptop/PC et Tablette)**. Le passage entre le **Mode Partie (Cockpit)** et le **Mode Édition (Forge)** est un simple commutateur d'affichage instantané (*Toggle*) sur la même fiche active :
 
-- **Parcours en Mode Édition (Forge — Création, ajustement en cours de partie ou montée de niveau)** :
+- **Parcours en Mode Édition (Forge - Création, ajustement en cours de partie ou montée de niveau)** :
   Création d'un personnage (ou modification à la volée pendant une session : ajout d'une arme trouvée, ajustement d'un score, nouvelle compétence post-apo ou nouveau sort). Toute modification met immédiatement à jour l'état partagé.
-- **Parcours en Mode Partie (Cockpit — Jeu actif à la table sur Laptop ou Tablette)** :
+- **Parcours en Mode Partie (Cockpit - Jeu actif à la table sur Laptop ou Tablette)** :
   Consultation en un coup d'œil des statistiques clés sans risque de supprimer ou dérégler un champ par erreur. Application rapide de dégâts/soins, coche des munitions et emplacements de sorts, utilisation de l'**Assistant de Jet Hybride** (saisie du dé physique ou jet virtuel), déclenchement d'un Repos Court ou Long. Si le joueur doit modifier la structure de sa fiche en pleine partie, il bascule en *Mode Forge* en 1 clic, fait son changement, et revient en *Mode Cockpit*.
 - **Parcours optionnel Multi-Appareils (Transfert PC <-> Tablette)** :
   Si le joueur change d'appareil (ex. préparation sur PC fixe puis départ en session avec une Tablette), il utilise l'Export/Import `.json` en 1 clic (en attendant la synchronisation automatique Homelab prévue en v2).
@@ -51,9 +51,9 @@ L'application offre **100 % des fonctionnalités sur tous les supports (Laptop/P
 ---
 
 ## 5. Direction Artistique & Design System
-- **Ambiance visuelle** : *"Grimoire Tactique Moderne"* avec **double thème Clair (par défaut) / Sombre** commutable en 1 clic — alliance d'une esthétique éditoriale soignée (bordures finement ciselées, hiérarchie typographique inspirée des ouvrages de jeu de rôle modernes) et d'une lisibilité chirurgicale digne d'un tableau de bord.
+- **Ambiance visuelle** : *"Grimoire Tactique Moderne"* avec **double thème Clair (par défaut) / Sombre** commutable en 1 clic - alliance d'une esthétique éditoriale soignée (bordures finement ciselées, hiérarchie typographique inspirée des ouvrages de jeu de rôle modernes) et d'une lisibilité chirurgicale digne d'un tableau de bord.
 - **Palette & Double Thème (`data-theme="light" | "dark"`)** :
-  - **Thème Clair (Par défaut — "Ivoire & Encre")** :
+  - **Thème Clair (Par défaut - "Ivoire & Encre")** :
     - Fonds : Parchemin ivoire doux sans éblouissement (`--bg-canvas: #f6f3ec`), Surface carte papier vélin (`--bg-surface: #fcfaf5`), Surface secondaire (`--bg-elevated: #ede8dc`).
     - Textes : Encre anthracite profonde très contrastée (`--text-primary: #1a1d24`), Gris ardoise (`--text-secondary: #4a5262`), Muted (`--text-muted: #767f92`).
     - Accents : Bronze doré / Cuivre (`--accent-primary: #9a6b16`), Vert sauge (`--color-hp-ok: #2b8a3e`), Ambre (`--color-hp-warn: #d97706`), Cramoisi sceau (`--color-hp-crit: #c92a2a`), Bleu cobalt (`--color-arcane: #1971c2`).

@@ -312,7 +312,7 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
         range: 'Allonge 1,5 m (Lancer 6/18 m)',
         actionTiming: 'action',
         critRangeMin: 19,
-        notes: 'Finesse, légère, critique étendu (19–20)',
+        notes: 'Finesse, légère, critique étendu (19-20)',
       },
     ],
     spellcasting: {
