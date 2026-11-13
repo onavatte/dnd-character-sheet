@@ -49,4 +49,18 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     const res = validateCharacterSheet(invalidAbilities);
     expect(res.valid).toBe(false);
   });
+
+  it('tolère les fiches sans outils/langues mais rejette un format non-tableau', () => {
+    const demo = createDemoCharacter();
+    const legacySheet = { ...demo };
+    delete legacySheet.toolProficiencies;
+    delete legacySheet.languages;
+    expect(validateCharacterSheet(legacySheet).valid).toBe(true);
+
+    const badTools = { ...demo, toolProficiencies: 'aucun' };
+    expect(validateCharacterSheet(badTools).valid).toBe(false);
+
+    const badLanguages = { ...demo, languages: { commun: true } };
+    expect(validateCharacterSheet(badLanguages).valid).toBe(false);
+  });
 });

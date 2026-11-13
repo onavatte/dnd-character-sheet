@@ -9,9 +9,23 @@ import {
 import type {
   CharacterSheetV1,
   DerivedCharacterStats,
+  ProficiencyLevel,
   TermDisplayMode,
 } from '../../engine';
 import type { ActiveRollTarget } from './dialog-utils';
+
+function getProficiencySymbol(proficiency: ProficiencyLevel): string {
+  switch (proficiency) {
+    case 'expertise':
+      return '★★';
+    case 'proficient':
+      return '★';
+    case 'half':
+      return '½';
+    case 'none':
+      return '·';
+  }
+}
 
 export interface AbilitiesAndSkillsPanelProps {
   sheet: CharacterSheetV1;
@@ -179,14 +193,7 @@ export function AbilitiesAndSkillsPanel({
       >
         {filteredSkills.map((skill) => {
           const abilityMeta = ABILITY_GLOSSARY[skill.ability];
-          const profBadge =
-            skill.proficiency === 'expertise'
-              ? '★★'
-              : skill.proficiency === 'proficient'
-                ? '★'
-                : skill.proficiency === 'half'
-                  ? '½'
-                  : '·';
+          const profBadge = getProficiencySymbol(skill.proficiency);
 
           return (
             <button
@@ -239,6 +246,88 @@ export function AbilitiesAndSkillsPanel({
             </button>
           );
         })}
+      </div>
+
+      {/* Maîtrises d'outils (cliquables pour lancer le jet de réussite) */}
+      <div className="cockpit-subblock">
+        <h3>Maîtrises d&apos;outils</h3>
+        {derived.tools.length === 0 ? (
+          <p className="muted-note">
+            Aucun outil maîtrisé renseigné (Mode Édition &gt; Stats &amp; Compétences).
+          </p>
+        ) : (
+          <div
+            className="skill-list"
+            role="group"
+            aria-label="Liste des outils maîtrisés"
+          >
+            {derived.tools.map((tool) => {
+              const abilityMeta = ABILITY_GLOSSARY[tool.ability];
+              const profBadge = getProficiencySymbol(tool.proficiency);
+              const rollId = `tool-${tool.id}`;
+
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  className="skill-btn"
+                  aria-pressed={activeRollTargetId === rollId}
+                  onClick={() =>
+                    onSelectRollTarget({
+                      id: rollId,
+                      label: tool.name,
+                      ...(tool.originalName !== undefined
+                        ? { originalLabel: tool.originalName }
+                        : {}),
+                      category: 'tool',
+                      modifier: tool.modifier,
+                    })
+                  }
+                >
+                  <span>
+                    <strong
+                      className="tabular-nums"
+                      style={{ marginRight: '0.5rem' }}
+                    >
+                      {profBadge}
+                    </strong>
+                    {renderTerm(tool.name, tool.originalName)}{' '}
+                    <span
+                      style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}
+                    >
+                      [
+                      {termMode === 'en'
+                        ? abilityMeta.abbrEn
+                        : abilityMeta.abbrFr}
+                      ]
+                    </span>
+                  </span>
+                  <span className="tabular-nums" style={{ fontWeight: 700 }}>
+                    {formatSignedModifier(tool.modifier)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Langues maîtrisées */}
+      <div className="cockpit-subblock">
+        <h3>Langues</h3>
+        {(sheet.languages ?? []).length === 0 ? (
+          <p className="muted-note">
+            Aucune langue renseignée (Mode Édition &gt; Identité &amp; Classes).
+          </p>
+        ) : (
+          <div className="languages-pill-list" aria-label="Langues maîtrisées">
+            {(sheet.languages ?? []).map((lang) => (
+              <span key={lang.id} className="badge-pill">
+                {renderTerm(lang.name, lang.originalName)}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

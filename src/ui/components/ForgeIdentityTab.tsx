@@ -1,10 +1,11 @@
 import { useId, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import type { Draft } from 'immer';
 import {
   ABILITY_GLOSSARY,
   ABILITY_KEYS,
   HIT_DIE_SIZES,
+  LANGUAGE_PRESETS,
   formatSignedModifier,
   syncHitDicePoolsWithClasses,
 } from '../../engine';
@@ -33,6 +34,45 @@ export function ForgeIdentityTab({
   const [portraitFeedback, setPortraitFeedback] = useState<string | null>(null);
   const [portraitError, setPortraitError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [langName, setLangName] = useState('');
+  const [langOriginalName, setLangOriginalName] = useState('');
+
+  const languages = sheet.languages ?? [];
+
+  const handleAddLanguage = (name: string, originalName?: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const normalized = trimmed.toLocaleLowerCase('fr');
+    const alreadyExists = languages.some(
+      (l) => l.name.trim().toLocaleLowerCase('fr') === normalized,
+    );
+    if (alreadyExists) return;
+
+    const newId = `lang-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const trimmedOrig = originalName?.trim();
+    onMutate((draft) => {
+      draft.languages ??= [];
+      draft.languages.push({
+        id: newId,
+        name: trimmed,
+        ...(trimmedOrig ? { originalName: trimmedOrig } : {}),
+      });
+    });
+  };
+
+  const handleLanguageFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!langName.trim()) return;
+    handleAddLanguage(langName, langOriginalName);
+    setLangName('');
+    setLangOriginalName('');
+  };
+
+  const handleRemoveLanguage = (langId: string) => {
+    onMutate((draft) => {
+      draft.languages = (draft.languages ?? []).filter((l) => l.id !== langId);
+    });
+  };
 
   const handlePortraitSelected = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -212,6 +252,104 @@ export function ForgeIdentityTab({
               />
             </div>
           </div>
+        </fieldset>
+
+        <fieldset className="forge-fieldset">
+          <legend>Langues maîtrisées</legend>
+
+          {languages.length === 0 ? (
+            <p className="muted-note">
+              Aucune langue ajoutée pour le moment. Saisissez une langue ou utilisez les raccourcis ci-dessous.
+            </p>
+          ) : (
+            <div className="forge-languages-list">
+              {languages.map((lang) => (
+                <span key={lang.id} className="badge-pill forge-language-pill">
+                  <span>
+                    {lang.name}
+                    {lang.originalName ? (
+                      <span className="original-term">
+                        {' '}
+                        ({lang.originalName})
+                      </span>
+                    ) : null}
+                  </span>
+                  <button
+                    type="button"
+                    className="forge-pill-remove"
+                    aria-label={`Retirer la langue ${lang.name}`}
+                    onClick={() => handleRemoveLanguage(lang.id)}
+                  >
+                    x
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="forge-preset-strip" role="group" aria-label="Langues fréquentes">
+            {LANGUAGE_PRESETS.filter(
+              (preset) =>
+                !languages.some(
+                  (l) =>
+                    l.name.trim().toLocaleLowerCase('fr') ===
+                    preset.name.toLocaleLowerCase('fr'),
+                ),
+            ).map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                className="action-btn"
+                onClick={() =>
+                  handleAddLanguage(preset.name, preset.originalName)
+                }
+              >
+                + {preset.name}
+              </button>
+            ))}
+          </div>
+
+          <form
+            className="forge-two-cols"
+            onSubmit={handleLanguageFormSubmit}
+          >
+            <div className="field-group">
+              <label htmlFor={`${baseId}-lang-name`}>Autre langue (FR)</label>
+              <input
+                id={`${baseId}-lang-name`}
+                name="languageName"
+                type="text"
+                className="forge-input"
+                maxLength={50}
+                value={langName}
+                onChange={(e) => setLangName(e.target.value)}
+                placeholder="Ex. Géant, Binaire..."
+              />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor={`${baseId}-lang-vo`}>Nom VO (optionnel)</label>
+              <div className="inline-input-row">
+                <input
+                  id={`${baseId}-lang-vo`}
+                  name="languageVo"
+                  type="text"
+                  className="forge-input"
+                  maxLength={50}
+                  value={langOriginalName}
+                  onChange={(e) => setLangOriginalName(e.target.value)}
+                  placeholder="Ex. Giant"
+                />
+                <button
+                  type="submit"
+                  className="action-btn action-btn--primary"
+                  disabled={!langName.trim()}
+                >
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </form>
         </fieldset>
       </section>
 

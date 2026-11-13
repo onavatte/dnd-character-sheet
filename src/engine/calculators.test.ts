@@ -176,4 +176,22 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     expect(leveledUp[12]).toEqual({ total: 2, available: 2 });
     expect(leveledUp[6]).toEqual({ total: 0, available: 0 });
   });
+
+  it('calcule les modificateurs des maîtrises d’outils et reste rétro-compatible sans toolProficiencies', () => {
+    const demo = createDemoCharacter();
+    const derived = computeDerivedCharacter(demo);
+
+    // Kaelen Niv 7 => Maîtrise +3, DEX 18 (+4) => Outils de voleur = +7
+    const thievesTools = derived.tools.find((t) => t.id === 'tool-thieves');
+    expect(thievesTools?.modifier).toBe(7);
+
+    // INT 14 (+2) + Maîtrise (+3) + bonusFlat (+1) => Trousse de piratage = +6
+    const cyberdeck = derived.tools.find((t) => t.id === 'tool-cyberdeck');
+    expect(cyberdeck?.modifier).toBe(6);
+
+    const legacySheet = { ...demo };
+    delete legacySheet.toolProficiencies;
+    delete legacySheet.languages;
+    expect(computeDerivedCharacter(legacySheet).tools).toEqual([]);
+  });
 });

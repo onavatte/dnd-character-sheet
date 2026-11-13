@@ -54,6 +54,14 @@ export interface SkillDefinition extends BilingualNamed {
   isCustom: boolean;
 }
 
+export interface ToolProficiency extends BilingualNamed {
+  ability: AbilityKey;
+  proficiency: ProficiencyLevel;
+  bonusFlat: number;
+}
+
+export type LanguageEntry = BilingualNamed;
+
 export interface TrackedResource extends BilingualNamed {
   current: number;
   max: number;
@@ -122,6 +130,8 @@ export interface CharacterSheetV1 {
   abilities: Record<AbilityKey, number>;
   savingThrowProficiencies: Record<AbilityKey, boolean>;
   skills: SkillDefinition[];
+  toolProficiencies?: ToolProficiency[];
+  languages?: LanguageEntry[];
   combat: {
     hpCurrent: number;
     hpMax: number;
@@ -161,6 +171,15 @@ export interface DerivedSkillStat {
   isCustom: boolean;
 }
 
+export interface DerivedToolStat {
+  id: string;
+  name: string;
+  originalName?: string;
+  ability: AbilityKey;
+  proficiency: ProficiencyLevel;
+  modifier: number;
+}
+
 export interface DerivedAttackStat {
   id: string;
   name: string;
@@ -183,6 +202,7 @@ export interface DerivedCharacterStats {
   passiveInvestigation: number;
   passiveInsight: number;
   skills: DerivedSkillStat[];
+  tools: DerivedToolStat[];
   attacks: DerivedAttackStat[];
   spellcastingByAbility: Partial<
     Record<AbilityKey, { saveDC: number; attackBonus: number }>

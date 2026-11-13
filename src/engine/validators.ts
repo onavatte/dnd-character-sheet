@@ -139,6 +139,19 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
     errors.push('La liste des compétences (skills) doit être un tableau.');
   }
 
+  if (
+    payload['toolProficiencies'] !== undefined &&
+    !Array.isArray(payload['toolProficiencies'])
+  ) {
+    errors.push(
+      'La liste des maîtrises d’outils (toolProficiencies) doit être un tableau.',
+    );
+  }
+
+  if (payload['languages'] !== undefined && !Array.isArray(payload['languages'])) {
+    errors.push('La liste des langues (languages) doit être un tableau.');
+  }
+
   if (!Array.isArray(payload['resources'])) {
     errors.push('La liste des ressources (resources) doit être un tableau.');
   }

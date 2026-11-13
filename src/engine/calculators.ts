@@ -13,10 +13,12 @@ import type {
   DerivedAttackStat,
   DerivedCharacterStats,
   DerivedSkillStat,
+  DerivedToolStat,
   HitDicePools,
   HitDieSize,
   ProficiencyLevel,
   SkillDefinition,
+  ToolProficiency,
 } from './types';
 
 /**
@@ -132,6 +134,21 @@ export function computeSavingThrowModifier(
 }
 
 /**
+ * Calcule le modificateur combiné d'un jet basé sur une caractéristique, un niveau de maîtrise et un modificateur fixe.
+ */
+function computeAbilityProficiencyModifier(
+  ability: AbilityKey,
+  proficiency: ProficiencyLevel,
+  bonusFlat: number,
+  abilities: Record<AbilityKey, number>,
+  proficiencyBonus: number,
+): number {
+  const abilityMod = computeAbilityModifier(abilities[ability]);
+  const profMod = computeProficiencyContribution(proficiency, proficiencyBonus);
+  return abilityMod + profMod + bonusFlat;
+}
+
+/**
  * Calcule le modificateur total d'une compétence (standard 5e ou compétence personnalisée post-apo).
  */
 export function computeSkillModifier(
@@ -139,9 +156,30 @@ export function computeSkillModifier(
   abilities: Record<AbilityKey, number>,
   proficiencyBonus: number,
 ): number {
-  const abilityMod = computeAbilityModifier(abilities[skill.ability]);
-  const profMod = computeProficiencyContribution(skill.proficiency, proficiencyBonus);
-  return abilityMod + profMod + skill.bonusFlat;
+  return computeAbilityProficiencyModifier(
+    skill.ability,
+    skill.proficiency,
+    skill.bonusFlat,
+    abilities,
+    proficiencyBonus,
+  );
+}
+
+/**
+ * Calcule le modificateur total d'un jet de maîtrise d'outil (caractéristique associée + maîtrise + modificateur divers).
+ */
+export function computeToolModifier(
+  tool: ToolProficiency,
+  abilities: Record<AbilityKey, number>,
+  proficiencyBonus: number,
+): number {
+  return computeAbilityProficiencyModifier(
+    tool.ability,
+    tool.proficiency,
+    tool.bonusFlat,
+    abilities,
+    proficiencyBonus,
+  );
 }
 
 /**
@@ -288,6 +326,20 @@ export function computeDerivedCharacter(sheet: CharacterSheetV1): DerivedCharact
     return derived;
   });
 
+  const tools: DerivedToolStat[] = (sheet.toolProficiencies ?? []).map((tool) => {
+    const derivedTool: DerivedToolStat = {
+      id: tool.id,
+      name: tool.name,
+      ability: tool.ability,
+      proficiency: tool.proficiency,
+      modifier: computeToolModifier(tool, sheet.abilities, proficiencyBonus),
+    };
+    if (tool.originalName !== undefined) {
+      derivedTool.originalName = tool.originalName;
+    }
+    return derivedTool;
+  });
+
   const findSkillPassive = (id: string, fallbackAbility: AbilityKey): number => {
     const found = skills.find((s) => s.id === id);
     if (found !== undefined) {
@@ -356,6 +408,7 @@ export function computeDerivedCharacter(sheet: CharacterSheetV1): DerivedCharact
     passiveInvestigation: findSkillPassive('investigation', 'INT'),
     passiveInsight: findSkillPassive('insight', 'WIS'),
     skills,
+    tools,
     attacks,
     spellcastingByAbility,
     totalWeight: Math.round(totalWeight * 100) / 100,

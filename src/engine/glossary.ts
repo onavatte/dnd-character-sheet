@@ -7,8 +7,39 @@ import type {
   AbilityKey,
   BilingualNamed,
   CharacterSheetV1,
+  LanguageEntry,
   SkillDefinition,
+  ToolProficiency,
 } from './types';
+
+export interface ToolPreset {
+  name: string;
+  originalName: string;
+  ability: AbilityKey;
+}
+
+export const TOOL_PRESETS: readonly ToolPreset[] = [
+  { name: 'Outils de voleur', originalName: "Thieves' Tools", ability: 'DEX' },
+  { name: 'Outils de forgeron', originalName: "Smith's Tools", ability: 'STR' },
+  { name: "Matériel d'alchimiste", originalName: "Alchemist's Supplies", ability: 'INT' },
+  { name: "Kit d'herboriste", originalName: 'Herbalism Kit', ability: 'WIS' },
+  { name: 'Kit de déguisement', originalName: 'Disguise Kit', ability: 'CHA' },
+  { name: 'Outils de bricoleur', originalName: "Tinker's Tools", ability: 'INT' },
+  { name: 'Véhicules terrestres', originalName: 'Vehicles (Land)', ability: 'DEX' },
+  { name: 'Trousse de piratage', originalName: 'Cyberdeck / Hacking Kit', ability: 'INT' },
+];
+
+export const LANGUAGE_PRESETS: readonly Omit<LanguageEntry, 'id'>[] = [
+  { name: 'Commun', originalName: 'Common' },
+  { name: 'Elfique', originalName: 'Elvish' },
+  { name: 'Nain', originalName: 'Dwarvish' },
+  { name: 'Halfelin', originalName: 'Halfling' },
+  { name: 'Draconique', originalName: 'Draconic' },
+  { name: 'Sylvestre', originalName: 'Sylvan' },
+  { name: 'Infernal', originalName: 'Infernal' },
+  { name: 'Abyssal', originalName: 'Abyssal' },
+  { name: 'Argot des voleurs', originalName: "Thieves' Cant" },
+];
 
 export interface AbilityGlossaryEntry {
   key: AbilityKey;
@@ -241,6 +272,29 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
       CHA: false,
     },
     skills,
+    toolProficiencies: [
+      {
+        id: 'tool-thieves',
+        name: 'Outils de voleur',
+        originalName: "Thieves' Tools",
+        ability: 'DEX',
+        proficiency: 'proficient',
+        bonusFlat: 0,
+      },
+      {
+        id: 'tool-cyberdeck',
+        name: 'Trousse de piratage',
+        originalName: 'Cyberdeck / Hacking Kit',
+        ability: 'INT',
+        proficiency: 'proficient',
+        bonusFlat: 1,
+      },
+    ] satisfies ToolProficiency[],
+    languages: [
+      { id: 'lang-common', name: 'Commun', originalName: 'Common' },
+      { id: 'lang-elvish', name: 'Elfique', originalName: 'Elvish' },
+      { id: 'lang-sylvan', name: 'Sylvestre', originalName: 'Sylvan' },
+    ],
     combat: {
       hpCurrent: 52,
       hpMax: 58,
@@ -458,6 +512,8 @@ export function createBlankCharacter(
       CHA: false,
     },
     skills: createDefaultSkills(),
+    toolProficiencies: [],
+    languages: [],
     combat: {
       hpCurrent: 10,
       hpMax: 10,

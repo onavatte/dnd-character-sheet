@@ -4,6 +4,7 @@ import type { Draft } from 'immer';
 import {
   ABILITY_GLOSSARY,
   ABILITY_KEYS,
+  TOOL_PRESETS,
   formatSignedModifier,
 } from '../../engine';
 import type {
@@ -33,6 +34,56 @@ export function ForgeStatsAndSkillsTab({
   const [customProficiency, setCustomProficiency] =
     useState<ProficiencyLevel>('proficient');
   const [customBonusFlat, setCustomBonusFlat] = useState(0);
+
+  const [toolName, setToolName] = useState('');
+  const [toolOriginalName, setToolOriginalName] = useState('');
+  const [toolAbility, setToolAbility] = useState<AbilityKey>('DEX');
+  const [toolProficiency, setToolProficiency] =
+    useState<ProficiencyLevel>('proficient');
+  const [toolBonusFlat, setToolBonusFlat] = useState(0);
+
+  const toolProficiencies = sheet.toolProficiencies ?? [];
+
+  const handleAddTool = (
+    name: string,
+    originalName: string | undefined,
+    ability: AbilityKey,
+    proficiency: ProficiencyLevel,
+    bonusFlat: number,
+  ) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const newId = `tool-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const trimmedOrig = originalName?.trim();
+    onMutate((draft) => {
+      draft.toolProficiencies ??= [];
+      draft.toolProficiencies.push({
+        id: newId,
+        name: trimmed,
+        ...(trimmedOrig ? { originalName: trimmedOrig } : {}),
+        ability,
+        proficiency,
+        bonusFlat,
+      });
+    });
+  };
+
+  const handleAddToolFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!toolName.trim()) return;
+    handleAddTool(
+      toolName,
+      toolOriginalName,
+      toolAbility,
+      toolProficiency,
+      toolBonusFlat,
+    );
+    setToolName('');
+    setToolOriginalName('');
+    setToolAbility('DEX');
+    setToolProficiency('proficient');
+    setToolBonusFlat(0);
+  };
 
   const handleAddCustomSkill = (e: FormEvent) => {
     e.preventDefault();
@@ -538,6 +589,294 @@ export function ForgeStatsAndSkillsTab({
             );
           })}
         </div>
+      </section>
+
+      {/* Bloc 3 : Maîtrises d'outils */}
+      <section
+        className="grimoire-card forge-card"
+        aria-label="Maîtrises d'outils"
+      >
+        <h2>Maîtrises d&apos;outils</h2>
+        <p className="muted-caption">
+          Outils d&apos;artisanat, kits techniques ou véhicules nécessitant un jet de réussite (calculé avec la caractéristique associée).
+        </p>
+
+        <div className="forge-custom-skill-form">
+          <div className="forge-preset-strip" role="group" aria-label="Outils fréquents">
+            {TOOL_PRESETS.filter(
+              (preset) =>
+                !toolProficiencies.some(
+                  (t) =>
+                    t.name.trim().toLocaleLowerCase('fr') ===
+                    preset.name.toLocaleLowerCase('fr'),
+                ),
+            ).map((preset) => (
+              <button
+                key={preset.name}
+                type="button"
+                className="action-btn"
+                onClick={() =>
+                  handleAddTool(
+                    preset.name,
+                    preset.originalName,
+                    preset.ability,
+                    'proficient',
+                    0,
+                  )
+                }
+              >
+                + {preset.name} ({ABILITY_GLOSSARY[preset.ability].abbrFr})
+              </button>
+            ))}
+          </div>
+
+          <form
+            className="forge-custom-skill-form"
+            aria-labelledby={`${baseId}-custom-tool-title`}
+            onSubmit={handleAddToolFormSubmit}
+          >
+            <h3 id={`${baseId}-custom-tool-title`}>
+              + Ajouter un outil personnalisé
+            </h3>
+            <div className="forge-custom-skill-grid">
+              <div className="field-group">
+                <label htmlFor={`${baseId}-new-tool-name`}>Nom (FR) *</label>
+                <input
+                  id={`${baseId}-new-tool-name`}
+                  name="toolName"
+                  type="text"
+                  className="forge-input"
+                  value={toolName}
+                  onChange={(e) => setToolName(e.target.value)}
+                  placeholder="Ex. Outils de mécano, Kit de chimie..."
+                  required
+                />
+              </div>
+
+              <div className="field-group">
+                <label htmlFor={`${baseId}-new-tool-vo`}>
+                  Nom VO (optionnel)
+                </label>
+                <input
+                  id={`${baseId}-new-tool-vo`}
+                  name="toolVo"
+                  type="text"
+                  className="forge-input"
+                  value={toolOriginalName}
+                  onChange={(e) => setToolOriginalName(e.target.value)}
+                  placeholder="Ex. Mechanic's Tools"
+                />
+              </div>
+
+              <div className="field-group">
+                <label htmlFor={`${baseId}-new-tool-abil`}>
+                  Caractéristique
+                </label>
+                <select
+                  id={`${baseId}-new-tool-abil`}
+                  name="toolAbility"
+                  className="forge-select"
+                  value={toolAbility}
+                  onChange={(e) => setToolAbility(e.target.value as AbilityKey)}
+                >
+                  {ABILITY_KEYS.map((key) => (
+                    <option key={key} value={key}>
+                      {ABILITY_GLOSSARY[key].abbrFr} ({ABILITY_GLOSSARY[key].name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field-group">
+                <label htmlFor={`${baseId}-new-tool-prof`}>Maîtrise</label>
+                <select
+                  id={`${baseId}-new-tool-prof`}
+                  name="toolProficiency"
+                  className="forge-select"
+                  value={toolProficiency}
+                  onChange={(e) =>
+                    setToolProficiency(e.target.value as ProficiencyLevel)
+                  }
+                >
+                  {PROFICIENCY_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="field-group">
+                <label htmlFor={`${baseId}-new-tool-flat`}>Mod. divers</label>
+                <NumberStepper
+                  id={`${baseId}-new-tool-flat`}
+                  name="toolFlat"
+                  value={toolBonusFlat}
+                  min={-10}
+                  max={20}
+                  decrementLabel="Réduire le modificateur divers de l'outil"
+                  incrementLabel="Augmenter le modificateur divers de l'outil"
+                  onChange={(val) => setToolBonusFlat(Math.trunc(val))}
+                />
+              </div>
+            </div>
+
+            <div>
+              <button type="submit" className="action-btn action-btn--primary">
+                Ajouter l&apos;outil
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {toolProficiencies.length === 0 ? (
+          <p className="muted-note">
+            Aucun outil maîtrisé configuré pour le moment. Utilisez les ajouts rapides ou le formulaire ci-dessus.
+          </p>
+        ) : (
+          <div className="forge-skills-list">
+            {toolProficiencies.map((tool) => {
+              const derivedTool = derived.tools.find((t) => t.id === tool.id);
+              const abilityMod = derived.abilityModifiers[tool.ability];
+              const totalMod = derivedTool?.modifier ?? 0;
+
+              return (
+                <div
+                  key={tool.id}
+                  className="forge-skill-row"
+                >
+                  <div className="forge-skill-title">
+                    <div className="forge-two-cols">
+                      <div className="field-group">
+                        <label htmlFor={`${baseId}-tool-name-${tool.id}`}>
+                          Outil
+                        </label>
+                        <CommittedTextInput
+                          id={`${baseId}-tool-name-${tool.id}`}
+                          name={`tool-name-${tool.id}`}
+                          value={tool.name}
+                          required
+                          maxLength={60}
+                          onCommit={(val) =>
+                            onMutate((draft) => {
+                              const target = (draft.toolProficiencies ?? []).find(
+                                (t) => t.id === tool.id,
+                              );
+                              if (target) target.name = val.trim() || 'Outil';
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="field-group">
+                        <label htmlFor={`${baseId}-tool-abil-${tool.id}`}>
+                          Caractéristique ({formatSignedModifier(abilityMod)})
+                        </label>
+                        <select
+                          id={`${baseId}-tool-abil-${tool.id}`}
+                          name={`tool-abil-${tool.id}`}
+                          className="forge-select"
+                          value={tool.ability}
+                          onChange={(e) => {
+                            const nextAbil = e.target.value as AbilityKey;
+                            onMutate((draft) => {
+                              const target = (draft.toolProficiencies ?? []).find(
+                                (t) => t.id === tool.id,
+                              );
+                              if (target) target.ability = nextAbil;
+                            });
+                          }}
+                        >
+                          {ABILITY_KEYS.map((key) => (
+                            <option key={key} value={key}>
+                              {ABILITY_GLOSSARY[key].abbrFr}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="forge-skill-controls">
+                    <div className="field-group">
+                      <label htmlFor={`${baseId}-tool-prof-${tool.id}`}>
+                        Maîtrise
+                      </label>
+                      <select
+                        id={`${baseId}-tool-prof-${tool.id}`}
+                        name={`tool-prof-${tool.id}`}
+                        className="forge-select"
+                        value={tool.proficiency}
+                        onChange={(e) => {
+                          const nextProf = e.target.value as ProficiencyLevel;
+                          onMutate((draft) => {
+                            const target = (draft.toolProficiencies ?? []).find(
+                              (t) => t.id === tool.id,
+                            );
+                            if (target) target.proficiency = nextProf;
+                          });
+                        }}
+                      >
+                        {PROFICIENCY_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="field-group">
+                      <label htmlFor={`${baseId}-tool-flat-${tool.id}`}>
+                        Mod. divers
+                      </label>
+                      <NumberStepper
+                        id={`${baseId}-tool-flat-${tool.id}`}
+                        name={`tool-flat-${tool.id}`}
+                        value={tool.bonusFlat}
+                        min={-10}
+                        max={20}
+                        decrementLabel={`Diminuer le modificateur divers de ${tool.name}`}
+                        incrementLabel={`Augmenter le modificateur divers de ${tool.name}`}
+                        onChange={(nextFlat) =>
+                          onMutate((draft) => {
+                            const target = (draft.toolProficiencies ?? []).find(
+                              (t) => t.id === tool.id,
+                            );
+                            if (target) target.bonusFlat = Math.trunc(nextFlat);
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div
+                      className="forge-skill-total-card"
+                      aria-label={`Total pour ${tool.name} : ${formatSignedModifier(totalMod)}`}
+                    >
+                      <span className="forge-skill-total-label">Total</span>
+                      <strong className="forge-skill-total-value tabular-nums">
+                        {formatSignedModifier(totalMod)}
+                      </strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="action-btn"
+                      onClick={() =>
+                        onMutate((draft) => {
+                          draft.toolProficiencies = (
+                            draft.toolProficiencies ?? []
+                          ).filter((t) => t.id !== tool.id);
+                        })
+                      }
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );
