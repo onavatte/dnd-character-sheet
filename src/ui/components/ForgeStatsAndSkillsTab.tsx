@@ -16,6 +16,19 @@ import type {
 import { PROFICIENCY_OPTIONS } from './forge-constants';
 import { CommittedTextInput, NumberStepper } from './ForgeSharedControls';
 
+function getProficiencyMarker(proficiency: ProficiencyLevel): string {
+  switch (proficiency) {
+    case 'expertise':
+      return '★★';
+    case 'proficient':
+      return '★';
+    case 'half':
+      return '½';
+    case 'none':
+      return '·';
+  }
+}
+
 export interface ForgeStatsAndSkillsTabProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
@@ -115,49 +128,99 @@ export function ForgeStatsAndSkillsTab({
   return (
     <div className="forge-stack">
       {/* Bloc 1 : Caractéristiques, Sauvegardes & Combat */}
-      <div className="forge-grid">
+      <div className="forge-grid forge-stats-top-grid">
         <section
           className="grimoire-card forge-card"
           aria-label="Scores de caractéristiques et maîtrises de sauvegarde"
         >
           <h2>Caractéristiques & Jets de Sauvegarde</h2>
-          <div className="forge-abilities-list">
+          <div className="forge-abilities-grid">
             {ABILITY_KEYS.map((key) => {
               const glossary = ABILITY_GLOSSARY[key];
               const score = sheet.abilities[key];
               const mod = derived.abilityModifiers[key];
               const isProficientSave = sheet.savingThrowProficiencies[key];
               const saveMod = derived.savingThrows[key].modifier;
+              const abilityInputId = `${baseId}-abil-${key}`;
               const saveCheckboxId = `${baseId}-save-${key}`;
 
               return (
-                <div key={key} className="forge-ability-row">
-                  <div className="forge-ability-header">
-                    <label htmlFor={`${baseId}-abil-${key}`}>
-                      <strong>{glossary.name}</strong> ({glossary.abbrFr})
+                <div key={key} className="ability-card">
+                  <div className="forge-ability-main">
+                    <label
+                      htmlFor={abilityInputId}
+                      className="ability-abbr"
+                    >
+                      {glossary.abbrFr}
                     </label>
-                    <span className="badge-pill tabular-nums">
-                      Mod. {formatSignedModifier(mod)} · JdS{' '}
-                      {formatSignedModifier(saveMod)}
-                    </span>
+                    <div className="forge-ability-stepper">
+                      <button
+                        type="button"
+                        className="stepper-btn forge-ability-step-btn tabular-nums"
+                        disabled={score <= 1}
+                        aria-label={`Diminuer ${glossary.abbrFr}`}
+                        onClick={() =>
+                          onMutate((draft) => {
+                            draft.abilities[key] = Math.max(1, score - 1);
+                          })
+                        }
+                      >
+                        -
+                      </button>
+                      <span className="ability-value-line tabular-nums">
+                        <input
+                          id={abilityInputId}
+                          name={`ability-${key}`}
+                          type="number"
+                          className="ability-raw-score forge-ability-score-input tabular-nums"
+                          value={score}
+                          min={1}
+                          max={30}
+                          onChange={(e) => {
+                            const parsed = Number(e.target.value);
+                            if (
+                              e.target.value.trim() !== '' &&
+                              Number.isFinite(parsed)
+                            ) {
+                              const clamped = Math.min(
+                                30,
+                                Math.max(1, Math.trunc(parsed)),
+                              );
+                              onMutate((draft) => {
+                                draft.abilities[key] = clamped;
+                              });
+                            }
+                          }}
+                        />
+                        <span className="ability-mod-inline">
+                          ({formatSignedModifier(mod)})
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        className="stepper-btn forge-ability-step-btn tabular-nums"
+                        disabled={score >= 30}
+                        aria-label={`Augmenter ${glossary.abbrFr}`}
+                        onClick={() =>
+                          onMutate((draft) => {
+                            draft.abilities[key] = Math.min(30, score + 1);
+                          })
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="forge-ability-controls">
-                    <NumberStepper
-                      id={`${baseId}-abil-${key}`}
-                      name={`ability-${key}`}
-                      value={score}
-                      min={1}
-                      max={30}
-                      decrementLabel={`Diminuer ${glossary.name}`}
-                      incrementLabel={`Augmenter ${glossary.name}`}
-                      onChange={(nextScore) =>
-                        onMutate((draft) => {
-                          draft.abilities[key] = Math.trunc(nextScore);
-                        })
-                      }
-                    />
-                    <div className="forge-checkbox-inline">
+                  <label
+                    htmlFor={saveCheckboxId}
+                    className={
+                      isProficientSave
+                        ? 'ability-save-btn forge-ability-save-toggle forge-ability-save-toggle--checked tabular-nums'
+                        : 'ability-save-btn forge-ability-save-toggle tabular-nums'
+                    }
+                  >
+                    <span className="forge-ability-save-left">
                       <input
                         id={saveCheckboxId}
                         name={`save-prof-${key}`}
@@ -169,9 +232,10 @@ export function ForgeStatsAndSkillsTab({
                           })
                         }
                       />
-                      <label htmlFor={saveCheckboxId}>Maîtrise JdS</label>
-                    </div>
-                  </div>
+                      <span>Sauvegarde</span>
+                    </span>
+                    <strong>{formatSignedModifier(saveMod)}</strong>
+                  </label>
                 </div>
               );
             })}
@@ -183,15 +247,30 @@ export function ForgeStatsAndSkillsTab({
           aria-label="Vitalité, Classe d'Armure et Mobilité"
         >
           <h2>Vitalité, CA & Mobilité</h2>
-          <p className="muted-note tabular-nums">
-            Aperçu calculé : CA totale {derived.armorClass} · Initiative{' '}
-            {formatSignedModifier(derived.initiative)} · Perception passive{' '}
-            {derived.passivePerception}
-          </p>
+          <div className="forge-kpi-strip" aria-label="Aperçu des valeurs calculées">
+            <div className="forge-kpi-tile">
+              <span className="forge-kpi-label">CA totale</span>
+              <strong className="forge-kpi-value tabular-nums">
+                {derived.armorClass}
+              </strong>
+            </div>
+            <div className="forge-kpi-tile">
+              <span className="forge-kpi-label">Initiative</span>
+              <strong className="forge-kpi-value tabular-nums">
+                {formatSignedModifier(derived.initiative)}
+              </strong>
+            </div>
+            <div className="forge-kpi-tile">
+              <span className="forge-kpi-label">Perc. passive</span>
+              <strong className="forge-kpi-value tabular-nums">
+                {derived.passivePerception}
+              </strong>
+            </div>
+          </div>
 
           <fieldset className="forge-fieldset">
-            <legend>Paramètres de combat de base</legend>
-            <div className="forge-two-cols">
+            <legend>Paramètres de combat</legend>
+            <div className="forge-two-cols forge-combat-cols">
               <div className="field-group">
                 <label htmlFor={`${baseId}-hp-max`}>PV Maximum</label>
                 <NumberStepper
@@ -237,7 +316,7 @@ export function ForgeStatsAndSkillsTab({
               </div>
             </div>
 
-            <div className="forge-two-cols">
+            <div className="forge-two-cols forge-combat-cols">
               <div className="field-group">
                 <label htmlFor={`${baseId}-ac-base`}>
                   CA de base (Armure + DEX)
@@ -279,7 +358,7 @@ export function ForgeStatsAndSkillsTab({
               </div>
             </div>
 
-            <div className="forge-two-cols">
+            <div className="forge-two-cols forge-combat-cols">
               <div className="field-group">
                 <label htmlFor={`${baseId}-speed`}>Vitesse (mètres)</label>
                 <NumberStepper
@@ -301,7 +380,7 @@ export function ForgeStatsAndSkillsTab({
 
               <div className="field-group">
                 <label htmlFor={`${baseId}-init-flat`}>
-                  Bonus d’Initiative plat
+                  Mod. divers d’Initiative
                 </label>
                 <NumberStepper
                   id={`${baseId}-init-flat`}
@@ -330,14 +409,16 @@ export function ForgeStatsAndSkillsTab({
       >
         <h2>Compétences</h2>
 
-        <form
-          className="forge-custom-skill-form"
-          aria-labelledby={`${baseId}-custom-skill-title`}
-          onSubmit={handleAddCustomSkill}
-        >
-          <h3 id={`${baseId}-custom-skill-title`}>
-            + Ajouter une compétence personnalisée
-          </h3>
+        <details className="forge-details">
+          <summary id={`${baseId}-custom-skill-title`}>
+            Ajouter une compétence personnalisée
+          </summary>
+          <div className="forge-details-body">
+            <form
+              className="forge-custom-skill-form"
+              aria-labelledby={`${baseId}-custom-skill-title`}
+              onSubmit={handleAddCustomSkill}
+            >
           <div className="forge-custom-skill-grid">
             <div className="field-group">
               <label htmlFor={`${baseId}-new-skill-name`}>Nom (FR) *</label>
@@ -419,29 +500,37 @@ export function ForgeStatsAndSkillsTab({
             </div>
           </div>
 
-          <div>
-            <button type="submit" className="action-btn action-btn--primary">
-              Ajouter la compétence
-            </button>
+              <div>
+                <button type="submit" className="action-btn action-btn--primary">
+                  Ajouter la compétence
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </details>
 
         <div className="forge-skills-list">
           {sheet.skills.map((skill) => {
             const derivedSkill = derived.skills.find((s) => s.id === skill.id);
             const abilityMod = derived.abilityModifiers[skill.ability];
             const totalMod = derivedSkill?.modifier ?? 0;
+            const profClass =
+              skill.proficiency === 'expertise'
+                ? 'forge-skill-row--expertise'
+                : skill.proficiency === 'proficient'
+                  ? 'forge-skill-row--proficient'
+                  : '';
 
             return (
               <div
                 key={skill.id}
-                className={`forge-skill-row ${
+                className={`forge-skill-row ${profClass} ${
                   skill.isCustom ? 'forge-skill-row--custom' : ''
                 }`}
               >
                 <div className="forge-skill-title">
                   {skill.isCustom ? (
-                    <div className="forge-two-cols">
+                    <div className="forge-skill-custom-fields">
                       <div className="field-group">
                         <label htmlFor={`${baseId}-sk-name-${skill.id}`}>
                           Nom personnalisé
@@ -491,13 +580,20 @@ export function ForgeStatsAndSkillsTab({
                     </div>
                   ) : (
                     <div>
-                      <strong>{skill.name}</strong>
-                      {skill.originalName && (
-                        <span className="original-term">
-                          {' '}
-                          ({skill.originalName})
+                      <div className="forge-skill-name-line">
+                        <span
+                          className="forge-prof-marker tabular-nums"
+                          aria-hidden="true"
+                        >
+                          {getProficiencyMarker(skill.proficiency)}
                         </span>
-                      )}
+                        <strong>{skill.name}</strong>
+                        {skill.originalName && (
+                          <span className="original-term">
+                            ({skill.originalName})
+                          </span>
+                        )}
+                      </div>
                       <div className="attack-meta forge-skill-meta-row">
                         <span>Basée sur {ABILITY_GLOSSARY[skill.ability].abbrFr}</span>
                         <span className="badge-pill tabular-nums">
@@ -568,8 +664,10 @@ export function ForgeStatsAndSkillsTab({
                       {formatSignedModifier(totalMod)}
                     </strong>
                   </div>
+                </div>
 
-                  {skill.isCustom && (
+                {skill.isCustom && (
+                  <div className="forge-skill-row-actions">
                     <button
                       type="button"
                       className="action-btn"
@@ -583,8 +681,8 @@ export function ForgeStatsAndSkillsTab({
                     >
                       Supprimer
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -601,8 +699,12 @@ export function ForgeStatsAndSkillsTab({
           Outils d&apos;artisanat, kits techniques ou véhicules nécessitant un jet de réussite (calculé avec la caractéristique associée).
         </p>
 
-        <div className="forge-custom-skill-form">
-          <div className="forge-preset-strip" role="group" aria-label="Outils fréquents">
+        <details className="forge-details">
+          <summary id={`${baseId}-custom-tool-title`}>
+            Ajouter ou choisir un outil
+          </summary>
+          <div className="forge-details-body">
+            <div className="forge-preset-strip" role="group" aria-label="Outils fréquents">
             {TOOL_PRESETS.filter(
               (preset) =>
                 !toolProficiencies.some(
@@ -635,9 +737,6 @@ export function ForgeStatsAndSkillsTab({
             aria-labelledby={`${baseId}-custom-tool-title`}
             onSubmit={handleAddToolFormSubmit}
           >
-            <h3 id={`${baseId}-custom-tool-title`}>
-              + Ajouter un outil personnalisé
-            </h3>
             <div className="forge-custom-skill-grid">
               <div className="field-group">
                 <label htmlFor={`${baseId}-new-tool-name`}>Nom (FR) *</label>
@@ -721,17 +820,18 @@ export function ForgeStatsAndSkillsTab({
               </div>
             </div>
 
-            <div>
-              <button type="submit" className="action-btn action-btn--primary">
-                Ajouter l&apos;outil
-              </button>
-            </div>
-          </form>
-        </div>
+              <div>
+                <button type="submit" className="action-btn action-btn--primary">
+                  Ajouter l&apos;outil
+                </button>
+              </div>
+            </form>
+          </div>
+        </details>
 
         {toolProficiencies.length === 0 ? (
           <p className="muted-note">
-            Aucun outil maîtrisé configuré pour le moment. Utilisez les ajouts rapides ou le formulaire ci-dessus.
+            Aucun outil maîtrisé configuré pour le moment. Utilisez la section &laquo; Ajouter ou choisir un outil &raquo; ci-dessus.
           </p>
         ) : (
           <div className="forge-skills-list">
@@ -739,14 +839,20 @@ export function ForgeStatsAndSkillsTab({
               const derivedTool = derived.tools.find((t) => t.id === tool.id);
               const abilityMod = derived.abilityModifiers[tool.ability];
               const totalMod = derivedTool?.modifier ?? 0;
+              const profClass =
+                tool.proficiency === 'expertise'
+                  ? 'forge-skill-row--expertise'
+                  : tool.proficiency === 'proficient'
+                    ? 'forge-skill-row--proficient'
+                    : '';
 
               return (
                 <div
                   key={tool.id}
-                  className="forge-skill-row"
+                  className={`forge-skill-row ${profClass}`}
                 >
                   <div className="forge-skill-title">
-                    <div className="forge-two-cols">
+                    <div className="forge-skill-custom-fields">
                       <div className="field-group">
                         <label htmlFor={`${baseId}-tool-name-${tool.id}`}>
                           Outil
@@ -857,7 +963,9 @@ export function ForgeStatsAndSkillsTab({
                         {formatSignedModifier(totalMod)}
                       </strong>
                     </div>
+                  </div>
 
+                  <div className="forge-skill-row-actions">
                     <button
                       type="button"
                       className="action-btn"

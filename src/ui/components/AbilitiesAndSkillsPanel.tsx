@@ -232,16 +232,7 @@ export function AbilitiesAndSkillsPanel({
                 </span>
               </span>
               <span className="tabular-nums" style={{ fontWeight: 700 }}>
-                {formatSignedModifier(skill.modifier)}{' '}
-                <span
-                  style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 400,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  (P.{skill.passive})
-                </span>
+                {formatSignedModifier(skill.modifier)}
               </span>
             </button>
           );
