@@ -7,10 +7,36 @@ import type {
   AbilityKey,
   BilingualNamed,
   CharacterSheetV1,
+  CreatureSize,
   LanguageEntry,
   SkillDefinition,
   ToolProficiency,
 } from './types';
+
+export const CREATURE_SIZE_OPTIONS: ReadonlyArray<{
+  value: CreatureSize;
+  label: string;
+}> = [
+  { value: 'TP', label: 'Très petite (TP)' },
+  { value: 'P', label: 'Petite (P)' },
+  { value: 'M', label: 'Moyenne (M)' },
+  { value: 'G', label: 'Grande (G)' },
+  { value: 'TG', label: 'Très grande (TG)' },
+  { value: 'Gig', label: 'Gigantesque (Gig)' },
+];
+
+export const ALIGNMENT_OPTIONS: readonly string[] = [
+  'Loyal Bon',
+  'Neutre Bon',
+  'Chaotique Bon',
+  'Loyal Neutre',
+  'Neutre',
+  'Chaotique Neutre',
+  'Loyal Mauvais',
+  'Neutre Mauvais',
+  'Chaotique Mauvais',
+  'Non aligné',
+];
 
 export interface ToolPreset {
   name: string;
@@ -252,8 +278,14 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
           hitDieSize: 8,
         },
       ],
+      race: 'Humain',
+      subrace: 'Variante',
+      heritage: '',
+      creatureType: 'Humanoïde',
+      size: 'M',
+      alignment: 'Neutre Bon',
+      deityOrPatron: '',
       background: 'Éclaireur des Marches',
-      ancestry: 'Humain (Variant)',
       backstory:
         'Ancien éclaireur des Marches du Nord, familier des sentiers oubliés et des ruines elfiques. Il guide les compagnies d’aventuriers à travers les forêts frontalières et traque les créatures de l’Ombre.',
     },
@@ -494,8 +526,14 @@ export function createBlankCharacter(
           hitDieSize: 10,
         },
       ],
+      race: 'Humain',
+      subrace: '',
+      heritage: '',
+      creatureType: 'Humanoïde',
+      size: 'M',
+      alignment: 'Neutre',
+      deityOrPatron: '',
       background: 'Voyageur',
-      ancestry: 'Humain',
       backstory: '',
     },
     abilities: {

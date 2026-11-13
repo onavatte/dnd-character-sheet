@@ -11,6 +11,16 @@ export type TermDisplayMode = 'bilingual' | 'fr' | 'en';
 export type ThemeMode = 'light' | 'dark';
 export type AdvantageState = 'normal' | 'advantage' | 'disadvantage';
 export type ActionTiming = 'action' | 'bonus_action' | 'reaction' | 'special';
+export type CreatureSize = 'TP' | 'P' | 'M' | 'G' | 'TG' | 'Gig';
+
+export const CREATURE_SIZES: readonly CreatureSize[] = [
+  'TP',
+  'P',
+  'M',
+  'G',
+  'TG',
+  'Gig',
+] as const;
 
 export const ABILITY_KEYS: readonly AbilityKey[] = [
   'STR',
@@ -124,8 +134,14 @@ export interface CharacterSheetV1 {
     name: string;
     portraitDataUrl?: string;
     classes: CharacterClassEntry[];
+    race: string;
+    subrace: string;
+    heritage: string;
+    creatureType: string;
+    size: CreatureSize;
+    alignment: string;
+    deityOrPatron: string;
     background: string;
-    ancestry: string;
     backstory: string;
   };
   abilities: Record<AbilityKey, number>;

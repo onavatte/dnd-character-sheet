@@ -262,13 +262,20 @@ export function App() {
             <h1>{hasActiveCharacter ? sheet.identity.name : 'Grimoire 5e'}</h1>
             {hasActiveCharacter ? (
               <p className="identity-subtitle">
-                <span className="badge-pill">{sheet.identity.ancestry}</span>
+                <span className="badge-pill">
+                  {sheet.identity.race || 'Race non définie'}
+                  {sheet.identity.subrace ? ` (${sheet.identity.subrace})` : ''}
+                  {sheet.identity.heritage ? ` - ${sheet.identity.heritage}` : ''}
+                </span>
                 {sheet.identity.classes.map((cls) => (
                   <span key={cls.id} className="badge-pill">
                     {renderTerm(cls.name, cls.originalName)} {cls.level}
                     {cls.subclass ? ` (${cls.subclass.name})` : ''}
                   </span>
                 ))}
+                {sheet.identity.alignment && (
+                  <span className="badge-pill">{sheet.identity.alignment}</span>
+                )}
                 <span className="badge-pill tabular-nums">
                   Niveau {derived.totalLevel}
                 </span>

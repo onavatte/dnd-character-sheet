@@ -63,4 +63,17 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     const badLanguages = { ...demo, languages: { commun: true } };
     expect(validateCharacterSheet(badLanguages).valid).toBe(false);
   });
+
+  it('valide la catégorie de taille et rejette une taille invalide', () => {
+    const demo = createDemoCharacter();
+    const badSize = {
+      ...demo,
+      identity: {
+        ...demo.identity,
+        size: 'XXXL',
+      },
+    };
+    const res = validateCharacterSheet(badSize);
+    expect(res.valid).toBe(false);
+  });
 });

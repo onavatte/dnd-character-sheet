@@ -3,8 +3,8 @@
  * Protège l'application contre les fichiers JSON malformés, tronqués ou corrompus.
  */
 
-import { ABILITY_KEYS, HIT_DIE_SIZES } from './types';
-import type { CharacterSheetV1 } from './types';
+import { ABILITY_KEYS, CREATURE_SIZES, HIT_DIE_SIZES } from './types';
+import type { CharacterSheetV1, CreatureSize } from './types';
 
 export type ValidationResult =
   | { valid: true; data: CharacterSheetV1 }
@@ -56,6 +56,23 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
   } else {
     if (!isNonEmptyString(identity['name'])) {
       errors.push('Le nom du personnage (identity.name) est obligatoire.');
+    }
+    if (
+      typeof identity['race'] !== 'string' ||
+      typeof identity['subrace'] !== 'string' ||
+      typeof identity['heritage'] !== 'string' ||
+      typeof identity['creatureType'] !== 'string' ||
+      typeof identity['alignment'] !== 'string' ||
+      typeof identity['deityOrPatron'] !== 'string'
+    ) {
+      errors.push(
+        'Les champs d’identité (race, subrace, heritage, creatureType, alignment, deityOrPatron) doivent être des chaînes.',
+      );
+    }
+    if (!CREATURE_SIZES.includes(identity['size'] as CreatureSize)) {
+      errors.push(
+        'La catégorie de taille (identity.size) doit être TP, P, M, G, TG ou Gig.',
+      );
     }
     if (typeof identity['backstory'] !== 'string') {
       errors.push(

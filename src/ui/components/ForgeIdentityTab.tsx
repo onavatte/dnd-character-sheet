@@ -4,6 +4,8 @@ import type { Draft } from 'immer';
 import {
   ABILITY_GLOSSARY,
   ABILITY_KEYS,
+  ALIGNMENT_OPTIONS,
+  CREATURE_SIZE_OPTIONS,
   HIT_DIE_SIZES,
   LANGUAGE_PRESETS,
   formatSignedModifier,
@@ -12,6 +14,7 @@ import {
 import type {
   AbilityKey,
   CharacterSheetV1,
+  CreatureSize,
   DerivedCharacterStats,
   HitDieSize,
 } from '../../engine';
@@ -225,21 +228,121 @@ export function ForgeIdentityTab({
 
           <div className="forge-two-cols">
             <div className="field-group">
-              <label htmlFor={`${baseId}-ancestry`}>Ascendance / Espèce</label>
+              <label htmlFor={`${baseId}-race`}>Race</label>
               <CommittedTextInput
-                id={`${baseId}-ancestry`}
-                name="ancestry"
-                value={sheet.identity.ancestry}
-                maxLength={80}
-                placeholder="Ex. Humain (Variant), Elfe..."
+                id={`${baseId}-race`}
+                name="race"
+                value={sheet.identity.race || ''}
+                maxLength={60}
+                placeholder="Ex. Humain, Elfe, Drakéide, Demi-elfe..."
                 onCommit={(val) =>
                   onMutate((draft) => {
-                    draft.identity.ancestry = val.trim();
+                    draft.identity.race = val.trim();
                   })
                 }
               />
             </div>
 
+            <div className="field-group">
+              <label htmlFor={`${baseId}-subrace`}>
+                Sous-race (optionnelle)
+              </label>
+              <CommittedTextInput
+                id={`${baseId}-subrace`}
+                name="subrace"
+                value={sheet.identity.subrace || ''}
+                maxLength={60}
+                placeholder="Ex. Variante, Elfe des bois, Nain des collines..."
+                onCommit={(val) =>
+                  onMutate((draft) => {
+                    draft.identity.subrace = val.trim();
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div className="field-group">
+            <label htmlFor={`${baseId}-heritage`}>
+              Ascendance / Héritage (optionnel)
+            </label>
+            <CommittedTextInput
+              id={`${baseId}-heritage`}
+              name="heritage"
+              value={sheet.identity.heritage || ''}
+              maxLength={80}
+              placeholder="Ex. Ascendance draconique d'or, Héritage Haut-elfe, Lignée infernale..."
+              onCommit={(val) =>
+                onMutate((draft) => {
+                  draft.identity.heritage = val.trim();
+                })
+              }
+            />
+          </div>
+
+          <div className="forge-three-cols">
+            <div className="field-group">
+              <label htmlFor={`${baseId}-size`}>Taille</label>
+              <select
+                id={`${baseId}-size`}
+                name="creatureSize"
+                className="forge-select"
+                value={sheet.identity.size || 'M'}
+                onChange={(e) => {
+                  const nextSize = e.target.value as CreatureSize;
+                  onMutate((draft) => {
+                    draft.identity.size = nextSize;
+                  });
+                }}
+              >
+                {CREATURE_SIZE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="field-group">
+              <label htmlFor={`${baseId}-creature-type`}>Type de créature</label>
+              <CommittedTextInput
+                id={`${baseId}-creature-type`}
+                name="creatureType"
+                value={sheet.identity.creatureType || ''}
+                maxLength={50}
+                placeholder="Ex. Humanoïde, Fée..."
+                onCommit={(val) =>
+                  onMutate((draft) => {
+                    draft.identity.creatureType = val.trim() || 'Humanoïde';
+                  })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor={`${baseId}-alignment`}>Alignement</label>
+              <select
+                id={`${baseId}-alignment`}
+                name="alignment"
+                className="forge-select"
+                value={sheet.identity.alignment || 'Neutre'}
+                onChange={(e) => {
+                  const nextAlign = e.target.value;
+                  onMutate((draft) => {
+                    draft.identity.alignment = nextAlign;
+                  });
+                }}
+              >
+                {ALIGNMENT_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="forge-two-cols">
             <div className="field-group">
               <label htmlFor={`${baseId}-background`}>Historique</label>
               <CommittedTextInput
@@ -251,6 +354,24 @@ export function ForgeIdentityTab({
                 onCommit={(val) =>
                   onMutate((draft) => {
                     draft.identity.background = val.trim();
+                  })
+                }
+              />
+            </div>
+
+            <div className="field-group">
+              <label htmlFor={`${baseId}-deity`}>
+                Divinité / Patron (optionnel)
+              </label>
+              <CommittedTextInput
+                id={`${baseId}-deity`}
+                name="deityOrPatron"
+                value={sheet.identity.deityOrPatron || ''}
+                maxLength={80}
+                placeholder="Ex. Lathandre, Asmodée, La Reine Corneille..."
+                onCommit={(val) =>
+                  onMutate((draft) => {
+                    draft.identity.deityOrPatron = val.trim();
                   })
                 }
               />
