@@ -47,26 +47,27 @@ function ensureDefenses(draft: Draft<CharacterSheetV1>): CharacterDefenses {
 
 interface DefenseTagGroupProps {
   legend: string;
+  emptyLabel: string;
   inputId: string;
   placeholder: string;
   presets: ReadonlyArray<string>;
   selectedValues: ReadonlyArray<string>;
-  onToggleValue: (value: string) => void;
-  onAddCustom: (value: string) => void;
+  onAddValue: (value: string) => void;
   onRemoveValue: (value: string) => void;
 }
 
 /**
- * Groupe réutilisable de sélecteurs rapides (pilules) + saisie libre pour les sens et défenses.
+ * Groupe réutilisable aligné sur "Langues maîtrisées" : puces actives retirables,
+ * raccourcis restants (+ ...) et saisie libre.
  */
 function DefenseTagGroup({
   legend,
+  emptyLabel,
   inputId,
   placeholder,
   presets,
   selectedValues,
-  onToggleValue,
-  onAddCustom,
+  onAddValue,
   onRemoveValue,
 }: DefenseTagGroupProps) {
   const [customInput, setCustomInput] = useState('');
@@ -74,7 +75,7 @@ function DefenseTagGroup({
   const handleSubmitCustom = () => {
     const trimmed = customInput.trim();
     if (!trimmed) return;
-    onAddCustom(trimmed);
+    onAddValue(trimmed);
     setCustomInput('');
   };
 
@@ -85,42 +86,53 @@ function DefenseTagGroup({
     }
   };
 
-  const customOnlyValues = selectedValues.filter((val) => !presets.includes(val));
+  const remainingPresets = presets.filter(
+    (preset) =>
+      !selectedValues.some(
+        (val) =>
+          val.trim().toLocaleLowerCase('fr') ===
+          preset.toLocaleLowerCase('fr'),
+      ),
+  );
 
   return (
     <fieldset className="forge-fieldset">
       <legend>{legend}</legend>
 
-      <div className="forge-preset-pills">
-        {presets.map((preset) => {
-          const isActive = selectedValues.includes(preset);
-          return (
+      {selectedValues.length === 0 ? (
+        <p className="muted-note">{emptyLabel}</p>
+      ) : (
+        <div className="forge-languages-list">
+          {selectedValues.map((val) => (
+            <span key={val} className="badge-pill forge-language-pill">
+              <span>{val}</span>
+              <button
+                type="button"
+                className="forge-pill-remove"
+                aria-label={`Retirer ${val}`}
+                onClick={() => onRemoveValue(val)}
+              >
+                x
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {remainingPresets.length > 0 && (
+        <div className="forge-preset-strip" role="group" aria-label={legend}>
+          {remainingPresets.map((preset) => (
             <button
               key={preset}
               type="button"
-              className="forge-preset-pill"
-              aria-pressed={isActive}
-              onClick={() => onToggleValue(preset)}
+              className="action-btn"
+              onClick={() => onAddValue(preset)}
             >
-              {isActive ? `✓ ${preset}` : `+ ${preset}`}
+              + {preset}
             </button>
-          );
-        })}
-
-        {customOnlyValues.map((val) => (
-          <span key={val} className="badge-pill forge-language-pill">
-            <span>{val}</span>
-            <button
-              type="button"
-              className="forge-pill-remove"
-              aria-label={`Retirer ${val}`}
-              onClick={() => onRemoveValue(val)}
-            >
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       <div className="inline-input-row">
         <label htmlFor={inputId} className="visually-hidden">
@@ -139,7 +151,7 @@ function DefenseTagGroup({
         />
         <button
           type="button"
-          className="action-btn"
+          className="action-btn action-btn--primary"
           onClick={handleSubmitCustom}
           disabled={customInput.trim().length === 0}
         >
@@ -177,6 +189,15 @@ export function ForgeFeaturesAndDefensesTab({
     categoryFilter === 'all'
       ? features
       : features.filter((item) => item.category === categoryFilter);
+
+  const remainingFeaturePresets = FEATURE_PRESETS_5E.filter(
+    (preset) =>
+      !features.some(
+        (item) =>
+          item.name.trim().toLocaleLowerCase('fr') ===
+          preset.name.toLocaleLowerCase('fr'),
+      ),
+  );
 
   const toggleExpanded = (id: string, isOpen: boolean) => {
     setExpandedIds((prev) => {
@@ -216,7 +237,9 @@ export function ForgeFeaturesAndDefensesTab({
 
   const handleAddPresetFeature = (preset: FeaturePreset) => {
     const alreadyExists = features.some(
-      (item) => item.name.toLowerCase() === preset.name.toLowerCase(),
+      (item) =>
+        item.name.trim().toLocaleLowerCase('fr') ===
+        preset.name.toLocaleLowerCase('fr'),
     );
     if (alreadyExists) return;
 
@@ -243,26 +266,15 @@ export function ForgeFeaturesAndDefensesTab({
     });
   };
 
-  const toggleDefenseItem = (key: DefenseListKey, value: string) => {
-    onMutate((draft) => {
-      const target = ensureDefenses(draft);
-      const list = target[key];
-      const existingIndex = list.indexOf(value);
-      if (existingIndex >= 0) {
-        list.splice(existingIndex, 1);
-      } else {
-        list.push(value);
-      }
-    });
-  };
-
-  const addCustomDefenseItem = (key: DefenseListKey, rawValue: string) => {
+  const addDefenseItem = (key: DefenseListKey, rawValue: string) => {
     const trimmed = rawValue.trim();
     if (!trimmed) return;
     onMutate((draft) => {
       const target = ensureDefenses(draft);
       const exists = target[key].some(
-        (item) => item.toLowerCase() === trimmed.toLowerCase(),
+        (item) =>
+          item.trim().toLocaleLowerCase('fr') ===
+          trimmed.toLocaleLowerCase('fr'),
       );
       if (!exists) {
         target[key].push(trimmed);
@@ -303,25 +315,24 @@ export function ForgeFeaturesAndDefensesTab({
           </button>
         </div>
 
-        <div className="forge-preset-strip">
-          {FEATURE_PRESETS_5E.map((preset) => {
-            const exists = features.some(
-              (item) => item.name.toLowerCase() === preset.name.toLowerCase(),
-            );
-            return (
+        {remainingFeaturePresets.length > 0 && (
+          <div
+            className="forge-preset-strip"
+            role="group"
+            aria-label="Ajouts rapides d'aptitudes 5e"
+          >
+            {remainingFeaturePresets.map((preset) => (
               <button
                 key={preset.key}
                 type="button"
-                className="forge-preset-pill"
-                aria-pressed={exists}
-                disabled={exists}
+                className="action-btn"
                 onClick={() => handleAddPresetFeature(preset)}
               >
-                {exists ? `✓ ${preset.name}` : `+ ${preset.name}`}
+                + {preset.name}
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div
           className="forge-filter-pills"
@@ -420,7 +431,7 @@ export function ForgeFeaturesAndDefensesTab({
                             value={entry.name}
                             required
                             maxLength={80}
-                            placeholder="Ex : Vision dans le noir (18 m)"
+                            placeholder="Ex : Ascendance féerique"
                             onCommit={(nextVal) => {
                               const trimmed = nextVal.trim();
                               if (!trimmed) return;
@@ -441,7 +452,7 @@ export function ForgeFeaturesAndDefensesTab({
                             name={voId}
                             value={entry.originalName ?? ''}
                             maxLength={80}
-                            placeholder="Ex : Darkvision"
+                            placeholder="Ex : Fey Ancestry"
                             onCommit={(nextVal) => {
                               const trimmed = nextVal.trim();
                               onMutate((draft) => {
@@ -572,49 +583,45 @@ export function ForgeFeaturesAndDefensesTab({
         <div className="forge-repeat-list">
           <DefenseTagGroup
             legend="Sens spéciaux"
+            emptyLabel="Aucun sens spécial ajouté. Saisissez-en un ou utilisez les raccourcis ci-dessous."
             inputId={`${baseId}-sense-custom`}
             placeholder="Ex : Vision nocturne 27 m, Odorat aiguisé..."
             presets={SENSE_PRESETS_5E}
             selectedValues={defenses.senses}
-            onToggleValue={(val) => toggleDefenseItem('senses', val)}
-            onAddCustom={(val) => addCustomDefenseItem('senses', val)}
+            onAddValue={(val) => addDefenseItem('senses', val)}
             onRemoveValue={(val) => removeDefenseItem('senses', val)}
           />
 
           <DefenseTagGroup
             legend="Résistances aux dégâts (1/2 dégâts)"
+            emptyLabel="Aucune résistance aux dégâts renseignée."
             inputId={`${baseId}-res-custom`}
             placeholder="Autre résistance (ex : Radiation, Argent)..."
             presets={DAMAGE_TYPE_PRESETS_5E}
             selectedValues={defenses.resistances}
-            onToggleValue={(val) => toggleDefenseItem('resistances', val)}
-            onAddCustom={(val) => addCustomDefenseItem('resistances', val)}
+            onAddValue={(val) => addDefenseItem('resistances', val)}
             onRemoveValue={(val) => removeDefenseItem('resistances', val)}
           />
 
           <DefenseTagGroup
             legend="Immunités aux dégâts (0 dégât)"
+            emptyLabel="Aucune immunité aux dégâts renseignée."
             inputId={`${baseId}-imm-dmg-custom`}
             placeholder="Autre immunité aux dégâts..."
             presets={DAMAGE_TYPE_PRESETS_5E}
             selectedValues={defenses.damageImmunities}
-            onToggleValue={(val) => toggleDefenseItem('damageImmunities', val)}
-            onAddCustom={(val) => addCustomDefenseItem('damageImmunities', val)}
+            onAddValue={(val) => addDefenseItem('damageImmunities', val)}
             onRemoveValue={(val) => removeDefenseItem('damageImmunities', val)}
           />
 
           <DefenseTagGroup
             legend="Immunités aux états & effets"
+            emptyLabel="Aucune immunité aux états ou effets renseignée."
             inputId={`${baseId}-imm-cond-custom`}
             placeholder="Autre état ou effet (ex : Vieillissement)..."
             presets={CONDITION_IMMUNITY_PRESETS_5E}
             selectedValues={defenses.conditionImmunities}
-            onToggleValue={(val) =>
-              toggleDefenseItem('conditionImmunities', val)
-            }
-            onAddCustom={(val) =>
-              addCustomDefenseItem('conditionImmunities', val)
-            }
+            onAddValue={(val) => addDefenseItem('conditionImmunities', val)}
             onRemoveValue={(val) =>
               removeDefenseItem('conditionImmunities', val)
             }
@@ -622,12 +629,12 @@ export function ForgeFeaturesAndDefensesTab({
 
           <DefenseTagGroup
             legend="Vulnérabilités (x2 dégâts)"
+            emptyLabel="Aucune vulnérabilité renseignée."
             inputId={`${baseId}-vuln-custom`}
             placeholder="Autre vulnérabilité (ex : Lumière du soleil)..."
             presets={DAMAGE_TYPE_PRESETS_5E}
             selectedValues={defenses.vulnerabilities}
-            onToggleValue={(val) => toggleDefenseItem('vulnerabilities', val)}
-            onAddCustom={(val) => addCustomDefenseItem('vulnerabilities', val)}
+            onAddValue={(val) => addDefenseItem('vulnerabilities', val)}
             onRemoveValue={(val) => removeDefenseItem('vulnerabilities', val)}
           />
 

@@ -2736,29 +2736,6 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
 }
 
 .vital-defense-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.25rem 0.55rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-elevated);
-  color: var(--text-primary);
-}
-
-.vital-defense-pill--sense {
-  border-color: var(--color-arcane);
-  background-color: color-mix(in srgb, var(--color-arcane) 10%, var(--bg-surface));
-}
-
-.vital-defense-pill--res {
-  border-color: var(--color-hp-ok);
-  background-color: color-mix(in srgb, var(--color-hp-ok) 12%, var(--bg-surface));
-}
-
-.vital-defense-pill--imm {
   border-color: var(--accent-primary);
   background-color: color-mix(in srgb, var(--accent-primary) 16%, var(--bg-surface));
 }
@@ -2782,40 +2759,6 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
 
 .inline-input-row > .action-btn {
   flex-shrink: 0;
-}
-
-.forge-preset-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.forge-preset-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  min-height: 36px;
-  padding: 0.3rem 0.65rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-surface);
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 120ms ease, background-color 120ms ease, color 120ms ease;
-}
-
-.forge-preset-pill:hover,
-.forge-preset-pill:focus-visible {
-  border-color: var(--accent-primary);
-  color: var(--text-primary);
-}
-
-.forge-preset-pill[aria-pressed='true'] {
-  border-color: var(--accent-primary);
-  background-color: color-mix(in srgb, var(--accent-primary) 15%, var(--bg-surface));
-  color: var(--text-primary);
 }
 
 .cockpit-features-section {

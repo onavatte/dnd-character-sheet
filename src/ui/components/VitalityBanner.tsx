@@ -320,7 +320,7 @@ export function VitalityBanner({
             {sheet.defenses.senses.map((sense) => (
               <span
                 key={`sense-${sense}`}
-                className="vital-defense-pill vital-defense-pill--sense"
+                className="badge-pill vital-defense-pill"
               >
                 Sens : {sense}
               </span>
@@ -328,7 +328,7 @@ export function VitalityBanner({
             {sheet.defenses.resistances.map((res) => (
               <span
                 key={`res-${res}`}
-                className="vital-defense-pill vital-defense-pill--res"
+                className="badge-pill vital-defense-pill"
               >
                 Rés. : {res}
               </span>
@@ -336,7 +336,7 @@ export function VitalityBanner({
             {sheet.defenses.damageImmunities.map((imm) => (
               <span
                 key={`imm-dmg-${imm}`}
-                className="vital-defense-pill vital-defense-pill--imm"
+                className="badge-pill vital-defense-pill"
               >
                 Imm. dégâts : {imm}
               </span>
@@ -344,7 +344,7 @@ export function VitalityBanner({
             {sheet.defenses.conditionImmunities.map((imm) => (
               <span
                 key={`imm-cond-${imm}`}
-                className="vital-defense-pill vital-defense-pill--imm"
+                className="badge-pill vital-defense-pill"
               >
                 Imm. état : {imm}
               </span>
@@ -352,7 +352,7 @@ export function VitalityBanner({
             {sheet.defenses.vulnerabilities.map((vuln) => (
               <span
                 key={`vuln-${vuln}`}
-                className="vital-defense-pill vital-defense-pill--vuln"
+                className="badge-pill vital-defense-pill vital-defense-pill--vuln"
               >
                 Vuln. : {vuln}
               </span>
