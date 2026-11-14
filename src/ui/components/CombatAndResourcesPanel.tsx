@@ -615,7 +615,11 @@ export function CombatAndResourcesPanel({
                 >
                   <button
                     type="button"
-                    className="forge-filter-pill"
+                    className={
+                      featureFilter === 'all'
+                        ? 'forge-filter-pill forge-filter-pill--active'
+                        : 'forge-filter-pill'
+                    }
                     aria-pressed={featureFilter === 'all'}
                     onClick={() => setFeatureFilter('all')}
                   >
@@ -626,12 +630,17 @@ export function CombatAndResourcesPanel({
                       (item) => item.category === opt.value,
                     ).length;
                     if (count === 0) return null;
+                    const active = featureFilter === opt.value;
                     return (
                       <button
                         key={opt.value}
                         type="button"
-                        className="forge-filter-pill"
-                        aria-pressed={featureFilter === opt.value}
+                        className={
+                          active
+                            ? 'forge-filter-pill forge-filter-pill--active'
+                            : 'forge-filter-pill'
+                        }
+                        aria-pressed={active}
                         onClick={() => setFeatureFilter(opt.value)}
                       >
                         {opt.label} ({count})

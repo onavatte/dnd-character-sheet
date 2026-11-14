@@ -88,7 +88,7 @@ function DefenseTagGroup({
   const customOnlyValues = selectedValues.filter((val) => !presets.includes(val));
 
   return (
-    <fieldset className="forge-defense-group">
+    <fieldset className="forge-fieldset">
       <legend>{legend}</legend>
 
       <div className="forge-preset-pills">
@@ -108,11 +108,11 @@ function DefenseTagGroup({
         })}
 
         {customOnlyValues.map((val) => (
-          <span key={val} className="forge-chip-removable">
+          <span key={val} className="badge-pill forge-language-pill">
             <span>{val}</span>
             <button
               type="button"
-              className="forge-chip-remove-btn"
+              className="forge-pill-remove"
               aria-label={`Retirer ${val}`}
               onClick={() => onRemoveValue(val)}
             >
@@ -123,14 +123,14 @@ function DefenseTagGroup({
       </div>
 
       <div className="inline-input-row">
-        <label htmlFor={inputId} className="sr-only">
+        <label htmlFor={inputId} className="visually-hidden">
           Ajouter manuellement ({legend})
         </label>
         <input
           id={inputId}
           name={inputId}
           type="text"
-          className="grimoire-input"
+          className="forge-input"
           placeholder={placeholder}
           value={customInput}
           maxLength={60}
@@ -281,13 +281,19 @@ export function ForgeFeaturesAndDefensesTab({
     <div className="forge-grid">
       {/* Colonne gauche : Aptitudes, Traits d'espèce, Classe & Dons */}
       <section
-        className="forge-card"
+        className="grimoire-card forge-card"
         aria-labelledby={`${baseId}-features-heading`}
       >
         <div className="forge-card-header">
-          <h3 id={`${baseId}-features-heading`}>
-            Aptitudes, Traits & Dons ({features.length})
-          </h3>
+          <div>
+            <h2 id={`${baseId}-features-heading`} className="panel-title">
+              Aptitudes, Traits & Dons ({features.length})
+            </h2>
+            <p className="muted-caption">
+              Ajouts rapides D&D 5e ou saisie libre (espèce, classe, dons,
+              historique).
+            </p>
+          </div>
           <button
             type="button"
             className="action-btn action-btn--primary"
@@ -296,11 +302,6 @@ export function ForgeFeaturesAndDefensesTab({
             + Ajouter une aptitude
           </button>
         </div>
-
-        <p className="forge-help-text">
-          Ajouts rapides D&D 5e ou saisie libre (espèce, classe, dons,
-          historique) :
-        </p>
 
         <div className="forge-preset-strip">
           {FEATURE_PRESETS_5E.map((preset) => {
@@ -329,7 +330,11 @@ export function ForgeFeaturesAndDefensesTab({
         >
           <button
             type="button"
-            className="forge-filter-pill"
+            className={
+              categoryFilter === 'all'
+                ? 'forge-filter-pill forge-filter-pill--active'
+                : 'forge-filter-pill'
+            }
             aria-pressed={categoryFilter === 'all'}
             onClick={() => setCategoryFilter('all')}
           >
@@ -339,12 +344,17 @@ export function ForgeFeaturesAndDefensesTab({
             const count = features.filter(
               (item) => item.category === opt.value,
             ).length;
+            const active = categoryFilter === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                className="forge-filter-pill"
-                aria-pressed={categoryFilter === opt.value}
+                className={
+                  active
+                    ? 'forge-filter-pill forge-filter-pill--active'
+                    : 'forge-filter-pill'
+                }
+                aria-pressed={active}
                 onClick={() => setCategoryFilter(opt.value)}
               >
                 {opt.label} ({count})
@@ -354,7 +364,7 @@ export function ForgeFeaturesAndDefensesTab({
         </div>
 
         {filteredFeatures.length === 0 ? (
-          <p className="forge-help-text">
+          <p className="muted-caption">
             Aucune aptitude dans cette catégorie. Utilisez un modèle ci-dessus
             ou cliquez sur « + Ajouter une aptitude ».
           </p>
@@ -368,7 +378,7 @@ export function ForgeFeaturesAndDefensesTab({
               const descId = `${baseId}-feat-desc-${entry.id}`;
 
               return (
-                <div key={entry.id} className="forge-entry-card">
+                <article key={entry.id} className="forge-entry-card">
                   <details
                     className="forge-entry-details"
                     open={expandedIds.has(entry.id)}
@@ -377,26 +387,38 @@ export function ForgeFeaturesAndDefensesTab({
                     }
                   >
                     <summary className="forge-entry-summary">
-                      <span className="forge-entry-summary-title">
-                        {entry.name || 'Aptitude sans nom'}
-                        {entry.originalName ? ` (${entry.originalName})` : ''}
+                      <span className="forge-entry-summary-main">
+                        <span className="forge-entry-title">
+                          <strong>{entry.name || 'Aptitude sans nom'}</strong>
+                          {entry.originalName && (
+                            <span className="original-term">
+                              ({entry.originalName})
+                            </span>
+                          )}
+                        </span>
+                        <span className="forge-entry-submeta">
+                          {entry.source || 'Origine non précisée'}
+                        </span>
                       </span>
-                      <span className="forge-entry-summary-meta">
+
+                      <span className="forge-entry-badges">
                         <span className="badge-pill">
                           {getFeatureCategoryLabel(entry.category)}
                         </span>
-                        {entry.source ? <span>{entry.source}</span> : null}
                       </span>
                     </summary>
 
                     <div className="forge-entry-body">
                       <div className="forge-two-cols">
-                        <div className="forge-field">
-                          <label htmlFor={nameId}>Nom FR</label>
+                        <div className="field-group">
+                          <label htmlFor={nameId}>
+                            Nom (FR) <span aria-hidden="true">*</span>
+                          </label>
                           <CommittedTextInput
                             id={nameId}
                             name={nameId}
                             value={entry.name}
+                            required
                             maxLength={80}
                             placeholder="Ex : Vision dans le noir (18 m)"
                             onCommit={(nextVal) => {
@@ -412,7 +434,7 @@ export function ForgeFeaturesAndDefensesTab({
                           />
                         </div>
 
-                        <div className="forge-field">
+                        <div className="field-group">
                           <label htmlFor={voId}>Nom VO (optionnel)</label>
                           <CommittedTextInput
                             id={voId}
@@ -439,7 +461,7 @@ export function ForgeFeaturesAndDefensesTab({
                       </div>
 
                       <div className="forge-two-cols">
-                        <div className="forge-field">
+                        <div className="field-group">
                           <label htmlFor={catId}>Catégorie</label>
                           <select
                             id={catId}
@@ -464,7 +486,7 @@ export function ForgeFeaturesAndDefensesTab({
                           </select>
                         </div>
 
-                        <div className="forge-field">
+                        <div className="field-group">
                           <label htmlFor={srcId}>Source / Origine</label>
                           <CommittedTextInput
                             id={srcId}
@@ -490,7 +512,7 @@ export function ForgeFeaturesAndDefensesTab({
                         </div>
                       </div>
 
-                      <div className="forge-field">
+                      <div className="field-group">
                         <label htmlFor={descId}>
                           Description & effets mécaniques
                         </label>
@@ -523,7 +545,7 @@ export function ForgeFeaturesAndDefensesTab({
                       </div>
                     </div>
                   </details>
-                </div>
+                </article>
               );
             })}
           </div>
@@ -532,19 +554,20 @@ export function ForgeFeaturesAndDefensesTab({
 
       {/* Colonne droite : Sens, Résistances, Immunités & Vulnérabilités */}
       <section
-        className="forge-card"
+        className="grimoire-card forge-card"
         aria-labelledby={`${baseId}-defenses-heading`}
       >
         <div className="forge-card-header">
-          <h3 id={`${baseId}-defenses-heading`}>
-            Sens, Résistances & Immunités
-          </h3>
+          <div>
+            <h2 id={`${baseId}-defenses-heading`} className="panel-title">
+              Sens, Résistances & Immunités
+            </h2>
+            <p className="muted-caption">
+              Ces éléments s’affichent en accès direct sous la barre d’état dans
+              le Cockpit de Partie.
+            </p>
+          </div>
         </div>
-
-        <p className="forge-help-text">
-          Ces éléments s’affichent en accès direct sous la barre d’état dans le
-          Cockpit de Partie.
-        </p>
 
         <div className="forge-repeat-list">
           <DefenseTagGroup
@@ -608,7 +631,7 @@ export function ForgeFeaturesAndDefensesTab({
             onRemoveValue={(val) => removeDefenseItem('vulnerabilities', val)}
           />
 
-          <div className="forge-field">
+          <div className="field-group">
             <label htmlFor={`${baseId}-def-notes`}>
               Particularités & avantages aux sauvegardes
             </label>

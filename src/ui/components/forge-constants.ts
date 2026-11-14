@@ -128,15 +128,6 @@ export interface FeaturePreset {
 
 export const FEATURE_PRESETS_5E: ReadonlyArray<FeaturePreset> = [
   {
-    key: 'darkvision-18',
-    category: 'trait',
-    source: 'Espèce',
-    name: 'Vision dans le noir (18 m)',
-    originalName: 'Darkvision (60 ft.)',
-    description:
-      'Dans un rayon de 18 m, voit en lumière faible comme en lumière vive et dans les ténèbres comme en lumière faible (en nuances de gris).',
-  },
-  {
     key: 'fey-ancestry',
     category: 'trait',
     source: 'Elfe / Demi-elfe',

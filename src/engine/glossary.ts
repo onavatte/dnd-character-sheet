@@ -466,15 +466,6 @@ export function createDemoCharacter(nowIso = '2026-11-11T12:00:00.000Z'): Charac
     },
     features: [
       {
-        id: 'feat-darkvision',
-        category: 'trait',
-        source: 'Elfe des bois / Pisteur des ombres',
-        name: 'Vision dans le noir (27 m)',
-        originalName: 'Darkvision (90 ft.)',
-        description:
-          'Permet de voir dans la lumière faible comme en lumière vive et dans les ténèbres comme en lumière faible (en nuances de gris). Portée étendue à 27 m grâce à Vision des ombres.',
-      },
-      {
         id: 'feat-fey-ancestry',
         category: 'trait',
         source: 'Elfe des bois',

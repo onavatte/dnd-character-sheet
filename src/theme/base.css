@@ -2773,29 +2773,13 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   margin-left: var(--space-1);
 }
 
-.forge-preset-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  margin-bottom: var(--space-2);
+.inline-input-row > .forge-input {
+  flex: 1 1 160px;
+  min-width: 0;
 }
 
-.forge-defense-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-  background-color: var(--bg-elevated);
-}
-
-.forge-defense-group legend,
-.forge-defense-title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+.inline-input-row > .action-btn {
+  flex-shrink: 0;
 }
 
 .forge-preset-pills {
@@ -2830,40 +2814,6 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   border-color: var(--accent-primary);
   background-color: color-mix(in srgb, var(--accent-primary) 15%, var(--bg-surface));
   color: var(--text-primary);
-}
-
-.forge-chip-removable {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.25rem 0.4rem 0.25rem 0.65rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--accent-primary);
-  background-color: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-surface));
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
-.forge-chip-remove-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--radius-pill);
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
-  font-weight: 700;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.forge-chip-remove-btn:hover,
-.forge-chip-remove-btn:focus-visible {
-  color: var(--color-hp-crit);
-  border-color: var(--color-hp-crit);
-  background-color: color-mix(in srgb, var(--color-hp-crit) 12%, var(--bg-surface));
 }
 
 .cockpit-features-section {
