@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import {
   CANONICAL_CONDITIONS_5E,
   formatSignedModifier,
@@ -65,6 +65,36 @@ export function VitalityBanner({
   const activePools = HIT_DIE_SIZES.filter(
     (size: HitDieSize) => sheet.combat.hitDicePools[size].total > 0,
   );
+
+  const appendHpDigit = (digit: string) => {
+    setHpAmountDraft((prev) => {
+      if (prev.length >= 3) return prev;
+      if (prev === '' && digit === '0') return '';
+      return prev + digit;
+    });
+  };
+
+  const backspaceHpDigit = () => {
+    setHpAmountDraft((prev) => prev.slice(0, -1));
+  };
+
+  const handleHpDialogKeyDown = (event: KeyboardEvent<HTMLDialogElement>) => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+      appendHpDigit(event.key);
+      return;
+    }
+    if (event.key === 'Backspace') {
+      event.preventDefault();
+      backspaceHpDigit();
+      return;
+    }
+    if (event.key === 'Delete' || event.key === 'c' || event.key === 'C') {
+      event.preventDefault();
+      setHpAmountDraft('');
+    }
+  };
 
   const openHpModal = () => {
     setHpAmountDraft('');
@@ -335,12 +365,13 @@ export function VitalityBanner({
           </div>
         )}
 
-      {/* Modale native <dialog> : Gestion rapide des Points de Vie */}
+      {/* Modale native <dialog> : Gestion rapide des Points de Vie (pavé tactile intégré, zéro clavier OS) */}
       <dialog
         ref={hpDialogRef}
         className="grimoire-dialog"
         aria-labelledby={hpDialogTitleId}
         onClick={handleDialogBackdropClick}
+        onKeyDown={handleHpDialogKeyDown}
         {...({ closedby: 'any' } as Record<string, string>)}
       >
         <div className="dialog-header">
@@ -360,28 +391,59 @@ export function VitalityBanner({
           (PV Temporaires : <strong>+{sheet.combat.hpTemp}</strong>)
         </p>
 
-        <div className="field-group">
-          <label htmlFor="hp-modal-amount">Quantité de PV à appliquer :</label>
-          <div className="inline-input-row">
-            <input
-              id="hp-modal-amount"
-              name="hp-modal-amount"
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              enterKeyHint="done"
-              autoComplete="off"
-              className="forge-input tabular-nums"
-              maxLength={3}
-              placeholder="Ex : 8"
-              value={hpAmountDraft}
-              onChange={(e) => {
-                const digitsOnly = e.target.value.replace(/\D+/g, '').slice(0, 3);
-                setHpAmountDraft(digitsOnly);
-              }}
-              autoFocus
-            />
-          </div>
+        <div className="hp-amount-display" aria-live="polite">
+          <span className="hp-amount-label">Montant à appliquer</span>
+          <span
+            className={
+              isHpAmountValid
+                ? 'hp-amount-value tabular-nums'
+                : 'hp-amount-value hp-amount-value--empty tabular-nums'
+            }
+          >
+            {isHpAmountValid ? `${parsedHpAmount} PV` : '0 PV'}
+          </span>
+        </div>
+
+        <div
+          className="hp-keypad"
+          role="group"
+          aria-label="Pavé numérique des points de vie"
+        >
+          {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((digit) => (
+            <button
+              key={digit}
+              type="button"
+              className="hp-keypad-btn tabular-nums"
+              autoFocus={digit === '1'}
+              onClick={() => appendHpDigit(digit)}
+            >
+              {digit}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="hp-keypad-btn hp-keypad-btn--muted"
+            disabled={hpAmountDraft.length === 0}
+            onClick={() => setHpAmountDraft('')}
+          >
+            Effacer
+          </button>
+          <button
+            type="button"
+            className="hp-keypad-btn tabular-nums"
+            onClick={() => appendHpDigit('0')}
+          >
+            0
+          </button>
+          <button
+            type="button"
+            className="hp-keypad-btn hp-keypad-btn--muted"
+            disabled={hpAmountDraft.length === 0}
+            aria-label="Effacer le dernier chiffre"
+            onClick={backspaceHpDigit}
+          >
+            ⌫
+          </button>
         </div>
 
         <div className="dialog-actions-grid">

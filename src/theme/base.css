@@ -531,6 +531,8 @@ dialog::backdrop {
 
 .grimoire-dialog {
   width: min(92vw, 540px);
+  max-height: 92dvh;
+  overflow-y: auto;
   border-radius: var(--radius-lg);
   border: 1px solid var(--border-strong);
   border-top: 4px solid var(--accent-primary);
@@ -2858,4 +2860,75 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   font-size: 0.875rem;
   color: var(--text-secondary);
   white-space: pre-wrap;
+}
+
+/* =========================================================
+   Pavé numérique tactile (Modale Points de Vie)
+   ========================================================= */
+
+.hp-amount-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-elevated);
+}
+
+.hp-amount-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.hp-amount-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  line-height: 1.2;
+}
+
+.hp-amount-value--empty {
+  color: var(--text-muted);
+}
+
+.hp-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.hp-keypad-btn {
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background-color: var(--bg-elevated);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease, transform 80ms ease;
+}
+
+.hp-keypad-btn:hover:not(:disabled),
+.hp-keypad-btn:focus-visible:not(:disabled) {
+  border-color: var(--accent-primary);
+  background-color: color-mix(in srgb, var(--accent-primary) 12%, var(--bg-surface));
+}
+
+.hp-keypad-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.hp-keypad-btn--muted {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+}
+
+.hp-keypad-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
