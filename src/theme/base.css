@@ -342,6 +342,10 @@ input[type='number'] {
   margin-inline-start: var(--space-1);
 }
 
+.vital-value .original-term {
+  font-size: 0.72em;
+}
+
 .vitals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));

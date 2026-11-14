@@ -441,6 +441,7 @@ export function App() {
         <ForgeEditorView
           sheet={sheet}
           derived={derived}
+          termMode={termMode}
           onMutate={mutateWithImmer}
         />
       ) : (
@@ -449,6 +450,7 @@ export function App() {
           <VitalityBanner
             sheet={sheet}
             derived={derived}
+            termMode={termMode}
             renderTerm={renderTerm}
             onSelectRollTarget={handleSelectRollTarget}
             onDamage={damage}

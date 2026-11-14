@@ -457,3 +457,23 @@ export function computeTotalWealthGp(currency?: CurrencyPurse): number {
 
   return Math.round((standardGp + customGp) * 100) / 100;
 }
+
+/**
+ * Convertit une vitesse en mètres vers l'équivalent D&D 5e en pieds (1,5 m = 5 ft).
+ */
+export function metersToFeet(meters: number): number {
+  if (!Number.isFinite(meters) || meters <= 0) {
+    return 0;
+  }
+  return Math.round((meters * 10) / 3);
+}
+
+/**
+ * Convertit une vitesse en pieds (ft) vers l'équivalent D&D 5e en mètres (5 ft = 1,5 m).
+ */
+export function feetToMeters(feet: number): number {
+  if (!Number.isFinite(feet) || feet <= 0) {
+    return 0;
+  }
+  return Math.round(feet * 0.3 * 10) / 10;
+}

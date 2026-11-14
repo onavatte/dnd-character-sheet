@@ -3,6 +3,7 @@
  * à la langue/accents et générateur de personnage de démonstration.
  */
 
+import { feetToMeters, metersToFeet } from './calculators';
 import type {
   AbilityKey,
   BilingualNamed,
@@ -10,6 +11,7 @@ import type {
   CreatureSize,
   LanguageEntry,
   SkillDefinition,
+  TermDisplayMode,
   ToolProficiency,
 } from './types';
 
@@ -175,6 +177,94 @@ export function normalizeSearchText(input: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
+}
+
+/**
+ * Correspondances canoniques FR / EN des sens spéciaux D&D 5e.
+ */
+export const CANONICAL_SENSES_5E: ReadonlyArray<{ fr: string; en: string }> = [
+  { fr: 'Vision dans le noir', en: 'Darkvision' },
+  { fr: 'Vision aveugle', en: 'Blindsight' },
+  { fr: 'Perception des vibrations', en: 'Tremorsense' },
+  { fr: 'Vision véritable', en: 'Truesight' },
+];
+
+function formatSenseMeters(meters: number): string {
+  const rounded = Math.round(meters * 10) / 10;
+  return `${String(rounded).replace('.', ',')} m`;
+}
+
+/**
+ * Décompose un sens spécial (canonique ou personnalisé) en libellé principal
+ * et libellé secondaire optionnel selon le mode d'affichage linguistique,
+ * en traduisant les sens canoniques et en convertissant la portée (m / ft).
+ */
+export function getSenseDisplayParts(
+  rawSense: string,
+  termMode: TermDisplayMode,
+): { primary: string; secondary?: string } {
+  const trimmed = rawSense.trim();
+  if (!trimmed) {
+    return { primary: '' };
+  }
+
+  const rangeMatch = /^(.*?)\s+(\d+(?:[.,]\d+)?)\s*(m|ft|pi|pieds|feet)\s*$/i.exec(trimmed);
+  const rawName = (rangeMatch?.[1] ?? trimmed).trim();
+  const normalizedName = normalizeSearchText(rawName);
+  const canonical = CANONICAL_SENSES_5E.find(
+    (entry) =>
+      normalizeSearchText(entry.fr) === normalizedName ||
+      normalizeSearchText(entry.en) === normalizedName,
+  );
+
+  let frRange: string | undefined;
+  let enRange: string | undefined;
+
+  if (rangeMatch?.[2] && rangeMatch[3]) {
+    const numericVal = Number.parseFloat(rangeMatch[2].replace(',', '.'));
+    if (Number.isFinite(numericVal) && numericVal >= 0) {
+      const unit = rangeMatch[3].toLowerCase();
+      if (unit === 'm') {
+        frRange = formatSenseMeters(numericVal);
+        enRange = `${metersToFeet(numericVal)} ft`;
+      } else {
+        frRange = formatSenseMeters(feetToMeters(numericVal));
+        enRange = `${Math.round(numericVal)} ft`;
+      }
+    }
+  }
+
+  const frName = canonical ? canonical.fr : rawName;
+  const enName = canonical ? canonical.en : rawName;
+
+  const frLabel = frRange ? `${frName} ${frRange}` : frName;
+  const enLabel = enRange ? `${enName} ${enRange}` : enName;
+
+  if (termMode === 'en') {
+    return { primary: enLabel };
+  }
+
+  if (termMode === 'bilingual') {
+    if (canonical) {
+      return canonical.fr !== canonical.en || frRange !== enRange
+        ? { primary: frLabel, secondary: enLabel }
+        : { primary: frLabel };
+    }
+    if (enRange && frRange) {
+      return { primary: frLabel, secondary: enRange };
+    }
+    return { primary: frLabel };
+  }
+
+  return { primary: frLabel };
+}
+
+/**
+ * Formate en une chaîne unique un sens spécial selon le mode d'affichage (FR / EN / Bilingue).
+ */
+export function formatSenseLabel(rawSense: string, termMode: TermDisplayMode): string {
+  const parts = getSenseDisplayParts(rawSense, termMode);
+  return parts.secondary ? `${parts.primary} (${parts.secondary})` : parts.primary;
 }
 
 /**

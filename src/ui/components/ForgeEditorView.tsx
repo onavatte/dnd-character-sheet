@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import type { Draft } from 'immer';
-import type { CharacterSheetV1, DerivedCharacterStats } from '../../engine/types';
+import type {
+  CharacterSheetV1,
+  DerivedCharacterStats,
+  TermDisplayMode,
+} from '../../engine/types';
 import { ForgeCombatAndSpellsTab } from './ForgeCombatAndSpellsTab';
 import { ForgeFeaturesAndDefensesTab } from './ForgeFeaturesAndDefensesTab';
 import { ForgeIdentityTab } from './ForgeIdentityTab';
@@ -30,10 +34,16 @@ const FORGE_TABS: readonly ForgeTabMeta[] = [
 export interface ForgeEditorViewProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
+  termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
 
-export function ForgeEditorView({ sheet, derived, onMutate }: ForgeEditorViewProps) {
+export function ForgeEditorView({
+  sheet,
+  derived,
+  termMode,
+  onMutate,
+}: ForgeEditorViewProps) {
   const [activeTab, setActiveTab] = useState<ForgeTabId>('identity');
 
   return (
@@ -87,6 +97,7 @@ export function ForgeEditorView({ sheet, derived, onMutate }: ForgeEditorViewPro
           <ForgeStatsAndSkillsTab
             sheet={sheet}
             derived={derived}
+            termMode={termMode}
             onMutate={onMutate}
           />
         </div>
@@ -98,7 +109,11 @@ export function ForgeEditorView({ sheet, derived, onMutate }: ForgeEditorViewPro
           id="forge-panel-features"
           aria-labelledby="forge-tab-features"
         >
-          <ForgeFeaturesAndDefensesTab sheet={sheet} onMutate={onMutate} />
+          <ForgeFeaturesAndDefensesTab
+            sheet={sheet}
+            termMode={termMode}
+            onMutate={onMutate}
+          />
         </div>
       )}
 

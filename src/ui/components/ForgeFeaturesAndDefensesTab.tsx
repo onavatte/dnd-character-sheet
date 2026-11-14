@@ -1,11 +1,13 @@
 import { useId, useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import type { Draft } from 'immer';
+import { formatSenseLabel, getSenseDisplayParts } from '../../engine';
 import type {
   CharacterDefenses,
   CharacterSheetV1,
   FeatureCategory,
   FeatureEntry,
+  TermDisplayMode,
 } from '../../engine';
 import {
   CONDITION_IMMUNITY_PRESETS_5E,
@@ -20,6 +22,7 @@ import { CommittedTextArea, CommittedTextInput } from './ForgeSharedControls';
 
 export interface ForgeFeaturesAndDefensesTabProps {
   sheet: CharacterSheetV1;
+  termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
 
@@ -52,6 +55,9 @@ interface DefenseTagGroupProps {
   placeholder: string;
   presets: ReadonlyArray<string>;
   selectedValues: ReadonlyArray<string>;
+  formatTagText?: (value: string) => string;
+  renderTagContent?: (value: string) => ReactNode;
+  normalizeCompareKey?: (value: string) => string;
   onAddValue: (value: string) => void;
   onRemoveValue: (value: string) => void;
 }
@@ -67,10 +73,18 @@ function DefenseTagGroup({
   placeholder,
   presets,
   selectedValues,
+  formatTagText,
+  renderTagContent,
+  normalizeCompareKey,
   onAddValue,
   onRemoveValue,
 }: DefenseTagGroupProps) {
   const [customInput, setCustomInput] = useState('');
+
+  const getKey = (raw: string) =>
+    normalizeCompareKey
+      ? normalizeCompareKey(raw)
+      : raw.trim().toLocaleLowerCase('fr');
 
   const handleSubmitCustom = () => {
     const trimmed = customInput.trim();
@@ -87,12 +101,7 @@ function DefenseTagGroup({
   };
 
   const remainingPresets = presets.filter(
-    (preset) =>
-      !selectedValues.some(
-        (val) =>
-          val.trim().toLocaleLowerCase('fr') ===
-          preset.toLocaleLowerCase('fr'),
-      ),
+    (preset) => !selectedValues.some((val) => getKey(val) === getKey(preset)),
   );
 
   return (
@@ -103,34 +112,40 @@ function DefenseTagGroup({
         <p className="muted-note">{emptyLabel}</p>
       ) : (
         <div className="forge-languages-list">
-          {selectedValues.map((val) => (
-            <span key={val} className="badge-pill forge-language-pill">
-              <span>{val}</span>
-              <button
-                type="button"
-                className="forge-pill-remove"
-                aria-label={`Retirer ${val}`}
-                onClick={() => onRemoveValue(val)}
-              >
-                x
-              </button>
-            </span>
-          ))}
+          {selectedValues.map((val) => {
+            const labelText = formatTagText ? formatTagText(val) : val;
+            return (
+              <span key={val} className="badge-pill forge-language-pill">
+                <span>{renderTagContent ? renderTagContent(val) : labelText}</span>
+                <button
+                  type="button"
+                  className="forge-pill-remove"
+                  aria-label={`Retirer ${labelText}`}
+                  onClick={() => onRemoveValue(val)}
+                >
+                  x
+                </button>
+              </span>
+            );
+          })}
         </div>
       )}
 
       {remainingPresets.length > 0 && (
         <div className="forge-preset-strip" role="group" aria-label={legend}>
-          {remainingPresets.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className="action-btn"
-              onClick={() => onAddValue(preset)}
-            >
-              + {preset}
-            </button>
-          ))}
+          {remainingPresets.map((preset) => {
+            const labelText = formatTagText ? formatTagText(preset) : preset;
+            return (
+              <button
+                key={preset}
+                type="button"
+                className="action-btn"
+                onClick={() => onAddValue(preset)}
+              >
+                + {labelText}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -167,6 +182,7 @@ function DefenseTagGroup({
  */
 export function ForgeFeaturesAndDefensesTab({
   sheet,
+  termMode,
   onMutate,
 }: ForgeFeaturesAndDefensesTabProps) {
   const baseId = useId();
@@ -266,15 +282,22 @@ export function ForgeFeaturesAndDefensesTab({
     });
   };
 
-  const addDefenseItem = (key: DefenseListKey, rawValue: string) => {
+  const normalizeSenseCompareKey = (raw: string) =>
+    formatSenseLabel(raw, 'fr').toLocaleLowerCase('fr');
+
+  const addDefenseItem = (
+    key: DefenseListKey,
+    rawValue: string,
+    customNormalize?: (val: string) => string,
+  ) => {
     const trimmed = rawValue.trim();
     if (!trimmed) return;
+    const normalize =
+      customNormalize ?? ((val: string) => val.trim().toLocaleLowerCase('fr'));
     onMutate((draft) => {
       const target = ensureDefenses(draft);
       const exists = target[key].some(
-        (item) =>
-          item.trim().toLocaleLowerCase('fr') ===
-          trimmed.toLocaleLowerCase('fr'),
+        (item) => normalize(item) === normalize(trimmed),
       );
       if (!exists) {
         target[key].push(trimmed);
@@ -287,6 +310,21 @@ export function ForgeFeaturesAndDefensesTab({
       const target = ensureDefenses(draft);
       target[key] = target[key].filter((item) => item !== value);
     });
+  };
+
+  const renderSenseContent = (rawSense: string) => {
+    const parts = getSenseDisplayParts(rawSense, termMode);
+    return (
+      <>
+        {parts.primary}
+        {parts.secondary ? (
+          <>
+            {' '}
+            <span className="original-term">({parts.secondary})</span>
+          </>
+        ) : null}
+      </>
+    );
   };
 
   return (
@@ -585,10 +623,19 @@ export function ForgeFeaturesAndDefensesTab({
             legend="Sens spéciaux"
             emptyLabel="Aucun sens spécial ajouté. Saisissez-en un ou utilisez les raccourcis ci-dessous."
             inputId={`${baseId}-sense-custom`}
-            placeholder="Ex : Vision nocturne 27 m, Odorat aiguisé..."
+            placeholder={
+              termMode === 'en'
+                ? 'Ex : Darkvision 90 ft, Keen Smell...'
+                : 'Ex : Vision nocturne 27 m, Odorat aiguisé...'
+            }
             presets={SENSE_PRESETS_5E}
             selectedValues={defenses.senses}
-            onAddValue={(val) => addDefenseItem('senses', val)}
+            formatTagText={(val) => formatSenseLabel(val, termMode)}
+            renderTagContent={renderSenseContent}
+            normalizeCompareKey={normalizeSenseCompareKey}
+            onAddValue={(val) =>
+              addDefenseItem('senses', val, normalizeSenseCompareKey)
+            }
             onRemoveValue={(val) => removeDefenseItem('senses', val)}
           />
 

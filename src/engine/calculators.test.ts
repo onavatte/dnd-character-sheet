@@ -13,7 +13,9 @@ import {
   computeSpellSaveDC,
   computeTotalLevel,
   computeTotalWealthGp,
+  feetToMeters,
   formatSignedModifier,
+  metersToFeet,
   syncHitDicePoolsWithClasses,
 } from './calculators';
 import { createDemoCharacter } from './glossary';
@@ -234,5 +236,21 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     expect(derived.carryingCapacityKg).toBe(60);
     expect(derived.totalWeight).toBe(68);
     expect(derived.encumbered).toBe(true);
+  });
+
+  it('convertit fidèlement la vitesse entre mètres et pieds selon la règle D&D 5e (1,5 m = 5 ft)', () => {
+    expect(metersToFeet(9)).toBe(30);
+    expect(metersToFeet(7.5)).toBe(25);
+    expect(metersToFeet(10.5)).toBe(35);
+    expect(metersToFeet(12)).toBe(40);
+    expect(metersToFeet(0)).toBe(0);
+    expect(metersToFeet(-3)).toBe(0);
+
+    expect(feetToMeters(30)).toBe(9);
+    expect(feetToMeters(25)).toBe(7.5);
+    expect(feetToMeters(35)).toBe(10.5);
+    expect(feetToMeters(40)).toBe(12);
+    expect(feetToMeters(0)).toBe(0);
+    expect(feetToMeters(-10)).toBe(0);
   });
 });

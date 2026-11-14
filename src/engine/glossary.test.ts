@@ -6,6 +6,8 @@ import {
   createBlankCharacter,
   createDefaultSkills,
   createDemoCharacter,
+  formatSenseLabel,
+  getSenseDisplayParts,
   matchesBilingualSearch,
   normalizeSearchText,
 } from './glossary';
@@ -48,5 +50,33 @@ describe('Lexique bilingue FR/EN & Recherche (glossary.ts)', () => {
     expect(blank.identity.name).toBe('Lyra');
     expect(blank.skills).toHaveLength(18);
     expect(validateCharacterSheet(blank).valid).toBe(true);
+  });
+
+  it('traduit les sens canoniques et convertit leurs portées (m / ft) selon la langue', () => {
+    expect(formatSenseLabel('Vision dans le noir 18 m', 'fr')).toBe(
+      'Vision dans le noir 18 m',
+    );
+    expect(formatSenseLabel('Vision dans le noir 18 m', 'en')).toBe(
+      'Darkvision 60 ft',
+    );
+    expect(formatSenseLabel('Vision dans le noir 18 m', 'bilingual')).toBe(
+      'Vision dans le noir 18 m (Darkvision 60 ft)',
+    );
+
+    expect(formatSenseLabel('Darkvision 90 ft', 'fr')).toBe(
+      'Vision dans le noir 27 m',
+    );
+    expect(formatSenseLabel('Blindsight 10 ft', 'en')).toBe('Blindsight 10 ft');
+
+    expect(getSenseDisplayParts('Vision nocturne 27 m', 'bilingual')).toEqual({
+      primary: 'Vision nocturne 27 m',
+      secondary: '90 ft',
+    });
+    expect(formatSenseLabel('Vision nocturne 27 m', 'en')).toBe(
+      'Vision nocturne 90 ft',
+    );
+    expect(formatSenseLabel('Odorat aiguisé', 'bilingual')).toBe(
+      'Odorat aiguisé',
+    );
   });
 });

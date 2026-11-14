@@ -5,13 +5,16 @@ import {
   ABILITY_GLOSSARY,
   ABILITY_KEYS,
   TOOL_PRESETS,
+  feetToMeters,
   formatSignedModifier,
+  metersToFeet,
 } from '../../engine';
 import type {
   AbilityKey,
   CharacterSheetV1,
   DerivedCharacterStats,
   ProficiencyLevel,
+  TermDisplayMode,
 } from '../../engine';
 import { PROFICIENCY_OPTIONS } from './forge-constants';
 import { CommittedTextInput, NumberStepper } from './ForgeSharedControls';
@@ -32,12 +35,14 @@ function getProficiencyMarker(proficiency: ProficiencyLevel): string {
 export interface ForgeStatsAndSkillsTabProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
+  termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
 
 export function ForgeStatsAndSkillsTab({
   sheet,
   derived,
+  termMode,
   onMutate,
 }: ForgeStatsAndSkillsTabProps) {
   const baseId = useId();
@@ -360,22 +365,34 @@ export function ForgeStatsAndSkillsTab({
 
             <div className="forge-two-cols forge-combat-cols">
               <div className="field-group">
-                <label htmlFor={`${baseId}-speed`}>Vitesse (mètres)</label>
+                <label htmlFor={`${baseId}-speed`}>
+                  {termMode === 'en' ? 'Vitesse (ft)' : 'Vitesse (mètres)'}
+                </label>
                 <NumberStepper
                   id={`${baseId}-speed`}
                   name="speed"
-                  value={sheet.combat.speed}
+                  value={
+                    termMode === 'en'
+                      ? metersToFeet(sheet.combat.speed)
+                      : sheet.combat.speed
+                  }
                   min={0}
-                  max={60}
-                  step={1.5}
+                  max={termMode === 'en' ? 200 : 60}
+                  step={termMode === 'en' ? 5 : 1.5}
                   decrementLabel="Réduire la vitesse"
                   incrementLabel="Augmenter la vitesse"
                   onChange={(nextSpeed) =>
                     onMutate((draft) => {
-                      draft.combat.speed = nextSpeed;
+                      draft.combat.speed =
+                        termMode === 'en' ? feetToMeters(nextSpeed) : nextSpeed;
                     })
                   }
                 />
+                {termMode === 'bilingual' && (
+                  <span className="muted-caption tabular-nums">
+                    Équivalent : {metersToFeet(sheet.combat.speed)} ft
+                  </span>
+                )}
               </div>
 
               <div className="field-group">

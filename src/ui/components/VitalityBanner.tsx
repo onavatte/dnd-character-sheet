@@ -3,11 +3,14 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import {
   CANONICAL_CONDITIONS_5E,
   formatSignedModifier,
+  getSenseDisplayParts,
+  metersToFeet,
 } from '../../engine';
 import type {
   CharacterSheetV1,
   DerivedCharacterStats,
   HitDieSize,
+  TermDisplayMode,
 } from '../../engine';
 import { HIT_DIE_SIZES } from '../../engine';
 import { handleDialogBackdropClick } from './dialog-utils';
@@ -16,6 +19,7 @@ import type { ActiveRollTarget } from './dialog-utils';
 export interface VitalityBannerProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
+  termMode: TermDisplayMode;
   renderTerm: (fr: string, en?: string) => ReactNode;
   onSelectRollTarget: (target: ActiveRollTarget) => void;
   onDamage: (amount: number) => void;
@@ -31,6 +35,7 @@ export interface VitalityBannerProps {
 export function VitalityBanner({
   sheet,
   derived,
+  termMode,
   renderTerm,
   onSelectRollTarget,
   onDamage,
@@ -187,7 +192,18 @@ export function VitalityBanner({
         <div className="vital-tile">
           <span className="vital-label">Vitesse & Sens</span>
           <span className="vital-value tabular-nums">
-            {sheet.combat.speed} m
+            {termMode === 'en' ? (
+              `${metersToFeet(sheet.combat.speed)} ft`
+            ) : (
+              <>
+                {sheet.combat.speed} m
+                {termMode === 'bilingual' && (
+                  <span className="original-term">
+                    ({metersToFeet(sheet.combat.speed)} ft)
+                  </span>
+                )}
+              </>
+            )}
           </span>
           <span className="vital-subtext tabular-nums">
             Perc. passive {derived.passivePerception} · Inv.{' '}
@@ -317,14 +333,28 @@ export function VitalityBanner({
             role="group"
             aria-label="Sens, résistances et immunités"
           >
-            {sheet.defenses.senses.map((sense) => (
-              <span
-                key={`sense-${sense}`}
-                className="badge-pill vital-defense-pill"
-              >
-                Sens : {sense}
-              </span>
-            ))}
+            {sheet.defenses.senses.map((sense) => {
+              const parts = getSenseDisplayParts(sense, termMode);
+              return (
+                <span
+                  key={`sense-${sense}`}
+                  className="badge-pill vital-defense-pill"
+                >
+                  Sens :{' '}
+                  <span>
+                    {parts.primary}
+                    {parts.secondary ? (
+                      <>
+                        {' '}
+                        <span className="original-term">
+                          ({parts.secondary})
+                        </span>
+                      </>
+                    ) : null}
+                  </span>
+                </span>
+              );
+            })}
             {sheet.defenses.resistances.map((res) => (
               <span
                 key={`res-${res}`}
