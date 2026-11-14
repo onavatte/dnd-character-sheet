@@ -579,9 +579,13 @@ dialog::backdrop {
 .settings-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding-top: var(--space-2);
+  gap: var(--space-3);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-subtle);
+}
+
+.settings-section + .settings-section {
+  margin-top: var(--space-1);
 }
 
 .dialog-header + .settings-section {
@@ -592,19 +596,44 @@ dialog::backdrop {
 .settings-section h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.015em;
 }
 
 .settings-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(175px, 1fr) minmax(0, 415px);
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-2) var(--space-3);
   font-size: 0.9375rem;
+}
+
+.settings-row .segmented-control {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: 100%;
+}
+
+.settings-row .segmented-btn {
+  font-size: 0.875rem;
+  padding-inline: var(--space-2);
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .settings-row {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-row .segmented-btn {
+    white-space: normal;
+    line-height: 1.2;
+    padding-block: var(--space-1);
+  }
 }
 
 .grimoire-textarea {

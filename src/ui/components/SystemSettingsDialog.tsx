@@ -55,11 +55,11 @@ export function SystemSettingsDialog({
 
   const syncLabel =
     syncStatus === 'saved'
-      ? 'Synchronisé (IndexedDB)'
+      ? 'Enregistré sur cet appareil'
       : syncStatus === 'pending'
-        ? 'Écriture en cours (Write-Behind)...'
+        ? 'Enregistrement en cours...'
         : syncStatus === 'error'
-          ? 'Erreur de persistance'
+          ? 'Erreur d’enregistrement'
           : 'Prêt';
 
   const formattedUpdatedAt = (() => {
@@ -79,7 +79,7 @@ export function SystemSettingsDialog({
       {...({ closedby: 'any' } as Record<string, string>)}
     >
       <div className="dialog-header">
-        <h2 id={titleId}>Paramètres, Stockage & Sauvegardes</h2>
+        <h2 id={titleId}>Paramètres & Sauvegardes</h2>
         <form method="dialog">
           <button type="submit" className="action-btn" autoFocus>
             Fermer
@@ -87,9 +87,9 @@ export function SystemSettingsDialog({
         </form>
       </div>
 
-      {/* 1. Préférences d'affichage et de jeu (Thème, Langue & Mode de dés) */}
+      {/* Préférences d'affichage et de jeu (Thème, Langue & Mode de dés) */}
       <div className="settings-section">
-        <h3>1. Préférences d’Affichage & de Jeu</h3>
+        <h3>Préférences d’affichage et de jeu</h3>
         <div className="settings-row">
           <span>Thème visuel :</span>
           <div
@@ -177,15 +177,14 @@ export function SystemSettingsDialog({
         </div>
       </div>
 
-      {/* 2. Diagnostic technique IndexedDB & Révision */}
+      {/* État de la sauvegarde automatique */}
       <div className="settings-section">
-        <h3>2. État Technique & Stockage Local (Tier 1)</h3>
+        <h3>Sauvegarde automatique</h3>
         <div className="stat-preview-row">
           <div>
-            <strong>Base locale : {syncLabel}</strong>
+            <strong>{syncLabel}</strong>
             <div className="attack-meta tabular-nums">
-              ID : {sheet.id} · Schéma v{sheet.schemaVersion} · Dernière modif.
-              : {formattedUpdatedAt}
+              Dernière modification : {formattedUpdatedAt}
             </div>
           </div>
           <span className="badge-pill tabular-nums">
@@ -194,12 +193,12 @@ export function SystemSettingsDialog({
         </div>
       </div>
 
-      {/* 3. Gestionnaire de Snapshots IndexedDB */}
+      {/* Points de restauration */}
       <div className="settings-section">
-        <h3>3. Points de Restauration (Snapshots IndexedDB - {snapshots.length})</h3>
+        <h3>Points de restauration ({snapshots.length})</h3>
         <div className="field-group">
           <label htmlFor="settings-snapshot-label">
-            Capturer un Snapshot manuel de l’état actuel :
+            Créer un point de restauration manuel :
           </label>
           <div className="inline-input-row">
             <input
@@ -223,8 +222,8 @@ export function SystemSettingsDialog({
           {snapshots.length === 0 ? (
             <div className="stat-preview-row">
               <span className="muted-note">
-                Aucun snapshot enregistré. Un snapshot est créé automatiquement
-                avant chaque Repos Long ou Import JSON.
+                Aucun point de restauration enregistré. Un point de restauration
+                est créé automatiquement avant chaque Repos Long ou Import JSON.
               </span>
             </div>
           ) : (

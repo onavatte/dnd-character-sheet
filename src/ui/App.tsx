@@ -168,7 +168,7 @@ export function App() {
 
   const handleCreateManualSnapshot = async (label: string) => {
     const snap = await createManualSnapshot(label);
-    setSnapshotFeedback(`Snapshot créé : "${snap.label}"`);
+    setSnapshotFeedback(`Point de restauration créé : "${snap.label}"`);
     return snap;
   };
 
