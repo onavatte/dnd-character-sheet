@@ -139,7 +139,7 @@ export function VitalityBanner({
         <button
           type="button"
           className="vital-tile vital-tile--interactive"
-          onClick={() => hpDialogRef.current?.showModal()}
+          onClick={openHpModal}
           title="Toucher pour gérer les PV Temporaires"
         >
           <span className="vital-label">PV Temporaires</span>
@@ -372,6 +372,7 @@ export function VitalityBanner({
         aria-labelledby={hpDialogTitleId}
         onClick={handleDialogBackdropClick}
         onKeyDown={handleHpDialogKeyDown}
+        onClose={() => setHpAmountDraft('')}
         {...({ closedby: 'any' } as Record<string, string>)}
       >
         <div className="dialog-header">
