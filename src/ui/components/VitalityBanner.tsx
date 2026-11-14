@@ -206,8 +206,7 @@ export function VitalityBanner({
             )}
           </span>
           <span className="vital-subtext tabular-nums">
-            Perc. passive {derived.passivePerception} · Inv.{' '}
-            {derived.passiveInvestigation}
+            Perception passive {derived.passivePerception}
           </span>
         </div>
 
