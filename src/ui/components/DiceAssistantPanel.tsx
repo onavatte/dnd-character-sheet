@@ -396,8 +396,14 @@ export function DiceAssistantPanel({
         }
       : undefined;
 
-  const activeResultBreakdown =
-    lastD20?.formulaBreakdown ?? lastDamage?.formulaBreakdown ?? null;
+  const activeResult = lastD20 ?? lastDamage;
+  const activeResultSuffix = activeResult ? ` ${activeResult.total}` : '';
+  const activeResultFormula =
+    activeResult !== null
+      ? activeResult.formulaBreakdown.endsWith(activeResultSuffix)
+        ? activeResult.formulaBreakdown.slice(0, -activeResultSuffix.length)
+        : activeResult.formulaBreakdown
+      : null;
 
   return (
     <>
@@ -508,26 +514,36 @@ export function DiceAssistantPanel({
         </div>
 
         {/* 2. Carte Résultat fixe sous le header (aucun texte répété, uniquement calcul + résultat) */}
-        <div className="dice-result-fixed" aria-live="polite">
-          {activeResultBreakdown !== null ? (
+        <div
+          className={`dice-result-fixed ${
+            activeResult !== null ? 'dice-result-fixed--has-result' : ''
+          }`}
+          aria-live="polite"
+        >
+          {activeResult !== null && activeResultFormula !== null ? (
             <div className="dice-result-content">
               <span className="dice-result-formula tabular-nums">
-                {activeResultBreakdown}
+                {activeResultFormula}
               </span>
-              {lastD20?.isCriticalSuccess && (
-                <span className="badge-pill dice-crit-badge--ok">
-                  CRITIQUE (
-                  {lastD20.critThreshold === 20
-                    ? '20'
-                    : `${lastD20.critThreshold}-20`}
-                  )
+              <div className="dice-result-total-group">
+                <span className="dice-result-total tabular-nums">
+                  {activeResult.total}
                 </span>
-              )}
-              {lastD20?.isCriticalFailure && (
-                <span className="badge-pill dice-crit-badge--fail">
-                  ÉCHEC (1)
-                </span>
-              )}
+                {lastD20?.isCriticalSuccess && (
+                  <span className="badge-pill dice-crit-badge--ok">
+                    CRITIQUE (
+                    {lastD20.critThreshold === 20
+                      ? '20'
+                      : `${lastD20.critThreshold}-20`}
+                    )
+                  </span>
+                )}
+                {lastD20?.isCriticalFailure && (
+                  <span className="badge-pill dice-crit-badge--fail">
+                    ÉCHEC (1)
+                  </span>
+                )}
+              </div>
             </div>
           ) : (
             <span className="muted-note">

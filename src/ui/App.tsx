@@ -17,6 +17,8 @@ import type { ActiveRollTarget, DiceRollMode } from './components/dialog-utils';
 
 type SheetMode = 'cockpit' | 'forge';
 
+const MAX_ROLL_LOG_ENTRIES = 100;
+
 function getInitialTheme(): ThemeMode {
   if (typeof document === 'undefined') return 'light';
   return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
@@ -163,7 +165,7 @@ export function App() {
   };
 
   const pushRollLog = (entry: RollLogEntry) => {
-    setRollLog((prev) => [entry, ...prev].slice(0, 12));
+    setRollLog((prev) => [entry, ...prev].slice(0, MAX_ROLL_LOG_ENTRIES));
   };
 
   const handleCreateManualSnapshot = async (label: string) => {
