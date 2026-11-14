@@ -1,5 +1,5 @@
-import { useId, useState } from 'react';
-import type { FormEvent, RefObject } from 'react';
+import { useId, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent, RefObject } from 'react';
 import { computeTotalLevel } from '../../engine';
 import type { CharacterSheetV1 } from '../../engine';
 import { handleDialogBackdropClick } from './dialog-utils';
@@ -10,11 +10,16 @@ export interface CharacterSelectorDialogProps {
   characters: CharacterSheetV1[];
   activeCharacterId: string;
   hasActiveCharacter: boolean;
+  backupFeedback: string | null;
+  lastError: string | null;
   onSwitchCharacter: (characterId: string) => Promise<void>;
   onCreateNewCharacter: (name?: string) => Promise<void>;
   onDuplicateCurrentCharacter: () => Promise<void>;
   onLoadDemoCharacter: () => Promise<void>;
   onDeleteCharacter: (characterId: string) => Promise<void>;
+  onExportJson: () => void;
+  onImportJsonFile: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
+  onClearFeedback: () => void;
 }
 
 export function CharacterSelectorDialog({
@@ -22,27 +27,38 @@ export function CharacterSelectorDialog({
   characters,
   activeCharacterId,
   hasActiveCharacter,
+  backupFeedback,
+  lastError,
   onSwitchCharacter,
   onCreateNewCharacter,
   onDuplicateCurrentCharacter,
   onLoadDemoCharacter,
   onDeleteCharacter,
+  onExportJson,
+  onImportJsonFile,
+  onClearFeedback,
 }: CharacterSelectorDialogProps) {
   const titleId = useId();
   const newNameInputId = useId();
+  const importInputRef = useRef<HTMLInputElement>(null);
   const [newName, setNewName] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  const resetDialogFeedback = () => {
+    setConfirmDeleteId(null);
+    onClearFeedback();
+  };
 
   const handleCreateSubmit = async (e: FormEvent) => {
     e.preventDefault();
     await onCreateNewCharacter(newName);
     setNewName('');
-    setConfirmDeleteId(null);
+    resetDialogFeedback();
     dialogRef.current?.close();
   };
 
   const handleSelectCharacter = async (characterId: string) => {
-    setConfirmDeleteId(null);
+    resetDialogFeedback();
     await onSwitchCharacter(characterId);
     dialogRef.current?.close();
   };
@@ -58,7 +74,7 @@ export function CharacterSelectorDialog({
       className="grimoire-dialog grimoire-dialog--wide"
       aria-labelledby={titleId}
       onClick={handleDialogBackdropClick}
-      onClose={() => setConfirmDeleteId(null)}
+      onClose={resetDialogFeedback}
       {...({ closedby: 'any' } as Record<string, string>)}
     >
       <div className="dialog-header">
@@ -70,7 +86,7 @@ export function CharacterSelectorDialog({
         </form>
       </div>
 
-      {/* Création / Duplication / Démo */}
+      {/* Création / Duplication / Démo / Import JSON */}
       <div className="settings-section">
         <h3>Créer ou Ajouter un Personnage</h3>
         <form className="field-group" onSubmit={(e) => void handleCreateSubmit(e)}>
@@ -96,7 +112,7 @@ export function CharacterSelectorDialog({
             disabled={!hasActiveCharacter}
             onClick={() => {
               void onDuplicateCurrentCharacter().then(() => {
-                setConfirmDeleteId(null);
+                resetDialogFeedback();
                 dialogRef.current?.close();
               });
             }}
@@ -108,23 +124,59 @@ export function CharacterSelectorDialog({
             className="action-btn"
             onClick={() => {
               void onLoadDemoCharacter().then(() => {
-                setConfirmDeleteId(null);
+                resetDialogFeedback();
                 dialogRef.current?.close();
               });
             }}
           >
-            Ajouter la fiche démo (Kaelen)
+            Ajouter la fiche démo
           </button>
+          <button
+            type="button"
+            className="action-btn"
+            onClick={() => importInputRef.current?.click()}
+          >
+            Importer une fiche (.json)
+          </button>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json,application/json"
+            className="visually-hidden"
+            onChange={(e) => {
+              setConfirmDeleteId(null);
+              void onImportJsonFile(e);
+            }}
+          />
+        </div>
+
+        <div aria-live="polite">
+          {backupFeedback && (
+            <div
+              className="roll-banner"
+              style={{ fontSize: '0.875rem', marginTop: 'var(--space-2)' }}
+            >
+              {backupFeedback}
+            </div>
+          )}
+          {lastError && (
+            <div
+              className="status-banner-error"
+              style={{ marginTop: 'var(--space-2)' }}
+            >
+              {lastError}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Liste des personnages sauvegardés */}
       <div className="settings-section">
-        <h3>Fiches enregistrées (IndexedDB)</h3>
+        <h3>Fiches enregistrées</h3>
         {characters.length === 0 ? (
           <div className="stat-preview-row">
             <span className="muted-note">
-              Aucune fiche enregistrée pour le moment. Créez un personnage ci-dessus ou chargez la fiche démo.
+              Aucune fiche enregistrée pour le moment. Créez un personnage ci-dessus, importez un fichier .json ou chargez la fiche démo.
             </span>
           </div>
         ) : (
@@ -175,6 +227,15 @@ export function CharacterSelectorDialog({
                             onClick={() => void handleSelectCharacter(char.id)}
                           >
                             Charger
+                          </button>
+                        )}
+                        {isActive && (
+                          <button
+                            type="button"
+                            className="action-btn"
+                            onClick={onExportJson}
+                          >
+                            Exporter (.json)
                           </button>
                         )}
                         <button

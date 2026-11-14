@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import type { ChangeEvent, RefObject } from 'react';
+import type { RefObject } from 'react';
 import type {
   CharacterSheetV1,
   CharacterSnapshot,
@@ -26,9 +26,6 @@ export interface SystemSettingsDialogProps {
   onCreateManualSnapshot: (label: string) => Promise<CharacterSnapshot>;
   onRestoreSnapshot: (snapshotId: string) => Promise<void>;
   onDeleteSnapshot: (snapshotId: string) => Promise<void>;
-  onExportJson: () => void;
-  onImportJsonFile: (e: ChangeEvent<HTMLInputElement>) => Promise<void>;
-  onResetToDemo: () => Promise<void>;
 }
 
 export function SystemSettingsDialog({
@@ -47,9 +44,6 @@ export function SystemSettingsDialog({
   onCreateManualSnapshot,
   onRestoreSnapshot,
   onDeleteSnapshot,
-  onExportJson,
-  onImportJsonFile,
-  onResetToDemo,
 }: SystemSettingsDialogProps) {
   const titleId = useId();
   const [snapshotLabel, setSnapshotLabel] = useState('');
@@ -265,38 +259,6 @@ export function SystemSettingsDialog({
               </div>
             ))
           )}
-        </div>
-      </div>
-
-      {/* 4. Export / Import JSON (Tier 2) & Maintenance */}
-      <div className="settings-section">
-        <h3>4. Sauvegarde Externe Portable (.json - Tier 2)</h3>
-        <div className="field-group">
-          <div className="button-cluster">
-            <button
-              type="button"
-              className="action-btn action-btn--primary"
-              onClick={onExportJson}
-            >
-              Exporter la fiche (.json)
-            </button>
-            <button
-              type="button"
-              className="action-btn"
-              onClick={() => void onResetToDemo()}
-            >
-              Réinitialiser Personnage Démo
-            </button>
-          </div>
-          <label htmlFor="settings-backup-file" style={{ marginTop: '0.35rem' }}>
-            Importer une fiche depuis un fichier .json :
-          </label>
-          <input
-            id="settings-backup-file"
-            type="file"
-            accept=".json,application/json"
-            onChange={(e) => void onImportJsonFile(e)}
-          />
         </div>
 
         <div aria-live="polite">

@@ -74,7 +74,6 @@ export function App() {
     (s) => s.exportCurrentSheetJson,
   );
   const importSheetJson = useCharacterStore((s) => s.importSheetJson);
-  const resetToDemo = useCharacterStore((s) => s.resetToDemo);
 
   const sheet = history.present;
   const undoCount = history.past.length;
@@ -102,7 +101,10 @@ export function App() {
     useState<ActiveRollTarget | null>(null);
   const [isDiceModalOpen, setIsDiceModalOpen] = useState<boolean>(false);
   const [rollLog, setRollLog] = useState<RollLogEntry[]>([]);
-  const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
+  const [snapshotFeedback, setSnapshotFeedback] = useState<string | null>(null);
+  const [characterBackupFeedback, setCharacterBackupFeedback] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     void initialize();
@@ -166,7 +168,7 @@ export function App() {
 
   const handleCreateManualSnapshot = async (label: string) => {
     const snap = await createManualSnapshot(label);
-    setBackupFeedback(`Snapshot créé : "${snap.label}"`);
+    setSnapshotFeedback(`Snapshot créé : "${snap.label}"`);
     return snap;
   };
 
@@ -182,7 +184,7 @@ export function App() {
     anchor.click();
     document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
-    setBackupFeedback(`Sauvegarde téléchargée : ${filename}`);
+    setCharacterBackupFeedback(`Sauvegarde téléchargée : ${filename}`);
   };
 
   const handleImportJsonFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -191,11 +193,11 @@ export function App() {
     const content = await file.text();
     const res = await importSheetJson(content);
     if (res.ok) {
-      setBackupFeedback(
+      setCharacterBackupFeedback(
         `Import JSON réussi depuis "${file.name}" (snapshot de sécurité créé automatiquement).`,
       );
     } else {
-      setBackupFeedback(null);
+      setCharacterBackupFeedback(null);
     }
     e.target.value = '';
   };
@@ -418,7 +420,7 @@ export function App() {
               className="action-btn"
               onClick={() => void handleLoadDemoCharacter()}
             >
-              Charger la fiche démo (Kaelen Vance)
+              Charger la fiche démo
             </button>
             <button
               type="button"
@@ -518,11 +520,16 @@ export function App() {
         characters={characters}
         activeCharacterId={sheet.id}
         hasActiveCharacter={hasActiveCharacter}
+        backupFeedback={characterBackupFeedback}
+        lastError={lastError}
         onSwitchCharacter={handleSwitchCharacter}
         onCreateNewCharacter={handleCreateCharacter}
         onDuplicateCurrentCharacter={handleDuplicateCharacter}
         onLoadDemoCharacter={handleLoadDemoCharacter}
         onDeleteCharacter={handleDeleteCharacter}
+        onExportJson={handleExportJson}
+        onImportJsonFile={handleImportJsonFile}
+        onClearFeedback={() => setCharacterBackupFeedback(null)}
       />
 
       <SystemSettingsDialog
@@ -531,7 +538,7 @@ export function App() {
         snapshots={snapshots}
         syncStatus={syncStatus}
         lastError={lastError}
-        backupFeedback={backupFeedback}
+        backupFeedback={snapshotFeedback}
         theme={theme}
         termMode={termMode}
         diceRollMode={diceRollMode}
@@ -541,9 +548,6 @@ export function App() {
         onCreateManualSnapshot={handleCreateManualSnapshot}
         onRestoreSnapshot={restoreSnapshot}
         onDeleteSnapshot={deleteSnapshot}
-        onExportJson={handleExportJson}
-        onImportJsonFile={handleImportJsonFile}
-        onResetToDemo={resetToDemo}
       />
     </div>
   );

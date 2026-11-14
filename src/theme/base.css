@@ -584,6 +584,11 @@ dialog::backdrop {
   border-top: 1px solid var(--border-subtle);
 }
 
+.dialog-header + .settings-section {
+  border-top: none;
+  padding-top: 0;
+}
+
 .settings-section h3 {
   margin: 0;
   font-family: var(--font-display);
