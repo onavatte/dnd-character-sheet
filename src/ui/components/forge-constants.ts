@@ -5,6 +5,7 @@ import type {
   NoteCategory,
   ProficiencyLevel,
   RecoveryTiming,
+  ResourceCategory,
   StandardCurrencyKey,
 } from '../../engine';
 
@@ -26,6 +27,21 @@ export const RECOVERY_OPTIONS: ReadonlyArray<{
   { value: 'long_rest', label: 'Repos Long' },
   { value: 'manual', label: 'Manuel' },
 ];
+
+export const RESOURCE_CATEGORY_OPTIONS: ReadonlyArray<{
+  value: ResourceCategory;
+  label: string;
+}> = [
+  { value: 'ability', label: 'Capacité' },
+  { value: 'magic_item', label: 'Objet à charges' },
+  { value: 'ammo', label: 'Munition' },
+  { value: 'other', label: 'Autre' },
+];
+
+export function getResourceCategoryLabel(category: ResourceCategory): string {
+  const found = RESOURCE_CATEGORY_OPTIONS.find((opt) => opt.value === category);
+  return found ? found.label : 'Autre';
+}
 
 export const ACTION_TIMING_OPTIONS: ReadonlyArray<{
   value: ActionTiming;

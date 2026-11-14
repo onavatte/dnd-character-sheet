@@ -157,4 +157,59 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     };
     expect(validateCharacterSheet(badDefenses).valid).toBe(false);
   });
+
+  it('valide les ressources enrichies (capacités et objets à charges) et rejette les champs invalides', () => {
+    const demo = createDemoCharacter();
+    const validEnriched = {
+      ...demo,
+      resources: [
+        ...demo.resources,
+        {
+          id: 'res-dragon-breath',
+          name: 'Souffle draconique',
+          current: 1,
+          max: 1,
+          recovery: 'short_rest',
+          category: 'ability',
+          castingTime: '1 action',
+          range: '4,5 m (cône)',
+          description: 'Cône de flammes (JdS DEX, moitié des dégâts si réussi).',
+          saveAbility: 'DEX',
+          fixedSaveDC: 13,
+          hasAttackRoll: false,
+        },
+      ],
+    };
+    expect(validateCharacterSheet(validEnriched).valid).toBe(true);
+
+    const badCategory = {
+      ...demo,
+      resources: [
+        {
+          id: 'res-bad',
+          name: 'Invalide',
+          current: 1,
+          max: 1,
+          recovery: 'manual',
+          category: 'artifact',
+        },
+      ],
+    };
+    expect(validateCharacterSheet(badCategory).valid).toBe(false);
+
+    const badDC = {
+      ...demo,
+      resources: [
+        {
+          id: 'res-bad-dc',
+          name: 'Invalide DD',
+          current: 1,
+          max: 1,
+          recovery: 'long_rest',
+          fixedSaveDC: 0,
+        },
+      ],
+    };
+    expect(validateCharacterSheet(badDC).valid).toBe(false);
+  });
 });

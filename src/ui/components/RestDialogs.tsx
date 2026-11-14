@@ -183,7 +183,7 @@ export function RestDialogs({
         {shortRestResources.length > 0 && (
           <div className="stat-preview-row">
             <span>
-              <strong>Ressources rechargées :</strong>{' '}
+              <strong>Réserves rechargées :</strong>{' '}
               {shortRestResources.map((r) => r.name).join(', ')}
             </span>
           </div>
@@ -232,7 +232,7 @@ export function RestDialogs({
             priorisant les plus gros dés dépensés).
           </li>
           <li>
-            Toutes les ressources de Repos Court / Repos Long et tous les
+            Toutes les réserves de Repos Court / Repos Long et tous les
             emplacements de sorts sont rechargés.
           </li>
           <li>Niveau d’épuisement réduit de 1 (si supérieur à 0).</li>

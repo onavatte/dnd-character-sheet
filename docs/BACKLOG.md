@@ -45,9 +45,9 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] Structuration du **Butin (Loot), de la Monnaie/Crédits et du Carnet de Notes** dans le modèle de données (ajout rapide d'objets trouvés en partie dans `inventory`, bourse/crédits et entrées de notes catégorisées persistées dans `IndexedDB` et les Snapshots)
 
 ## Correctifs UX, Tablette & Règles en attente
-- [ ] **Historique des jets** : augmenter la limite de rétention dans l'Assistant de Jet de `12` à `100` entrées.
+- [x] **Historique des jets** : augmenter la limite de rétention dans l'Assistant de Jet de `12` à `100` entrées.
 - [ ] **Assistant de Jet sur Tablette (Paysage)** : corriger le débordement du bouton `Passer aux Dégâts` hors de la modale et compacter la hauteur de la fenêtre flottante pour qu'elle tienne confortablement en format paysage.
-- [ ] **Visibilité du résultat (Assistant de Jet)** : améliorer la lisibilité et le contraste du bandeau de résultat fixe en haut de la modale.
+- [x] **Visibilité du résultat (Assistant de Jet)** : améliorer la lisibilité et le contraste du bandeau de résultat fixe en haut de la modale.
 - [x] **Épuration de la modale Système** : supprimer le jargon technique interne (`IndexedDB`, `Tier 1`, `Tier 2`, etc.), retirer la première ligne de séparation inutile tout en haut, enlever la numérotation des titres, agrandir les titres et ajouter plus de marge entre les sections.
 - [ ] **Règles d'États & d'Épuisement (D&D 5e)** : implémenter les effets mécaniques automatiques selon les règles 5e (désavantage sur les jets de caractéristiques/attaques/sauvegardes concernés, vitesse divisée par 2 dès l'épuisement niveau 2 puis 0 au niveau 5, PV max divisés par 2 au niveau 4, impacts d'états comme *Empoisonné*, *Effrayé*, *À terre*, etc.).
 - [x] **Vitesse de déplacement et sens spéciaux selon la langue (mètres / ft)** : adapter la saisie et l'affichage de la vitesse ainsi que la traduction/portée des sens spéciaux selon le mode de langue (`fr` en mètres, `en` en pieds/`ft`, et en mode `bilingual` saisie en mètres avec affichage automatique de l'équivalent en `ft`).

@@ -10,14 +10,17 @@ import {
   HIT_DIE_SIZES,
   INVENTORY_CATEGORIES,
   NOTE_CATEGORIES,
+  RESOURCE_CATEGORIES,
   STANDARD_CURRENCY_KEYS,
 } from './types';
 import type {
+  AbilityKey,
   CharacterSheetV1,
   CreatureSize,
   FeatureCategory,
   InventoryCategory,
   NoteCategory,
+  ResourceCategory,
 } from './types';
 
 export type ValidationResult =
@@ -190,6 +193,78 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
 
   if (!Array.isArray(payload['resources'])) {
     errors.push('La liste des ressources (resources) doit être un tableau.');
+  } else {
+    payload['resources'].forEach((rawRes, index) => {
+      if (!isRecord(rawRes)) {
+        errors.push(`La ressource #${index + 1} est invalide.`);
+        return;
+      }
+      if (!isNonEmptyString(rawRes['id']) || !isNonEmptyString(rawRes['name'])) {
+        errors.push(`La ressource #${index + 1} doit avoir un id et un nom.`);
+      }
+      if (!isFiniteNumber(rawRes['current']) || rawRes['current'] < 0) {
+        errors.push(`La valeur actuelle de la ressource #${index + 1} doit être >= 0.`);
+      }
+      if (!isFiniteNumber(rawRes['max']) || rawRes['max'] < 0) {
+        errors.push(`La valeur maximale de la ressource #${index + 1} doit être >= 0.`);
+      }
+      if (
+        rawRes['category'] !== undefined &&
+        (typeof rawRes['category'] !== 'string' ||
+          !RESOURCE_CATEGORIES.includes(rawRes['category'] as ResourceCategory))
+      ) {
+        errors.push(`Catégorie invalide pour la ressource #${index + 1}.`);
+      }
+      for (const optTextKey of [
+        'castingTime',
+        'range',
+        'description',
+        'damageFormula',
+        'damageType',
+      ] as const) {
+        if (
+          rawRes[optTextKey] !== undefined &&
+          typeof rawRes[optTextKey] !== 'string'
+        ) {
+          errors.push(`Champ "${optTextKey}" invalide pour la ressource #${index + 1}.`);
+        }
+      }
+      for (const optAbilKey of ['ability', 'saveAbility'] as const) {
+        if (
+          rawRes[optAbilKey] !== undefined &&
+          (typeof rawRes[optAbilKey] !== 'string' ||
+            !ABILITY_KEYS.includes(rawRes[optAbilKey] as AbilityKey))
+        ) {
+          errors.push(
+            `Caractéristique "${optAbilKey}" invalide pour la ressource #${index + 1}.`,
+          );
+        }
+      }
+      if (
+        rawRes['hasAttackRoll'] !== undefined &&
+        typeof rawRes['hasAttackRoll'] !== 'boolean'
+      ) {
+        errors.push(`Champ "hasAttackRoll" invalide pour la ressource #${index + 1}.`);
+      }
+      if (
+        rawRes['fixedSaveDC'] !== undefined &&
+        (!isFiniteNumber(rawRes['fixedSaveDC']) ||
+          rawRes['fixedSaveDC'] < 1 ||
+          rawRes['fixedSaveDC'] > 99)
+      ) {
+        errors.push(`DD fixe invalide pour la ressource #${index + 1} (attendu 1..99).`);
+      }
+      if (
+        rawRes['critRangeMin'] !== undefined &&
+        (!isFiniteNumber(rawRes['critRangeMin']) ||
+          rawRes['critRangeMin'] < 1 ||
+          rawRes['critRangeMin'] > 20)
+      ) {
+        errors.push(
+          `Seuil critique invalide pour la ressource #${index + 1} (attendu 1..20).`,
+        );
+      }
+    });
   }
 
   if (!Array.isArray(payload['attacks'])) {

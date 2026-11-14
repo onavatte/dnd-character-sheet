@@ -1026,6 +1026,67 @@ dialog::backdrop {
   border-radius: var(--radius-sm);
 }
 
+.resource-row--enriched {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.resource-row--selected {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-surface);
+}
+
+.resource-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resource-title-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.resource-description {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.forge-nested-details {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  padding: var(--space-2) var(--space-3);
+}
+
+.forge-nested-summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.forge-nested-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
 .resource-info {
   display: flex;
   flex-direction: column;
@@ -2375,7 +2436,20 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
   gap: var(--space-3);
 }
 
+.forge-grimoire-block .section-subheading {
+  margin: var(--space-1) 0 var(--space-2);
+}
+
+.forge-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
 .forge-filter-bar .field-group {
+  flex: 1 1 220px;
   max-width: 280px;
 }
 

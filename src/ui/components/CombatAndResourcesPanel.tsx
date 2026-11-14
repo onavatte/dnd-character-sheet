@@ -21,6 +21,7 @@ import {
   getFeatureCategoryLabel,
   getInventoryCategoryLabel,
   getNoteCategoryLabel,
+  getResourceCategoryLabel,
   INVENTORY_CATEGORY_OPTIONS,
   NOTE_CATEGORY_OPTIONS,
 } from './forge-constants';
@@ -158,7 +159,7 @@ export function CombatAndResourcesPanel({
           aria-pressed={activeTab === 'combat'}
           onClick={() => setActiveTab('combat')}
         >
-          1. Armes & Ressources
+          1. Armes & Réserves
         </button>
         <button
           type="button"
@@ -168,7 +169,7 @@ export function CombatAndResourcesPanel({
           aria-pressed={activeTab === 'spells'}
           onClick={() => setActiveTab('spells')}
         >
-          2. Sorts & Capacités
+          2. Sorts & Aptitudes
         </button>
         <button
           type="button"
@@ -275,7 +276,7 @@ export function CombatAndResourcesPanel({
             })}
           </div>
 
-          <h3>Ressources, Munitions & Capacités Comptées</h3>
+          <h3>Réserves, Charges & Munitions</h3>
           <div className="resources-stack">
             {sheet.resources.map((res) => {
               const recoveryLabel =
@@ -285,53 +286,209 @@ export function CombatAndResourcesPanel({
                     ? 'Repos Long'
                     : 'Manuel';
 
+              const abilityStats = res.ability
+                ? derived.spellcastingByAbility[res.ability]
+                : undefined;
+              const attackBonus = abilityStats?.attackBonus ?? 0;
+              const saveGlossary = res.saveAbility
+                ? ABILITY_GLOSSARY[res.saveAbility]
+                : undefined;
+              const saveAbbr = saveGlossary
+                ? termMode === 'en'
+                  ? saveGlossary.abbrEn
+                  : saveGlossary.abbrFr
+                : undefined;
+              const effectiveDC = res.fixedSaveDC ?? abilityStats?.saveDC;
+              const isHealing =
+                res.damageType !== undefined &&
+                /soin|heal|pv/i.test(res.damageType);
+              const isSelected =
+                activeRollTargetId === res.id ||
+                activeRollTargetId === `${res.id}-dmg`;
+
+              const metaParts = [
+                ...(res.castingTime
+                  ? [formatCastingTimeLabel(res.castingTime)]
+                  : []),
+                ...(res.range ? [`Portée : ${res.range}`] : []),
+                ...(saveAbbr
+                  ? [
+                      `JS ${saveAbbr}${
+                        effectiveDC !== undefined ? ` DD ${effectiveDC}` : ''
+                      }`,
+                    ]
+                  : []),
+                ...(res.critRangeMin !== undefined && res.critRangeMin < 20
+                  ? [`Crit. ${res.critRangeMin}-20`]
+                  : []),
+                ...(res.damageType ? [`Type : ${res.damageType}`] : []),
+              ];
+
+              const showRollActions = Boolean(
+                res.hasAttackRoll || res.damageFormula,
+              );
+              const hasRichDetails = Boolean(
+                res.category ||
+                  metaParts.length > 0 ||
+                  res.description ||
+                  showRollActions,
+              );
+
+              const controlsBlock = (
+                <div className="resource-controls">
+                  {res.max <= 10 && (
+                    <div className="pip-strip" aria-hidden="true">
+                      {Array.from({ length: res.max }, (_, idx) => {
+                        const isFilled = idx < res.current;
+                        return (
+                          <span
+                            key={idx}
+                            className={`resource-pip ${
+                              isFilled ? 'resource-pip--filled' : ''
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                  <span className="tabular-nums resource-counter">
+                    {res.current} / {res.max}
+                  </span>
+                  <button
+                    type="button"
+                    className="stepper-btn tabular-nums"
+                    disabled={res.current <= 0}
+                    onClick={() => onAdjustResource(res.id, -1)}
+                    aria-label={`Dépenser 1 ${res.name}`}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    className="stepper-btn tabular-nums"
+                    disabled={res.current >= res.max}
+                    onClick={() => onAdjustResource(res.id, 1)}
+                    aria-label={`Récupérer 1 ${res.name}`}
+                  >
+                    +
+                  </button>
+                </div>
+              );
+
+              if (!hasRichDetails) {
+                return (
+                  <div key={res.id} className="resource-row">
+                    <div className="resource-info">
+                      <strong>{renderTerm(res.name, res.originalName)}</strong>
+                      <span className="resource-recovery-badge">
+                        Récup. : {recoveryLabel}
+                      </span>
+                    </div>
+                    {controlsBlock}
+                  </div>
+                );
+              }
+
+              const triggerResourceDamageRoll = () => {
+                const formula = res.damageFormula;
+                if (!formula) return;
+                const frSuffix = isHealing ? 'Soins' : 'Dégâts';
+                const enSuffix = isHealing ? 'Healing' : 'Damage';
+
+                onSelectRollTarget({
+                  id: `${res.id}-dmg`,
+                  label: `${res.name} - ${frSuffix}`,
+                  ...(res.originalName !== undefined
+                    ? { originalLabel: `${res.originalName} - ${enSuffix}` }
+                    : {}),
+                  category: 'damage',
+                  modifier: attackBonus,
+                  damageFormula: formula,
+                  ...(res.damageType !== undefined
+                    ? { damageType: res.damageType }
+                    : {}),
+                  initialMode: 'formula',
+                  isCritical: false,
+                });
+              };
+
               return (
-                <div key={res.id} className="resource-row">
-                  <div className="resource-info">
-                    <strong>{renderTerm(res.name, res.originalName)}</strong>
-                    <span className="resource-recovery-badge">
-                      Récup. : {recoveryLabel}
-                    </span>
+                <div
+                  key={res.id}
+                  className={`resource-row resource-row--enriched ${
+                    isSelected ? 'resource-row--selected' : ''
+                  }`}
+                >
+                  <div className="resource-header-row">
+                    <div className="resource-info">
+                      <div className="resource-title-badges">
+                        <strong>{renderTerm(res.name, res.originalName)}</strong>
+                        {res.category && (
+                          <span className="badge-pill">
+                            {getResourceCategoryLabel(res.category)}
+                          </span>
+                        )}
+                      </div>
+                      <span className="resource-recovery-badge">
+                        Récup. : {recoveryLabel}
+                      </span>
+                    </div>
+                    {controlsBlock}
                   </div>
 
-                  <div className="resource-controls">
-                    {res.max <= 10 && (
-                      <div className="pip-strip" aria-hidden="true">
-                        {Array.from({ length: res.max }, (_, idx) => {
-                          const isFilled = idx < res.current;
-                          return (
-                            <span
-                              key={idx}
-                              className={`resource-pip ${
-                                isFilled ? 'resource-pip--filled' : ''
-                              }`}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                    <span className="tabular-nums resource-counter">
-                      {res.current} / {res.max}
-                    </span>
-                    <button
-                      type="button"
-                      className="stepper-btn tabular-nums"
-                      disabled={res.current <= 0}
-                      onClick={() => onAdjustResource(res.id, -1)}
-                      aria-label={`Dépenser 1 ${res.name}`}
-                    >
-                      −
-                    </button>
-                    <button
-                      type="button"
-                      className="stepper-btn tabular-nums"
-                      disabled={res.current >= res.max}
-                      onClick={() => onAdjustResource(res.id, 1)}
-                      aria-label={`Récupérer 1 ${res.name}`}
-                    >
-                      +
-                    </button>
-                  </div>
+                  {metaParts.length > 0 && (
+                    <div className="attack-meta">{metaParts.join(' · ')}</div>
+                  )}
+
+                  {res.description && (
+                    <p className="resource-description">{res.description}</p>
+                  )}
+
+                  {showRollActions && (
+                    <div className="button-cluster">
+                      {res.hasAttackRoll && (
+                        <button
+                          type="button"
+                          className="action-btn action-btn--primary tabular-nums"
+                          onClick={() =>
+                            onSelectRollTarget({
+                              id: res.id,
+                              label: `${res.name} - Attaque`,
+                              ...(res.originalName !== undefined
+                                ? {
+                                    originalLabel: `${res.originalName} - Attack`,
+                                  }
+                                : {}),
+                              category: 'attack',
+                              modifier: attackBonus,
+                              ...(res.damageFormula !== undefined
+                                ? { damageFormula: res.damageFormula }
+                                : {}),
+                              ...(res.damageType !== undefined
+                                ? { damageType: res.damageType }
+                                : {}),
+                              ...(res.critRangeMin !== undefined
+                                ? { critThreshold: res.critRangeMin }
+                                : {}),
+                              initialMode: 'd20',
+                            })
+                          }
+                        >
+                          Toucher 1d20 {formatSignedModifier(attackBonus)}
+                        </button>
+                      )}
+
+                      {res.damageFormula && (
+                        <button
+                          type="button"
+                          className="action-btn tabular-nums"
+                          onClick={triggerResourceDamageRoll}
+                        >
+                          {isHealing ? 'Soins' : 'Dégâts'} ({res.damageFormula})
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -478,7 +635,7 @@ export function CombatAndResourcesPanel({
             <p className="muted-note">Aucun emplacement de sort configuré.</p>
           )}
 
-          <h3>Sorts & Capacités Préparés</h3>
+          <h3>Sorts préparés</h3>
           <div className="attack-cards-list">
             {sheet.spellcasting?.abilitiesList.map((spell) => {
               const spellAbilityKey =

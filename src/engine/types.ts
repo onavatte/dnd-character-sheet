@@ -72,10 +72,30 @@ export interface ToolProficiency extends BilingualNamed {
 
 export type LanguageEntry = BilingualNamed;
 
+export const RESOURCE_CATEGORIES = [
+  'ability',
+  'magic_item',
+  'ammo',
+  'other',
+] as const;
+
+export type ResourceCategory = (typeof RESOURCE_CATEGORIES)[number];
+
 export interface TrackedResource extends BilingualNamed {
   current: number;
   max: number;
   recovery: RecoveryTiming;
+  category?: ResourceCategory;
+  castingTime?: string;
+  range?: string;
+  description?: string;
+  ability?: AbilityKey;
+  hasAttackRoll?: boolean;
+  saveAbility?: AbilityKey;
+  fixedSaveDC?: number;
+  damageFormula?: string;
+  damageType?: string;
+  critRangeMin?: number;
 }
 
 export interface AttackEntry extends BilingualNamed {

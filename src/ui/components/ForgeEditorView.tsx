@@ -27,7 +27,7 @@ const FORGE_TABS: readonly ForgeTabMeta[] = [
   { id: 'identity', label: '1. Identité & Classes' },
   { id: 'stats', label: '2. Stats & Compétences' },
   { id: 'features', label: '3. Aptitudes & Défenses' },
-  { id: 'combat', label: '4. Ressources, Armes & Sorts' },
+  { id: 'combat', label: '4. Armes, Réserves & Sorts' },
   { id: 'inventory', label: '5. Inventaire & Notes' },
 ];
 

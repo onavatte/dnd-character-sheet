@@ -27,7 +27,11 @@ export function ForgeCombatAndSpellsTab({
           derived={derived}
           onMutate={onMutate}
         />
-        <ForgeResourcesSection sheet={sheet} onMutate={onMutate} />
+        <ForgeResourcesSection
+          sheet={sheet}
+          derived={derived}
+          onMutate={onMutate}
+        />
       </div>
 
       <ForgeSpellcastingSection

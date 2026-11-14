@@ -533,22 +533,13 @@ export function ForgeSpellcastingSection({
         )}
       </fieldset>
 
-      {/* Sous-bloc 4 : Grimoire (Sorts & Capacités) */}
+      {/* Sous-bloc 4 : Sorts */}
       <div className="forge-grimoire-block">
-        <div className="forge-card-header">
-          <div>
-            <h3>Grimoire (Sorts & Capacités)</h3>
-            <p className="muted-caption">
-              Cochez « Préparé » directement ou ouvrez un sort pour modifier sa mécanique.
-            </p>
-          </div>
-          <button
-            type="button"
-            className="action-btn action-btn--primary"
-            onClick={handleAddSpell}
-          >
-            + Ajouter un sort
-          </button>
+        <div>
+          <h3 className="section-subheading">Sorts</h3>
+          <p className="muted-caption">
+            Cochez « Préparé » directement ou ouvrez un sort pour modifier sa mécanique.
+          </p>
         </div>
 
         <div className="forge-filter-bar">
@@ -579,6 +570,13 @@ export function ForgeSpellcastingSection({
               })}
             </select>
           </div>
+          <button
+            type="button"
+            className="action-btn action-btn--primary"
+            onClick={handleAddSpell}
+          >
+            + Ajouter un sort
+          </button>
         </div>
 
         {sortedSpells.length === 0 ? (
