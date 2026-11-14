@@ -47,7 +47,11 @@ export function VitalityBanner({
   const hpDialogTitleId = useId();
   const condDialogTitleId = useId();
 
-  const [hpInputAmount, setHpInputAmount] = useState<number>(8);
+  const [hpAmountDraft, setHpAmountDraft] = useState<string>('');
+
+  const parsedHpAmount =
+    hpAmountDraft.length > 0 ? Math.min(999, Number(hpAmountDraft)) : 0;
+  const isHpAmountValid = Number.isInteger(parsedHpAmount) && parsedHpAmount > 0;
 
   const hpRatio =
     sheet.combat.hpMax > 0 ? sheet.combat.hpCurrent / sheet.combat.hpMax : 0;
@@ -62,12 +66,16 @@ export function VitalityBanner({
     (size: HitDieSize) => sheet.combat.hitDicePools[size].total > 0,
   );
 
+  const openHpModal = () => {
+    setHpAmountDraft('');
+    hpDialogRef.current?.showModal();
+  };
+
   const applyAndCloseHpModal = (action: 'damage' | 'heal' | 'temp') => {
-    const cleanAmount = Math.max(0, Math.trunc(hpInputAmount));
-    if (cleanAmount > 0) {
-      if (action === 'damage') onDamage(cleanAmount);
-      if (action === 'heal') onHeal(cleanAmount);
-      if (action === 'temp') onTempHp(cleanAmount);
+    if (isHpAmountValid) {
+      if (action === 'damage') onDamage(parsedHpAmount);
+      if (action === 'heal') onHeal(parsedHpAmount);
+      if (action === 'temp') onTempHp(parsedHpAmount);
     }
     hpDialogRef.current?.close();
   };
@@ -82,7 +90,7 @@ export function VitalityBanner({
         <button
           type="button"
           className="vital-tile vital-tile--interactive"
-          onClick={() => hpDialogRef.current?.showModal()}
+          onClick={openHpModal}
           title="Toucher pour appliquer des Dégâts, des Soins ou des PV Temporaires"
         >
           <span className="vital-label">Points de Vie (Toucher)</span>
@@ -357,13 +365,20 @@ export function VitalityBanner({
           <div className="inline-input-row">
             <input
               id="hp-modal-amount"
-              type="number"
-              min={1}
-              max={999}
-              value={hpInputAmount}
-              onChange={(e) =>
-                setHpInputAmount(Math.max(1, Number(e.target.value) || 1))
-              }
+              name="hp-modal-amount"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              enterKeyHint="done"
+              autoComplete="off"
+              className="forge-input tabular-nums"
+              maxLength={3}
+              placeholder="Ex : 8"
+              value={hpAmountDraft}
+              onChange={(e) => {
+                const digitsOnly = e.target.value.replace(/\D+/g, '').slice(0, 3);
+                setHpAmountDraft(digitsOnly);
+              }}
               autoFocus
             />
           </div>
@@ -373,23 +388,30 @@ export function VitalityBanner({
           <button
             type="button"
             className="action-btn action-btn--danger tabular-nums"
+            disabled={!isHpAmountValid}
             onClick={() => applyAndCloseHpModal('damage')}
           >
-            Infliger -{hpInputAmount} Dégâts
+            {isHpAmountValid
+              ? `Infliger -${parsedHpAmount} Dégâts`
+              : 'Infliger Dégâts'}
           </button>
           <button
             type="button"
             className="action-btn action-btn--heal tabular-nums"
+            disabled={!isHpAmountValid}
             onClick={() => applyAndCloseHpModal('heal')}
           >
-            Soigner +{hpInputAmount} PV
+            {isHpAmountValid ? `Soigner +${parsedHpAmount} PV` : 'Soigner PV'}
           </button>
           <button
             type="button"
             className="action-btn action-btn--primary tabular-nums"
+            disabled={!isHpAmountValid}
             onClick={() => applyAndCloseHpModal('temp')}
           >
-            PV Temporaires +{hpInputAmount}
+            {isHpAmountValid
+              ? `PV Temporaires +${parsedHpAmount}`
+              : 'PV Temporaires'}
           </button>
         </div>
       </dialog>
