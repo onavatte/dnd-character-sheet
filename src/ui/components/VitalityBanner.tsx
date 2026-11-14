@@ -181,7 +181,7 @@ export function VitalityBanner({
           }
           title="Envoyer le jet d'Initiative dans l'Assistant de Jet"
         >
-          <span className="vital-label">Initiative (Jet 1d20)</span>
+          <span className="vital-label">Initiative</span>
           <span className="vital-value tabular-nums">
             {formatSignedModifier(derived.initiative)}
           </span>
