@@ -128,7 +128,7 @@ export function VitalityBanner({
           onClick={openHpModal}
           title="Toucher pour appliquer des Dégâts, des Soins ou des PV Temporaires"
         >
-          <span className="vital-label">Points de Vie (Toucher)</span>
+          <span className="vital-label">Points de Vie</span>
           <span className={`vital-value tabular-nums ${hpColorClass}`}>
             {sheet.combat.hpCurrent} / {sheet.combat.hpMax}
           </span>
