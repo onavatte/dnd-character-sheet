@@ -105,6 +105,14 @@ export function validateCharacterSheet(payload: unknown): ValidationResult {
         'Le portrait du personnage (identity.portraitDataUrl) doit être une Data URL image valide (data:image/...).',
       );
     }
+    if (
+      identity['xp'] !== undefined &&
+      (!isFiniteNumber(identity['xp']) || identity['xp'] < 0)
+    ) {
+      errors.push(
+        "Les points d'expérience (identity.xp) doivent être un nombre positif ou nul.",
+      );
+    }
     const classes = identity['classes'];
     if (!Array.isArray(classes) || classes.length === 0) {
       errors.push(

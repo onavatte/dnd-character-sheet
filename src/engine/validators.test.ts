@@ -212,4 +212,26 @@ describe('Validation de schéma CharacterSheetV1 (validators.ts)', () => {
     };
     expect(validateCharacterSheet(badDC).valid).toBe(false);
   });
+
+  it('valide les points d’expérience optionnels (identity.xp) avec rétrocompatibilité', () => {
+    const demo = createDemoCharacter();
+    const withoutXp = {
+      ...demo,
+      identity: { ...demo.identity },
+    };
+    delete withoutXp.identity.xp;
+    expect(validateCharacterSheet(withoutXp).valid).toBe(true);
+
+    const zeroXp = {
+      ...demo,
+      identity: { ...demo.identity, xp: 0 },
+    };
+    expect(validateCharacterSheet(zeroXp).valid).toBe(true);
+
+    const negativeXp = {
+      ...demo,
+      identity: { ...demo.identity, xp: -150 },
+    };
+    expect(validateCharacterSheet(negativeXp).valid).toBe(false);
+  });
 });

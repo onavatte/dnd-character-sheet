@@ -296,3 +296,58 @@ export function applyLongRest(
 
   return updated;
 }
+
+function updateIdentityXp(
+  sheet: CharacterSheetV1,
+  targetXp: number,
+  nowIso?: string,
+): CharacterSheetV1 {
+  const nextXp = Math.max(0, Math.trunc(targetXp));
+  const currentXp = Math.max(0, Math.trunc(sheet.identity.xp ?? 0));
+  if (nextXp === currentXp && sheet.identity.xp !== undefined) {
+    return sheet;
+  }
+
+  return {
+    ...sheet,
+    ...bumpMetadata(sheet, nowIso),
+    identity: {
+      ...sheet.identity,
+      xp: nextXp,
+    },
+  };
+}
+
+/**
+ * Ajoute (ou retire) des points d'expérience avec un plancher à 0.
+ */
+export function applyXpDelta(
+  sheet: CharacterSheetV1,
+  rawDelta: number,
+  nowIso?: string,
+): CharacterSheetV1 {
+  if (!Number.isFinite(rawDelta)) {
+    return sheet;
+  }
+  const delta = Math.trunc(rawDelta);
+  if (delta === 0) {
+    return sheet;
+  }
+
+  const currentXp = Math.max(0, Math.trunc(sheet.identity.xp ?? 0));
+  return updateIdentityXp(sheet, currentXp + delta, nowIso);
+}
+
+/**
+ * Définit directement le total de points d'expérience du personnage (entier >= 0).
+ */
+export function setCharacterXp(
+  sheet: CharacterSheetV1,
+  rawXp: number,
+  nowIso?: string,
+): CharacterSheetV1 {
+  if (!Number.isFinite(rawXp)) {
+    return sheet;
+  }
+  return updateIdentityXp(sheet, rawXp, nowIso);
+}

@@ -175,6 +175,32 @@ input[type='number'] {
   font-size: 0.9375rem;
 }
 
+button.badge-pill--interactive {
+  min-height: 0;
+  line-height: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 100ms ease;
+}
+
+button.badge-pill--interactive:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface-alt, var(--accent-surface));
+}
+
+button.badge-pill--interactive:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.xp-threshold-reached {
+  color: var(--color-hp-ok);
+}
+
+.forge-xp-field {
+  max-width: 320px;
+}
+
 .toolbar-controls {
   display: flex;
   flex-wrap: wrap;

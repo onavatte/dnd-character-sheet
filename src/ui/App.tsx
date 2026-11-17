@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { computeDerivedCharacter } from '../engine';
+import {
+  computeDerivedCharacter,
+  formatXpValue,
+  getNextLevelXpThreshold,
+} from '../engine';
 import type { TermDisplayMode, ThemeMode } from '../engine';
 import { buildBackupFilename, useCharacterStore } from '../state';
 import { AbilitiesAndSkillsPanel } from './components/AbilitiesAndSkillsPanel';
@@ -13,6 +17,7 @@ import { DEFAULT_PORTRAIT_URL } from './components/portrait-utils';
 import { RestDialogs } from './components/RestDialogs';
 import { SystemSettingsDialog } from './components/SystemSettingsDialog';
 import { VitalityBanner } from './components/VitalityBanner';
+import { XpDialog } from './components/XpDialog';
 import type { ActiveRollTarget, DiceRollMode } from './components/dialog-utils';
 
 type SheetMode = 'cockpit' | 'forge';
@@ -56,6 +61,8 @@ export function App() {
   const damage = useCharacterStore((s) => s.damage);
   const heal = useCharacterStore((s) => s.heal);
   const tempHp = useCharacterStore((s) => s.tempHp);
+  const addXp = useCharacterStore((s) => s.addXp);
+  const setXp = useCharacterStore((s) => s.setXp);
   const adjustResource = useCharacterStore((s) => s.adjustResource);
   const toggleCondition = useCharacterStore((s) => s.toggleCondition);
   const setExhaustionLevel = useCharacterStore((s) => s.setExhaustionLevel);
@@ -92,9 +99,12 @@ export function App() {
   const longRestDialogRef = useRef<HTMLDialogElement>(null);
   const settingsDialogRef = useRef<HTMLDialogElement>(null);
   const characterDialogRef = useRef<HTMLDialogElement>(null);
+  const xpDialogRef = useRef<HTMLDialogElement>(null);
   const emptyImportInputRef = useRef<HTMLInputElement>(null);
 
   const derived = computeDerivedCharacter(sheet);
+  const currentXp = Math.max(0, Math.trunc(sheet.identity.xp ?? 0));
+  const nextXpThreshold = getNextLevelXpThreshold(derived.totalLevel);
 
   const defaultSkill =
     derived.skills.find((s) => s.id === 'stealth') ?? derived.skills[0];
@@ -282,6 +292,20 @@ export function App() {
                 <span className="badge-pill tabular-nums">
                   Niveau {derived.totalLevel}
                 </span>
+                <button
+                  type="button"
+                  className={`badge-pill badge-pill--interactive tabular-nums${
+                    nextXpThreshold !== null && currentXp >= nextXpThreshold
+                      ? ' badge-pill--active'
+                      : ''
+                  }`}
+                  onClick={() => xpDialogRef.current?.showModal()}
+                  title="Gérer les Points d'Expérience (XP)"
+                >
+                  {nextXpThreshold !== null
+                    ? `XP : ${formatXpValue(currentXp)} / ${formatXpValue(nextXpThreshold)}`
+                    : `XP : ${formatXpValue(currentXp)}`}
+                </button>
               </p>
             ) : (
               <p className="identity-subtitle">
@@ -515,6 +539,16 @@ export function App() {
             onConfirmLongRest={longRestWithAutoSnapshot}
           />
         </>
+      )}
+
+      {hasActiveCharacter && (
+        <XpDialog
+          dialogRef={xpDialogRef}
+          currentXp={currentXp}
+          totalLevel={derived.totalLevel}
+          onAddXp={addXp}
+          onSetXp={setXp}
+        />
       )}
 
       <CharacterSelectorDialog

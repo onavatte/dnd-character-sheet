@@ -5,6 +5,8 @@ import {
   applyHealing,
   applyLongRest,
   applyShortRest,
+  applyXpDelta,
+  setCharacterXp,
   setTemporaryHp,
   updateResourceCurrent,
 } from './rest';
@@ -124,5 +126,22 @@ describe('Machine à états Survie, Ressources & Repos (rest.ts)', () => {
     expect(afterLongRest.resources.find((r) => r.id === 'res-veil')?.current).toBe(3);
     expect(afterLongRest.resources.find((r) => r.id === 'res-arrows')?.current).toBe(0);
     expect(afterLongRest.spellcasting?.slots[1]?.used).toBe(0);
+  });
+
+  it('ajoute et définit les points d’expérience (XP) de façon immuable avec plancher à 0', () => {
+    const demo = createDemoCharacter(); // xp: 25400
+    const gained = applyXpDelta(demo, 450);
+    expect(gained.identity.xp).toBe(25850);
+    expect(gained.revision).toBe(demo.revision + 1);
+
+    const floored = applyXpDelta(gained, -99999);
+    expect(floored.identity.xp).toBe(0);
+
+    const noop = applyXpDelta(floored, 0);
+    expect(noop).toBe(floored);
+
+    const defined = setCharacterXp(demo, 34000.8);
+    expect(defined.identity.xp).toBe(34000);
+    expect(defined.revision).toBe(demo.revision + 1);
   });
 });

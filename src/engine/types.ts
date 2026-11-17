@@ -230,6 +230,7 @@ export interface CharacterSheetV1 {
     name: string;
     portraitDataUrl?: string;
     classes: CharacterClassEntry[];
+    xp?: number;
     race: string;
     subrace: string;
     heritage: string;

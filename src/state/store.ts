@@ -11,8 +11,10 @@ import {
   applyHealing,
   applyLongRest,
   applyShortRest,
+  applyXpDelta,
   createBlankCharacter,
   createDemoCharacter,
+  setCharacterXp,
   setTemporaryHp,
   updateResourceCurrent,
 } from '../engine';
@@ -89,6 +91,8 @@ export interface CharacterStoreState {
   damage(amount: number): void;
   heal(amount: number): void;
   tempHp(amount: number, overwrite?: boolean): void;
+  addXp(amount: number): void;
+  setXp(nextXp: number): void;
   adjustResource(resourceId: string, delta: number): void;
   toggleCondition(conditionId: string): void;
   setExhaustionLevel(level: 0 | 1 | 2 | 3 | 4 | 5 | 6): void;
@@ -434,6 +438,14 @@ export function createCharacterStore(options: CreateCharacterStoreOptions = {}) 
 
     tempHp(amount, overwrite = false): void {
       get().applySheetUpdate((sheet) => setTemporaryHp(sheet, amount, overwrite));
+    },
+
+    addXp(amount): void {
+      get().applySheetUpdate((sheet) => applyXpDelta(sheet, amount));
+    },
+
+    setXp(nextXp): void {
+      get().applySheetUpdate((sheet) => setCharacterXp(sheet, nextXp));
     },
 
     adjustResource(resourceId, delta): void {

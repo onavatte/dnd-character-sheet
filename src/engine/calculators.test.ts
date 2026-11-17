@@ -15,6 +15,7 @@ import {
   computeTotalWealthGp,
   feetToMeters,
   formatSignedModifier,
+  getNextLevelXpThreshold,
   metersToFeet,
   syncHitDicePoolsWithClasses,
 } from './calculators';
@@ -252,5 +253,12 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     expect(feetToMeters(40)).toBe(12);
     expect(feetToMeters(0)).toBe(0);
     expect(feetToMeters(-10)).toBe(0);
+  });
+
+  it('retourne le seuil d’XP officiel du niveau suivant (1 à 19) et null au niveau 20', () => {
+    expect(getNextLevelXpThreshold(1)).toBe(300);
+    expect(getNextLevelXpThreshold(7)).toBe(34000);
+    expect(getNextLevelXpThreshold(19)).toBe(355000);
+    expect(getNextLevelXpThreshold(20)).toBeNull();
   });
 });

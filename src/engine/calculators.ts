@@ -477,3 +477,48 @@ export function feetToMeters(feet: number): number {
   }
   return Math.round(feet * 0.3 * 10) / 10;
 }
+
+/**
+ * Seuils cumulés officiels d'XP D&D 5e (2014) pour les niveaux 1 à 20.
+ */
+export const XP_THRESHOLDS_BY_LEVEL: Readonly<Record<number, number>> = {
+  1: 0,
+  2: 300,
+  3: 900,
+  4: 2700,
+  5: 6500,
+  6: 14000,
+  7: 23000,
+  8: 34000,
+  9: 48000,
+  10: 64000,
+  11: 85000,
+  12: 100000,
+  13: 120000,
+  14: 140000,
+  15: 165000,
+  16: 195000,
+  17: 225000,
+  18: 265000,
+  19: 305000,
+  20: 355000,
+};
+
+/**
+ * Retourne le seuil d'XP requis pour atteindre le niveau suivant, ou null au niveau 20+.
+ */
+export function getNextLevelXpThreshold(totalLevel: number): number | null {
+  const level = Math.max(1, Math.trunc(totalLevel));
+  if (level >= 20) {
+    return null;
+  }
+  return XP_THRESHOLDS_BY_LEVEL[level + 1] ?? null;
+}
+
+/**
+ * Formate un total d'XP entier avec séparateur de milliers français.
+ */
+export function formatXpValue(xp: number): string {
+  const safeXp = Number.isFinite(xp) ? Math.max(0, Math.trunc(xp)) : 0;
+  return new Intl.NumberFormat('fr-FR').format(safeXp);
+}

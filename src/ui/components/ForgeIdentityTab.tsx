@@ -1,5 +1,5 @@
-import { useId, useRef, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import type { ChangeEvent, FormEvent, KeyboardEvent } from 'react';
 import type { Draft } from 'immer';
 import {
   ABILITY_GLOSSARY,
@@ -9,6 +9,8 @@ import {
   HIT_DIE_SIZES,
   LANGUAGE_PRESETS,
   formatSignedModifier,
+  formatXpValue,
+  getNextLevelXpThreshold,
   syncHitDicePoolsWithClasses,
 } from '../../engine';
 import type {
@@ -43,6 +45,42 @@ export function ForgeIdentityTab({
   const [isCompressing, setIsCompressing] = useState(false);
   const [langName, setLangName] = useState('');
   const [langOriginalName, setLangOriginalName] = useState('');
+
+  const currentXp = Math.max(0, Math.trunc(sheet.identity.xp ?? 0));
+  const nextXpThreshold = getNextLevelXpThreshold(derived.totalLevel);
+  const [xpDraft, setXpDraft] = useState(String(currentXp));
+
+  useEffect(() => {
+    setXpDraft(String(currentXp));
+  }, [currentXp]);
+
+  const commitXpDraft = () => {
+    const trimmed = xpDraft.trim();
+    if (trimmed === '') {
+      setXpDraft(String(currentXp));
+      return;
+    }
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      setXpDraft(String(currentXp));
+      return;
+    }
+    const nextXp = Math.trunc(parsed);
+    setXpDraft(String(nextXp));
+    if (nextXp !== currentXp || sheet.identity.xp === undefined) {
+      onMutate((draft) => {
+        draft.identity.xp = nextXp;
+      });
+    }
+  };
+
+  const handleXpKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      commitXpDraft();
+      e.currentTarget.blur();
+    }
+  };
 
   const languages = sheet.languages ?? [];
 
@@ -518,6 +556,32 @@ export function ForgeIdentityTab({
             + Ajouter une classe
           </button>
         </div>
+
+        <fieldset className="forge-fieldset">
+          <legend>Expérience</legend>
+          <div className="field-group forge-xp-field">
+            <label htmlFor={`${baseId}-xp`}>Points d’Expérience (XP)</label>
+            <input
+              id={`${baseId}-xp`}
+              name="xp"
+              type="number"
+              min={0}
+              step={1}
+              className="forge-input tabular-nums"
+              value={xpDraft}
+              onChange={(e) => setXpDraft(e.target.value)}
+              onBlur={commitXpDraft}
+              onKeyDown={handleXpKeyDown}
+            />
+            <p className="muted-caption tabular-nums">
+              {nextXpThreshold !== null
+                ? currentXp >= nextXpThreshold
+                  ? `Seuil du niveau ${derived.totalLevel + 1} (${formatXpValue(nextXpThreshold)} XP) atteint.`
+                  : `Prochain niveau (${derived.totalLevel + 1}) : ${formatXpValue(nextXpThreshold)} XP (encore ${formatXpValue(nextXpThreshold - currentXp)} XP).`
+                : 'Niveau maximum (20) atteint.'}
+            </p>
+          </div>
+        </fieldset>
 
         <div className="forge-repeat-list">
           {sheet.identity.classes.map((cls, index) => (
