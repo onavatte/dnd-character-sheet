@@ -16,6 +16,7 @@ import type {
 } from '../../engine';
 import type { ActiveRollTarget } from './dialog-utils';
 import { CurrencyPurseGrid } from './CurrencyPurseGrid';
+import { WeightCapacity, WeightValue } from './WeightText';
 import {
   FEATURE_CATEGORY_OPTIONS,
   getFeatureCategoryLabel,
@@ -895,7 +896,12 @@ export function CombatAndResourcesPanel({
                   : 'badge-pill tabular-nums'
               }
             >
-              Charge : {derived.totalWeight} / {derived.carryingCapacityKg} kg
+              Charge :{' '}
+              <WeightCapacity
+                totalKg={derived.totalWeight}
+                capacityKg={derived.carryingCapacityKg}
+                termMode={termMode}
+              />
               {derived.encumbered ? ' (Encombré)' : ''}
             </span>
           </div>
@@ -924,7 +930,8 @@ export function CombatAndResourcesPanel({
                       </div>
                       <div className="cockpit-inventory-weight tabular-nums">
                         <span className="badge-pill">
-                          ×{item.quantity} ({lineWeight} kg)
+                          ×{item.quantity} (
+                          <WeightValue kg={lineWeight} termMode={termMode} />)
                         </span>
                       </div>
                     </div>

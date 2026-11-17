@@ -1,19 +1,23 @@
 import { useId, useState } from 'react';
 import type { Draft } from 'immer';
+import { kgToLbs, lbsToKg } from '../../engine';
 import type {
   CharacterSheetV1,
   DerivedCharacterStats,
   InventoryCategory,
+  TermDisplayMode,
 } from '../../engine';
 import {
   getInventoryCategoryLabel,
   INVENTORY_CATEGORY_OPTIONS,
 } from './forge-constants';
 import { CommittedTextInput, NumberStepper } from './ForgeSharedControls';
+import { WeightCapacity, WeightValue } from './WeightText';
 
 export interface ForgeInventorySectionProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
+  termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
 
@@ -25,6 +29,7 @@ type InventoryFilter = 'all' | InventoryCategory;
 export function ForgeInventorySection({
   sheet,
   derived,
+  termMode,
   onMutate,
 }: ForgeInventorySectionProps) {
   const baseId = useId();
@@ -120,10 +125,19 @@ export function ForgeInventorySection({
       >
         <div className="tabular-nums">
           <strong>
-            Charge : {derived.totalWeight} / {derived.carryingCapacityKg} kg
+            Charge :{' '}
+            <WeightCapacity
+              totalKg={derived.totalWeight}
+              capacityKg={derived.carryingCapacityKg}
+              termMode={termMode}
+            />
           </strong>{' '}
           <span className="muted-caption">
-            (FOR {sheet.abilities.STR} × 7,5 kg)
+            {termMode === 'en'
+              ? `(FOR ${sheet.abilities.STR} × 15 lbs)`
+              : termMode === 'bilingual'
+                ? `(FOR ${sheet.abilities.STR} × 7,5 kg · 15 lbs)`
+                : `(FOR ${sheet.abilities.STR} × 7,5 kg)`}
           </span>
         </div>
         {derived.encumbered ? (
@@ -210,14 +224,21 @@ export function ForgeInventorySection({
                         )}
                       </span>
                       <span className="forge-entry-submeta">
-                        {catLabel} · {item.weight} kg/u
+                        {catLabel} ·{' '}
+                        <WeightValue
+                          kg={item.weight}
+                          termMode={termMode}
+                          perUnit
+                        />
                         {item.notes ? ` · ${item.notes}` : ''}
                       </span>
                     </span>
 
                     <span className="forge-entry-badges tabular-nums">
                       <span className="badge-pill">×{item.quantity}</span>
-                      <span className="badge-pill">{itemTotalWeight} kg</span>
+                      <span className="badge-pill">
+                        <WeightValue kg={itemTotalWeight} termMode={termMode} />
+                      </span>
                       {item.equipped && (
                         <span className="badge-pill badge-pill--active">
                           Équipé
@@ -339,14 +360,20 @@ export function ForgeInventorySection({
 
                       <div className="field-group">
                         <label htmlFor={`${baseId}-inv-weight-${item.id}`}>
-                          Poids unitaire (kg)
+                          {termMode === 'en'
+                            ? 'Poids unitaire (lbs)'
+                            : 'Poids unitaire (kg)'}
                         </label>
                         <NumberStepper
                           id={`${baseId}-inv-weight-${item.id}`}
                           name={`inv-weight-${item.id}`}
-                          value={item.weight}
+                          value={
+                            termMode === 'en'
+                              ? kgToLbs(item.weight)
+                              : item.weight
+                          }
                           min={0}
-                          max={999}
+                          max={termMode === 'en' ? 1998 : 999}
                           step={0.5}
                           decrementLabel={`Réduire le poids de ${item.name}`}
                           incrementLabel={`Augmenter le poids de ${item.name}`}
@@ -356,11 +383,19 @@ export function ForgeInventorySection({
                                 (i) => i.id === item.id,
                               );
                               if (target) {
-                                target.weight = nextWeight;
+                                target.weight =
+                                  termMode === 'en'
+                                    ? lbsToKg(nextWeight)
+                                    : nextWeight;
                               }
                             });
                           }}
                         />
+                        {termMode === 'bilingual' && (
+                          <span className="muted-caption tabular-nums">
+                            Équivalent : {kgToLbs(item.weight)} lbs
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -422,7 +457,8 @@ export function ForgeInventorySection({
 
                     <div className="forge-item-footer">
                       <span className="muted-caption tabular-nums">
-                        {catLabel} · Total : {itemTotalWeight} kg
+                        {catLabel} · Total :{' '}
+                        <WeightValue kg={itemTotalWeight} termMode={termMode} />
                       </span>
                       <button
                         type="button"

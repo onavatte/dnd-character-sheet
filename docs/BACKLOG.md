@@ -56,7 +56,7 @@ Légende : `[x]` fait, `[ ]` à faire, `✅` jalon terminé, `⏳` jalon en cour
 - [x] **Libellé Points de Vie (`VitalityBanner`)** : retirer la mention `(Toucher)` de `Points de Vie (Toucher)` dans le bandeau vital.
 - [ ] **Gestion des stimpacks / potions de vie** : prise en charge dédiée des consommables de soin (potions, stimpacks) avec suivi de stock/quantité et application directe des PV rendus (jet de dés via l'Assistant de Jet ou valeur rapide).
 - [ ] **Poids en `lbs`** : prendre en charge l'unité `lbs` pour le poids des objets et la capacité de charge (en cohérence avec le mode de langue / d'unités et le calcul actuel en `kg`).
-- [ ] **Gestion simple de l'XP** : ajouter un suivi simple des Points d'Expérience (saisie et ajout rapide de l'XP courante), en attendant l'Assistant complet de Montée de Niveau prévu au Jalon v2.3.
+- [x] **Gestion simple de l'XP** : ajouter un suivi simple des Points d'Expérience (saisie et ajout rapide de l'XP courante), en attendant l'Assistant complet de Montée de Niveau prévu au Jalon v2.3.
 
 ## Jalon 5 - Hardening, Sécurité & Audit Qualité (Obligatoire)
 - **Focus d'apprentissage** : Durcissement applicatif, résilience face aux fichiers corrompus, accessibilité et performance de production.

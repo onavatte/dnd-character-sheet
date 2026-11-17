@@ -140,6 +140,7 @@ export function ForgeEditorView({
           <ForgeInventoryTab
             sheet={sheet}
             derived={derived}
+            termMode={termMode}
             onMutate={onMutate}
           />
         </div>

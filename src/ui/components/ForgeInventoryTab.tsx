@@ -1,11 +1,16 @@
 import type { Draft } from 'immer';
-import type { CharacterSheetV1, DerivedCharacterStats } from '../../engine';
+import type {
+  CharacterSheetV1,
+  DerivedCharacterStats,
+  TermDisplayMode,
+} from '../../engine';
 import { ForgeInventorySection } from './ForgeInventorySection';
 import { ForgePurseAndNotesSection } from './ForgePurseAndNotesSection';
 
 export interface ForgeInventoryTabProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
+  termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
 }
 
@@ -15,6 +20,7 @@ export interface ForgeInventoryTabProps {
 export function ForgeInventoryTab({
   sheet,
   derived,
+  termMode,
   onMutate,
 }: ForgeInventoryTabProps) {
   return (
@@ -22,6 +28,7 @@ export function ForgeInventoryTab({
       <ForgeInventorySection
         sheet={sheet}
         derived={derived}
+        termMode={termMode}
         onMutate={onMutate}
       />
       <ForgePurseAndNotesSection

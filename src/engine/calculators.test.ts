@@ -16,6 +16,8 @@ import {
   feetToMeters,
   formatSignedModifier,
   getNextLevelXpThreshold,
+  kgToLbs,
+  lbsToKg,
   metersToFeet,
   syncHitDicePoolsWithClasses,
 } from './calculators';
@@ -260,5 +262,19 @@ describe('Calculateurs purs D&D 5e (calculators.ts)', () => {
     expect(getNextLevelXpThreshold(7)).toBe(34000);
     expect(getNextLevelXpThreshold(19)).toBe(355000);
     expect(getNextLevelXpThreshold(20)).toBeNull();
+  });
+
+  it('convertit fidèlement les poids entre kg et lbs selon la règle D&D 5e (1 kg = 2 lbs)', () => {
+    expect(kgToLbs(6)).toBe(12);
+    expect(kgToLbs(0.25)).toBe(0.5);
+    expect(kgToLbs(90)).toBe(180);
+    expect(kgToLbs(0)).toBe(0);
+    expect(kgToLbs(-5)).toBe(0);
+
+    expect(lbsToKg(12)).toBe(6);
+    expect(lbsToKg(0.5)).toBe(0.25);
+    expect(lbsToKg(180)).toBe(90);
+    expect(lbsToKg(0)).toBe(0);
+    expect(lbsToKg(-10)).toBe(0);
   });
 });

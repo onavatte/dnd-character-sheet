@@ -479,6 +479,26 @@ export function feetToMeters(feet: number): number {
 }
 
 /**
+ * Convertit un poids en kilogrammes vers l'équivalent officiel D&D 5e en livres (1 kg = 2 lbs).
+ */
+export function kgToLbs(kg: number): number {
+  if (!Number.isFinite(kg) || kg <= 0) {
+    return 0;
+  }
+  return Math.round(kg * 2 * 100) / 100;
+}
+
+/**
+ * Convertit un poids en livres (lbs) vers l'équivalent officiel D&D 5e en kilogrammes (1 lb = 0,5 kg).
+ */
+export function lbsToKg(lbs: number): number {
+  if (!Number.isFinite(lbs) || lbs <= 0) {
+    return 0;
+  }
+  return Math.round(lbs * 0.5 * 100) / 100;
+}
+
+/**
  * Seuils cumulés officiels d'XP D&D 5e (2014) pour les niveaux 1 à 20.
  */
 export const XP_THRESHOLDS_BY_LEVEL: Readonly<Record<number, number>> = {
