@@ -2758,7 +2758,10 @@ input[type='number'].forge-ability-score-input::-webkit-outer-spin-button {
 
 .cockpit-inventory-weight {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
+  gap: var(--space-1);
   margin-top: 0.15rem;
 }
 

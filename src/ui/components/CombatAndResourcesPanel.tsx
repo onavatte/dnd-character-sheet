@@ -929,9 +929,9 @@ export function CombatAndResourcesPanel({
                         {item.notes ? ` · ${item.notes}` : ''}
                       </div>
                       <div className="cockpit-inventory-weight tabular-nums">
+                        <span className="badge-pill">×{item.quantity}</span>
                         <span className="badge-pill">
-                          ×{item.quantity} (
-                          <WeightValue kg={lineWeight} termMode={termMode} />)
+                          <WeightValue kg={lineWeight} termMode={termMode} />
                         </span>
                       </div>
                     </div>
