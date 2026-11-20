@@ -1,7 +1,7 @@
 # Grimoire 5e - Règles et Contexte pour les Agents
 
 Application web Local-First (PWA) de fiche de personnage Donjons & Dragons 5e (édition 2014 + adaptations modernes/post-apo), pensée pour un usage fluide à la table de jeu comme en préparation, sur **PC/Laptop et Tablette**.
-Lire d'abord : [`docs/SPECS.md`](docs/SPECS.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/BACKLOG.md`](docs/BACKLOG.md), [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Lire d'abord : [`docs/SPECS.md`](docs/SPECS.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/BACKLOG.md`](docs/BACKLOG.md), [`docs/DECISIONS.md`](docs/DECISIONS.md), ainsi que les issues GitHub ouvertes (`gh issue list`).
 
 ---
 
@@ -15,7 +15,7 @@ Lire d'abord : [`docs/SPECS.md`](docs/SPECS.md), [`docs/ARCHITECTURE.md`](docs/A
   5. **Attendre que l'utilisateur teste réellement les modifications** (desktop/tablette) et donne ses retours.
   6. **Ne jamais enchaîner directement sur l'étape suivante** tant que l'utilisateur n'a pas validé son test.
 - Répondre en **français**. Rester concis. Zéro émoticône décoratif (uniquement `✅`, `⏳`, `[x]`, `[ ]`).
-- Travailler jalon par jalon (voir [`docs/BACKLOG.md`](docs/BACKLOG.md)). À la fin d'un jalon : cocher le backlog, mettre à jour [`docs/DECISIONS.md`](docs/DECISIONS.md) et [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) si le design a évolué.
+- Suivi des tâches : les derniers éléments v1 en cours figurent dans [`docs/BACKLOG.md`](docs/BACKLOG.md), tandis que les évolutions et nouvelles idées sont gérées dans les **Issues GitHub** (`gh issue list`). Après validation réelle d'une issue par l'utilisateur (étape 5), la fermer (`gh issue close <num>`) ; mettre à jour [`docs/DECISIONS.md`](docs/DECISIONS.md) et [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) si le design a évolué.
 - Ne pas ajouter de dépendance externe sans en discuter. Ne pas élargir le périmètre hors de [`docs/SPECS.md`](docs/SPECS.md).
 
 ---
