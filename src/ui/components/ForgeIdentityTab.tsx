@@ -31,12 +31,14 @@ export interface ForgeIdentityTabProps {
   sheet: CharacterSheetV1;
   derived: DerivedCharacterStats;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
+  onOpenPortrait: () => void;
 }
 
 export function ForgeIdentityTab({
   sheet,
   derived,
   onMutate,
+  onOpenPortrait,
 }: ForgeIdentityTabProps) {
   const baseId = useId();
   const portraitInputRef = useRef<HTMLInputElement>(null);
@@ -189,12 +191,18 @@ export function ForgeIdentityTab({
         <h2>Identité & Portrait</h2>
 
         <div className="forge-portrait-row">
-          <div className="portrait-frame portrait-frame--large" aria-hidden="true">
+          <button
+            type="button"
+            className="portrait-frame portrait-frame--large portrait-frame--interactive"
+            aria-label={`Agrandir le portrait de ${sheet.identity.name}`}
+            title="Agrandir le portrait"
+            onClick={onOpenPortrait}
+          >
             <img
               src={sheet.identity.portraitDataUrl ?? DEFAULT_PORTRAIT_URL}
-              alt={`Portrait de ${sheet.identity.name}`}
+              alt=""
             />
-          </div>
+          </button>
 
           <div className="forge-portrait-controls">
             <div className="button-cluster">

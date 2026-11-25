@@ -30,7 +30,8 @@ src/
     assets/     avatar_placeholder_512.png
     components/ VitalityBanner.tsx, AbilitiesAndSkillsPanel.tsx, CombatAndResourcesPanel.tsx,
                 CurrencyPurseGrid.tsx, DiceAssistantPanel.tsx, CharacterSelectorDialog.tsx,
-                RestDialogs.tsx, SystemSettingsDialog.tsx, ForgeEditorView.tsx,
+                PortraitDialog.tsx, RestDialogs.tsx, SystemSettingsDialog.tsx, XpDialog.tsx,
+                ForgeEditorView.tsx,
                 ForgeIdentityTab.tsx, ForgeStatsAndSkillsTab.tsx, ForgeCombatAndSpellsTab.tsx,
                 ForgeInventoryTab.tsx, ForgeAttacksSection.tsx, ForgeResourcesSection.tsx,
                 ForgeSpellcastingSection.tsx, ForgeInventorySection.tsx, ForgePurseAndNotesSection.tsx,

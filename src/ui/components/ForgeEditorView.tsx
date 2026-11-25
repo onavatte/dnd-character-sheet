@@ -36,6 +36,7 @@ export interface ForgeEditorViewProps {
   derived: DerivedCharacterStats;
   termMode: TermDisplayMode;
   onMutate: (recipe: (draft: Draft<CharacterSheetV1>) => void) => void;
+  onOpenPortrait: () => void;
 }
 
 export function ForgeEditorView({
@@ -43,6 +44,7 @@ export function ForgeEditorView({
   derived,
   termMode,
   onMutate,
+  onOpenPortrait,
 }: ForgeEditorViewProps) {
   const [activeTab, setActiveTab] = useState<ForgeTabId>('identity');
 
@@ -84,7 +86,12 @@ export function ForgeEditorView({
           id="forge-panel-identity"
           aria-labelledby="forge-tab-identity"
         >
-          <ForgeIdentityTab sheet={sheet} derived={derived} onMutate={onMutate} />
+          <ForgeIdentityTab
+            sheet={sheet}
+            derived={derived}
+            onMutate={onMutate}
+            onOpenPortrait={onOpenPortrait}
+          />
         </div>
       )}
 

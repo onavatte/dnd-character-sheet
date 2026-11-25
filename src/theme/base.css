@@ -139,6 +139,22 @@ input[type='number'] {
   object-fit: cover;
 }
 
+.portrait-frame--interactive {
+  padding: 0;
+  cursor: zoom-in;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 120ms ease;
+}
+
+.portrait-frame--interactive:hover,
+.portrait-frame--interactive:focus-visible {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-primary) 28%, transparent);
+}
+
+.portrait-frame--interactive:active {
+  transform: scale(0.98);
+}
+
 .identity-text h1 {
   margin: 0;
   font-family: var(--font-display);
@@ -575,6 +591,31 @@ dialog::backdrop {
 .grimoire-dialog--wide {
   width: min(94vw, 680px);
   max-height: 88dvh;
+}
+
+.grimoire-dialog--portrait {
+  width: min(94vw, 560px);
+  max-height: 92dvh;
+}
+
+.portrait-modal-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+}
+
+.portrait-modal-image {
+  display: block;
+  max-width: min(100%, 512px);
+  max-height: min(70dvh, 512px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
 }
 
 .settings-gear-btn {

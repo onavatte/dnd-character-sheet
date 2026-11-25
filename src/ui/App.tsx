@@ -14,6 +14,7 @@ import { DiceAssistantPanel } from './components/DiceAssistantPanel';
 import type { RollLogEntry } from './components/DiceAssistantPanel';
 import { ForgeEditorView } from './components/ForgeEditorView';
 import { DEFAULT_PORTRAIT_URL } from './components/portrait-utils';
+import { PortraitDialog } from './components/PortraitDialog';
 import { RestDialogs } from './components/RestDialogs';
 import { SystemSettingsDialog } from './components/SystemSettingsDialog';
 import { VitalityBanner } from './components/VitalityBanner';
@@ -100,6 +101,7 @@ export function App() {
   const settingsDialogRef = useRef<HTMLDialogElement>(null);
   const characterDialogRef = useRef<HTMLDialogElement>(null);
   const xpDialogRef = useRef<HTMLDialogElement>(null);
+  const portraitDialogRef = useRef<HTMLDialogElement>(null);
   const emptyImportInputRef = useRef<HTMLInputElement>(null);
 
   const derived = computeDerivedCharacter(sheet);
@@ -252,16 +254,24 @@ export function App() {
     <div className="app-shell">
       <header className="sheet-header">
         <div className="identity-block">
-          <div className="portrait-frame" aria-hidden="true">
-            {hasActiveCharacter ? (
+          {hasActiveCharacter ? (
+            <button
+              type="button"
+              className="portrait-frame portrait-frame--interactive"
+              aria-label={`Agrandir le portrait de ${sheet.identity.name}`}
+              title="Agrandir le portrait"
+              onClick={() => portraitDialogRef.current?.showModal()}
+            >
               <img
                 src={sheet.identity.portraitDataUrl ?? DEFAULT_PORTRAIT_URL}
-                alt={`Portrait de ${sheet.identity.name}`}
+                alt=""
               />
-            ) : (
-              'G5'
-            )}
-          </div>
+            </button>
+          ) : (
+            <div className="portrait-frame" aria-hidden="true">
+              G5
+            </div>
+          )}
           <div className="identity-text">
             <h1>{hasActiveCharacter ? sheet.identity.name : 'Grimoire 5e'}</h1>
             {hasActiveCharacter ? (
@@ -462,6 +472,7 @@ export function App() {
           derived={derived}
           termMode={termMode}
           onMutate={mutateWithImmer}
+          onOpenPortrait={() => portraitDialogRef.current?.showModal()}
         />
       ) : (
         <>
@@ -532,13 +543,20 @@ export function App() {
       )}
 
       {hasActiveCharacter && (
-        <XpDialog
-          dialogRef={xpDialogRef}
-          currentXp={currentXp}
-          totalLevel={derived.totalLevel}
-          onAddXp={addXp}
-          onSetXp={setXp}
-        />
+        <>
+          <XpDialog
+            dialogRef={xpDialogRef}
+            currentXp={currentXp}
+            totalLevel={derived.totalLevel}
+            onAddXp={addXp}
+            onSetXp={setXp}
+          />
+          <PortraitDialog
+            dialogRef={portraitDialogRef}
+            characterName={sheet.identity.name}
+            portraitUrl={sheet.identity.portraitDataUrl ?? DEFAULT_PORTRAIT_URL}
+          />
+        </>
       )}
 
       <CharacterSelectorDialog
