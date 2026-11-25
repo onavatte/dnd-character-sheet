@@ -29,8 +29,7 @@ export interface DiceAssistantPanelProps {
   isOpen: boolean;
   onToggleOpen: (open: boolean) => void;
   diceRollMode: DiceRollMode;
-  activeTarget: ActiveRollTarget;
-  hasExplicitTarget: boolean;
+  activeTarget: ActiveRollTarget | null;
   rollLog: RollLogEntry[];
   renderTerm: (fr: string, en?: string) => ReactNode;
   onPushRollLog: (entry: RollLogEntry) => void;
@@ -72,7 +71,6 @@ export function DiceAssistantPanel({
   onToggleOpen,
   diceRollMode,
   activeTarget,
-  hasExplicitTarget,
   rollLog,
   renderTerm,
   onPushRollLog,
@@ -91,14 +89,14 @@ export function DiceAssistantPanel({
   const [moveAnnouncement, setMoveAnnouncement] = useState('');
 
   const [assistantView, setAssistantView] = useState<AssistantView>(
-    hasExplicitTarget ? (activeTarget.initialMode ?? 'd20') : 'free',
+    activeTarget !== null ? (activeTarget.initialMode ?? 'd20') : 'free',
   );
   const [advantage, setAdvantage] = useState<AdvantageState>('normal');
   const [pendingFirstD20, setPendingFirstD20] = useState<number | null>(null);
 
   // État Formule / Dégâts
   const [isCriticalDamage, setIsCriticalDamage] = useState<boolean>(
-    activeTarget.isCritical ?? false,
+    activeTarget?.isCritical ?? false,
   );
   const [pendingDamageRolls, setPendingDamageRolls] = useState<number[]>([]);
 
@@ -115,7 +113,7 @@ export function DiceAssistantPanel({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (hasExplicitTarget) {
+    if (activeTarget !== null) {
       setAssistantView(activeTarget.initialMode ?? 'd20');
       setIsCriticalDamage(activeTarget.isCritical ?? false);
     } else {
@@ -126,7 +124,7 @@ export function DiceAssistantPanel({
     setPendingFreeRolls([]);
     setLastD20(null);
     setLastDamage(null);
-  }, [isOpen, activeTarget, hasExplicitTarget]);
+  }, [isOpen, activeTarget]);
 
   const clampPosition = (left: number, top: number) =>
     clampFloatingDialogPosition(dialogRef.current, left, top);
@@ -221,7 +219,10 @@ export function DiceAssistantPanel({
   };
 
   const toggleFreeRollView = () => {
-    if (assistantView === 'free' && hasExplicitTarget) {
+    if (assistantView === 'free') {
+      if (activeTarget === null) {
+        return;
+      }
       setAssistantView(activeTarget.initialMode ?? 'd20');
     } else {
       setAssistantView('free');
@@ -241,9 +242,10 @@ export function DiceAssistantPanel({
     });
 
   /* === 1. RÉSOLUTION JET D20 (PHYSIQUE & VIRTUEL) === */
-  const activeCritThreshold = activeTarget.critThreshold ?? 20;
+  const activeCritThreshold = activeTarget?.critThreshold ?? 20;
 
   const handlePhysicalD20Tap = (dieValue: number) => {
+    if (activeTarget === null) return;
     if (advantage !== 'normal' && pendingFirstD20 === null) {
       setPendingFirstD20(dieValue);
       return;
@@ -282,6 +284,7 @@ export function DiceAssistantPanel({
   };
 
   const handleVirtualD20 = () => {
+    if (activeTarget === null) return;
     setPendingFirstD20(null);
     const res = rollVirtualD20Check({
       label: activeTarget.label,
@@ -310,7 +313,7 @@ export function DiceAssistantPanel({
   };
 
   /* === 2. RÉSOLUTION FORMULE DE DÉGÂTS (PHYSIQUE & VIRTUELLE) === */
-  const activeFormula = activeTarget.damageFormula ?? '1d8';
+  const activeFormula = activeTarget?.damageFormula ?? '1d8';
   const parsedDamage = (() => {
     try {
       return parseDamageFormula(activeFormula);
@@ -328,6 +331,7 @@ export function DiceAssistantPanel({
   }`;
 
   const handlePhysicalDamageDieTap = (val: number) => {
+    if (activeTarget === null) return;
     const nextRolls = [...pendingDamageRolls, val];
     if (nextRolls.length < expectedDamageDiceCount) {
       setPendingDamageRolls(nextRolls);
@@ -354,6 +358,7 @@ export function DiceAssistantPanel({
   };
 
   const handleVirtualDamageRoll = () => {
+    if (activeTarget === null) return;
     setPendingDamageRolls([]);
     const dmg = resolveDamageRoll(activeFormula, {
       isCritical: isCriticalDamage,
@@ -526,7 +531,7 @@ export function DiceAssistantPanel({
               onClick={toggleFreeRollView}
               title="Configurer un jet libre (d4 à d100)"
             >
-              {assistantView === 'free' && hasExplicitTarget
+              {assistantView === 'free' && activeTarget !== null
                 ? 'Jet ciblé'
                 : 'Jet Libre'}
             </button>
@@ -586,7 +591,7 @@ export function DiceAssistantPanel({
         {/* 3. Corps compact (sans onglets ni historique) */}
         <div className="floating-dice-body">
           {/* Source du jet sélectionné (masquée en mode Jet Libre) */}
-          {assistantView !== 'free' && (
+          {assistantView !== 'free' && activeTarget !== null && (
             <div className="stat-preview-row">
               <div className="dice-target-info">
                 <span className="muted-note">Jet sélectionné :</span>
@@ -609,7 +614,7 @@ export function DiceAssistantPanel({
           )}
 
           {/* === VUE 1 : JET DE D20 === */}
-          {assistantView === 'd20' && (
+          {assistantView === 'd20' && activeTarget !== null && (
             <>
               <div
                 className="segmented-control"
@@ -715,7 +720,7 @@ export function DiceAssistantPanel({
           )}
 
           {/* === VUE 2 : DÉGÂTS D'ARME ADAPTÉS AU DÉ === */}
-          {assistantView === 'formula' && (
+          {assistantView === 'formula' && activeTarget !== null && (
             <>
               <div
                 className="segmented-control"

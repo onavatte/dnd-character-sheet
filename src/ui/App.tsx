@@ -106,9 +106,6 @@ export function App() {
   const currentXp = Math.max(0, Math.trunc(sheet.identity.xp ?? 0));
   const nextXpThreshold = getNextLevelXpThreshold(derived.totalLevel);
 
-  const defaultSkill =
-    derived.skills.find((s) => s.id === 'stealth') ?? derived.skills[0];
-
   const [selectedRollTarget, setSelectedRollTarget] =
     useState<ActiveRollTarget | null>(null);
   const [isDiceModalOpen, setIsDiceModalOpen] = useState<boolean>(false);
@@ -145,20 +142,14 @@ export function App() {
     }
   }, [diceRollMode]);
 
-  const activeRollTarget: ActiveRollTarget = selectedRollTarget ?? {
-    id: defaultSkill?.id ?? 'stealth',
-    label: defaultSkill?.name ?? 'Discrétion',
-    ...(defaultSkill?.originalName !== undefined
-      ? { originalLabel: defaultSkill.originalName }
-      : {}),
-    category: 'skill',
-    modifier: defaultSkill?.modifier ?? 0,
-    initialMode: 'd20',
-  };
-
   const handleSelectRollTarget = (target: ActiveRollTarget) => {
     setSelectedRollTarget(target);
     setIsDiceModalOpen(true);
+  };
+
+  const handleToggleDiceModal = (open: boolean) => {
+    setSelectedRollTarget(null);
+    setIsDiceModalOpen(open);
   };
 
   const renderTerm = (fr: string, en?: string) => {
@@ -497,7 +488,7 @@ export function App() {
               sheet={sheet}
               derived={derived}
               termMode={termMode}
-              activeRollTargetId={activeRollTarget.id}
+              activeRollTargetId={selectedRollTarget?.id ?? ''}
               renderTerm={renderTerm}
               onSelectRollTarget={handleSelectRollTarget}
             />
@@ -506,7 +497,7 @@ export function App() {
               sheet={sheet}
               derived={derived}
               termMode={termMode}
-              activeRollTargetId={activeRollTarget.id}
+              activeRollTargetId={selectedRollTarget?.id ?? ''}
               renderTerm={renderTerm}
               onSelectRollTarget={handleSelectRollTarget}
               onAdjustResource={adjustResource}
@@ -520,10 +511,9 @@ export function App() {
           {/* Assistant de Jet Hybride Universel (Modale flottante déplaçable sans flou + Bouton flottant FAB) */}
           <DiceAssistantPanel
             isOpen={isDiceModalOpen}
-            onToggleOpen={setIsDiceModalOpen}
+            onToggleOpen={handleToggleDiceModal}
             diceRollMode={diceRollMode}
-            activeTarget={activeRollTarget}
-            hasExplicitTarget={selectedRollTarget !== null}
+            activeTarget={selectedRollTarget}
             rollLog={rollLog}
             renderTerm={renderTerm}
             onPushRollLog={pushRollLog}
