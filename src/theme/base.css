@@ -1240,13 +1240,16 @@ dialog::backdrop {
 .floating-dice-dialog {
   position: fixed;
   margin: 0;
-  right: 1.25rem;
-  bottom: 5rem;
+  right: max(1.25rem, env(safe-area-inset-right, 0px));
+  bottom: max(4.75rem, calc(4.25rem + env(safe-area-inset-bottom, 0px)));
   left: auto;
   top: auto;
   z-index: 90;
   width: min(95vw, 445px);
-  max-height: 92dvh;
+  max-height: min(
+    92dvh,
+    calc(100dvh - 5.5rem - env(safe-area-inset-bottom, 0px))
+  );
   border-radius: var(--radius-lg);
   border: 2px solid var(--border-strong);
   border-top: 4px solid var(--accent-primary);
@@ -1254,6 +1257,13 @@ dialog::backdrop {
   color: var(--text-primary);
   padding: var(--space-4);
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+}
+
+.floating-dice-dialog--positioned {
+  max-height: min(
+    92dvh,
+    calc(100dvh - 1rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))
+  );
 }
 
 .floating-dice-dialog[open] {
@@ -1418,6 +1428,44 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline-end: 2px;
+}
+
+@media (min-width: 580px) and (max-height: 850px) {
+  .floating-dice-dialog {
+    width: min(95vw, 536px);
+    padding: var(--space-3);
+  }
+
+  .floating-dice-dialog[open] {
+    gap: var(--space-2);
+  }
+
+  .floating-dice-header {
+    padding-bottom: var(--space-1);
+  }
+
+  .dice-result-fixed {
+    min-height: 2.85rem;
+    padding: 0.375rem var(--space-3);
+  }
+
+  .floating-dice-body {
+    gap: var(--space-2);
+  }
+
+  .floating-dice-body .stat-preview-row {
+    padding: 0.375rem var(--space-3);
+  }
+
+  .d20-keypad--20 {
+    grid-template-columns: repeat(10, 1fr);
+    gap: var(--space-1);
+  }
 }
 
 .free-roll-config-row {

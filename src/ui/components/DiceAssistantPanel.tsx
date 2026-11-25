@@ -42,6 +42,31 @@ type FreeDieSides = 4 | 6 | 8 | 10 | 12 | 20 | 100;
 
 const FREE_DIE_OPTIONS: readonly FreeDieSides[] = [4, 6, 8, 10, 12, 20, 100];
 
+function clampFloatingDialogPosition(
+  el: HTMLDialogElement | null,
+  left: number,
+  top: number,
+): { left: number; top: number } {
+  if (typeof window === 'undefined') return { left: 16, top: 16 };
+  const width = el?.offsetWidth ?? 410;
+  const height = el?.offsetHeight ?? 440;
+  const maxLeft = Math.max(8, window.innerWidth - width - 8);
+  const maxTop = Math.max(8, window.innerHeight - height - 8);
+  return {
+    left: Math.max(8, Math.min(left, maxLeft)),
+    top: Math.max(8, Math.min(top, maxTop)),
+  };
+}
+
+function clampExistingFloatingPosition(
+  el: HTMLDialogElement | null,
+  prev: { left: number; top: number } | null,
+): { left: number; top: number } | null {
+  if (!prev) return null;
+  const next = clampFloatingDialogPosition(el, prev.left, prev.top);
+  return next.left === prev.left && next.top === prev.top ? prev : next;
+}
+
 export function DiceAssistantPanel({
   isOpen,
   onToggleOpen,
@@ -103,29 +128,31 @@ export function DiceAssistantPanel({
     setLastDamage(null);
   }, [isOpen, activeTarget, hasExplicitTarget]);
 
-  const clampPosition = (left: number, top: number) => {
-    if (typeof window === 'undefined') return { left: 16, top: 16 };
-    const el = dialogRef.current;
-    const width = el?.offsetWidth ?? 410;
-    const height = el?.offsetHeight ?? 440;
-    const maxLeft = Math.max(8, window.innerWidth - width - 8);
-    const maxTop = Math.max(8, window.innerHeight - height - 8);
-    return {
-      left: Math.max(8, Math.min(left, maxLeft)),
-      top: Math.max(8, Math.min(top, maxTop)),
-    };
-  };
+  const clampPosition = (left: number, top: number) =>
+    clampFloatingDialogPosition(dialogRef.current, left, top);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handleResize = () => {
       setPosition((prev) =>
-        prev ? clampPosition(prev.left, prev.top) : null,
+        clampExistingFloatingPosition(dialogRef.current, prev),
       );
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const hasPositioned = position !== null;
+
+  useEffect(() => {
+    if (!isOpen || !hasPositioned || typeof window === 'undefined') return;
+    const frameId = window.requestAnimationFrame(() => {
+      setPosition((prev) =>
+        clampExistingFloatingPosition(dialogRef.current, prev),
+      );
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [isOpen, hasPositioned, assistantView, freeDieSides, advantage]);
 
   const announceMove = (description: string) => {
     setMoveAnnouncement(description);
@@ -441,7 +468,9 @@ export function DiceAssistantPanel({
       <dialog
         ref={dialogRef}
         open={isOpen}
-        className="floating-dice-dialog"
+        className={`floating-dice-dialog${
+          position !== null ? ' floating-dice-dialog--positioned' : ''
+        }`}
         style={floatingStyle}
         aria-labelledby={titleId}
       >
@@ -632,7 +661,7 @@ export function DiceAssistantPanel({
                     </label>
                   )}
                   <div
-                    className="d20-keypad"
+                    className="d20-keypad d20-keypad--20"
                     role="group"
                     aria-label="Pavé de saisie du dé d20 physique"
                   >
@@ -882,7 +911,9 @@ export function DiceAssistantPanel({
                       </label>
                     )}
                     <div
-                      className="d20-keypad"
+                      className={`d20-keypad${
+                        freeDieSides === 20 ? ' d20-keypad--20' : ''
+                      }`}
                       role="group"
                       aria-label={`Pavé de saisie du dé d${freeDieSides}`}
                     >
